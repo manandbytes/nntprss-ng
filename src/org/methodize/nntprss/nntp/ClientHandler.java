@@ -82,7 +82,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.11 2004/01/04 21:25:06 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.12 2004/02/08 18:02:30 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -299,8 +299,7 @@ public class ClientHandler implements Runnable {
 		pw.flush();
 	}
 
-	private void writeBody(PrintWriter pw, Item item)
-		throws IOException {
+	private void writeBody(PrintWriter pw, Item item) throws IOException {
 
 		Channel channel = item.getChannel();
 		String boundary = null;
@@ -586,19 +585,18 @@ public class ClientHandler implements Runnable {
 					if (parameters.length == 1
 						&& currentArticle != NO_CURRENT_ARTICLE) {
 						// Get current article
-						group =
-							channelManager.groupByName(currentGroupName);
-						
-						if(group instanceof Channel) {
+						group = channelManager.groupByName(currentGroupName);
+
+						if (group instanceof Channel) {
 							item =
 								channelManager.getChannelDAO().loadItem(
-									(Channel)group,
+									(Channel) group,
 									currentArticle);
-						} else if(group instanceof Category) {
+						} else if (group instanceof Category) {
 							item =
 								channelManager.getChannelDAO().loadItem(
-									(Category)group,
-									currentArticle);							
+									(Category) group,
+									currentArticle);
 						}
 
 					} else {
@@ -611,16 +609,16 @@ public class ClientHandler implements Runnable {
 							group =
 								channelManager.groupByName(currentGroupName);
 
-							if(group instanceof Channel) {
+							if (group instanceof Channel) {
 								item =
 									channelManager.getChannelDAO().loadItem(
-										(Channel)group,
+										(Channel) group,
 										Integer.parseInt(artNumOrMsgId));
-							} else if(group instanceof Category) {
+							} else if (group instanceof Category) {
 								item =
 									channelManager.getChannelDAO().loadItem(
-										(Category)group,
-										Integer.parseInt(artNumOrMsgId));							
+										(Category) group,
+										Integer.parseInt(artNumOrMsgId));
 							}
 
 						} else {
@@ -635,7 +633,7 @@ public class ClientHandler implements Runnable {
 										sepPos + 1,
 										artNumOrMsgId.length() - 1);
 
-// Item signature retrieval only supported by original group, not category
+								// Item signature retrieval only supported by original group, not category
 								group =
 									channelManager.channelByName(
 										artChannelName);
@@ -644,7 +642,7 @@ public class ClientHandler implements Runnable {
 										channelManager
 											.getChannelDAO()
 											.loadItem(
-											(Channel)group,
+											(Channel) group,
 											itemSignature);
 								}
 
@@ -746,20 +744,22 @@ public class ClientHandler implements Runnable {
 						} else if (
 							currentArticle > group.getFirstArticleNumber()) {
 							Item item = null;
-							if(group instanceof Channel) {
-								item = channelManager
-									.getChannelDAO()
-									.loadPreviousItem(
-									(Channel)group,
-									currentArticle);
-							} else if(group instanceof Category) {
-								item = channelManager
-									.getChannelDAO()
-									.loadPreviousItem(
-									(Category)group,
-									currentArticle);
+							if (group instanceof Channel) {
+								item =
+									channelManager
+										.getChannelDAO()
+										.loadPreviousItem(
+										(Channel) group,
+										currentArticle);
+							} else if (group instanceof Category) {
+								item =
+									channelManager
+										.getChannelDAO()
+										.loadPreviousItem(
+										(Category) group,
+										currentArticle);
 							}
-																
+
 							currentArticle = item.getArticleNumber();
 							pw.println(
 								"223 "
@@ -793,7 +793,8 @@ public class ClientHandler implements Runnable {
 							pw.println("215 list of newsgroups follows");
 							Iterator groupIter = channelManager.groups();
 							while (groupIter.hasNext()) {
-								ItemContainer group = (ItemContainer) groupIter.next();
+								ItemContainer group =
+									(ItemContainer) groupIter.next();
 								pw.println(group.getName() + " ");
 								// @TODO think about description
 								//									+ channel.getDescription());
@@ -826,7 +827,8 @@ public class ClientHandler implements Runnable {
 						pw.println("215 list of newsgroups follows");
 						Iterator groupIter = channelManager.groups();
 						while (groupIter.hasNext()) {
-							ItemContainer group = (ItemContainer) groupIter.next();
+							ItemContainer group =
+								(ItemContainer) groupIter.next();
 							// group list first p
 							pw.println(
 								group.getName()
@@ -835,7 +837,10 @@ public class ClientHandler implements Runnable {
 									+ " "
 									+ group.getFirstArticleNumber()
 									+ " "
-									+ (group instanceof Channel && ((Channel)group).isPostingEnabled() ? "y" : "n"));
+									+ (group instanceof Channel
+										&& ((Channel) group).isPostingEnabled()
+											? "y"
+											: "n"));
 						}
 						pw.println(".");
 					}
@@ -854,12 +859,18 @@ public class ClientHandler implements Runnable {
 						pw.println("211 list of article numbers follow");
 
 						List items = null;
-						if(group instanceof Channel) {
-							items = channelManager.getChannelDAO().loadArticleNumbers(
-								(Channel)group);
-						} else if(group instanceof Category) {
-							items = channelManager.getChannelDAO().loadArticleNumbers(
-								(Category)group);
+						if (group instanceof Channel) {
+							items =
+								channelManager
+									.getChannelDAO()
+									.loadArticleNumbers(
+									(Channel) group);
+						} else if (group instanceof Category) {
+							items =
+								channelManager
+									.getChannelDAO()
+									.loadArticleNumbers(
+									(Category) group);
 						}
 
 						Iterator itemIter = items.iterator();
@@ -903,7 +914,8 @@ public class ClientHandler implements Runnable {
 							pw.println("231 list of new newsgroups follows");
 							Iterator groupIter = channelManager.groups();
 							while (groupIter.hasNext()) {
-								ItemContainer group = (ItemContainer) groupIter.next();
+								ItemContainer group =
+									(ItemContainer) groupIter.next();
 								// Only list channels created after the
 								// start date provided by the nntp client
 								if (group.getCreated().after(startDate)) {
@@ -912,8 +924,7 @@ public class ClientHandler implements Runnable {
 											+ " "
 											+ group.getFirstArticleNumber()
 											+ " "
-											+ (group.getLastArticleNumber()
-												- 1)
+											+ (group.getLastArticleNumber() - 1)
 											+ " n");
 								}
 							}
@@ -938,14 +949,20 @@ public class ClientHandler implements Runnable {
 						} else if (
 							currentArticle < group.getLastArticleNumber()) {
 							Item item = null;
-							if(group instanceof Channel) {
-								item = channelManager.getChannelDAO().loadNextItem(
-									(Channel)group,
-									currentArticle);
-							} else if(group instanceof Category) {
-								item = channelManager.getChannelDAO().loadNextItem(
-									(Category)group,
-									currentArticle);
+							if (group instanceof Channel) {
+								item =
+									channelManager
+										.getChannelDAO()
+										.loadNextItem(
+										(Channel) group,
+										currentArticle);
+							} else if (group instanceof Category) {
+								item =
+									channelManager
+										.getChannelDAO()
+										.loadNextItem(
+										(Category) group,
+										currentArticle);
 							}
 							currentArticle = item.getArticleNumber();
 							pw.println(
@@ -979,14 +996,16 @@ public class ClientHandler implements Runnable {
 							group =
 								channelManager.groupByName(currentGroupName);
 							Item item = null;
-							if(group instanceof Channel) {
-								item = channelManager.getChannelDAO().loadItem(
-									(Channel)group,
-									currentArticle);
-							} else if(group instanceof Category) {
-								item = channelManager.getChannelDAO().loadItem(
-									(Category)group,
-									currentArticle);
+							if (group instanceof Channel) {
+								item =
+									channelManager.getChannelDAO().loadItem(
+										(Channel) group,
+										currentArticle);
+							} else if (group instanceof Category) {
+								item =
+									channelManager.getChannelDAO().loadItem(
+										(Category) group,
+										currentArticle);
 							}
 							if (item != null) {
 								items = new ArrayList();
@@ -1008,7 +1027,7 @@ public class ClientHandler implements Runnable {
 										sepPos + 1,
 										parameters[2].length() - 1);
 
-// Signature look-ups are only on channels, not categories
+								// Signature look-ups are only on channels, not categories
 								group =
 									channelManager.channelByName(
 										artChannelName);
@@ -1017,7 +1036,7 @@ public class ClientHandler implements Runnable {
 										channelManager
 											.getChannelDAO()
 											.loadItem(
-											(Channel)group,
+											(Channel) group,
 											itemSignature);
 
 									if (item != null) {
@@ -1038,18 +1057,24 @@ public class ClientHandler implements Runnable {
 									channelManager.groupByName(
 										currentGroupName);
 								items = null;
-								if(group instanceof Channel) {
-									items = channelManager.getChannelDAO().loadItems(
-										(Channel)group,
-										range,
-										false,
-										ChannelDAO.LIMIT_NONE);
-								} else if(group instanceof Category) {
-									items = channelManager.getChannelDAO().loadItems(
-										(Category)group,
-										range,
-										false,
-										ChannelDAO.LIMIT_NONE);
+								if (group instanceof Channel) {
+									items =
+										channelManager
+											.getChannelDAO()
+											.loadItems(
+											(Channel) group,
+											range,
+											false,
+											ChannelDAO.LIMIT_NONE);
+								} else if (group instanceof Category) {
+									items =
+										channelManager
+											.getChannelDAO()
+											.loadItems(
+											(Category) group,
+											range,
+											false,
+											ChannelDAO.LIMIT_NONE);
 								}
 							}
 						}
@@ -1099,22 +1124,23 @@ public class ClientHandler implements Runnable {
 								switch (header) {
 									case NNTP_HEADER_FROM :
 										pw.println(
-											processAuthor(item.getChannel(), item));
+											processAuthor(
+												item.getChannel(),
+												item));
 										break;
 									case NNTP_HEADER_DATE :
 										pw.println(df.format(item.getDate()));
 										break;
 									case NNTP_HEADER_NEWSGROUP :
-//										pw.println(item.getChannel().getName());
+										//										pw.println(item.getChannel().getName());
 										pw.println(group.getName());
 										break;
 									case NNTP_HEADER_SUBJECT :
 										pw.println(
-											processSubject(
-												MimeUtility.encodeText(
-													item.getTitle(),
-													"UTF-8",
-													"Q")));
+											MimeUtility.encodeText(
+												processSubject(item.getTitle()),
+												"UTF-8",
+												"Q"));
 										break;
 									case NNTP_HEADER_MESSAGE_ID :
 										pw.println(
@@ -1207,19 +1233,29 @@ public class ClientHandler implements Runnable {
 			int[] range = getIntRange(parameters[1]);
 			boolean noItemsFound = true;
 			boolean retrieving = true;
-			
-			while(retrieving) {
+
+			while (retrieving) {
 				List items = null;
-				if(group instanceof Channel) {
-					items = channelManager.getChannelDAO().loadItems((Channel)group, range, false, RETRIEVE_LIMIT);
-				} else if(group instanceof Category) {
-					items = channelManager.getChannelDAO().loadItems((Category)group, range, false, RETRIEVE_LIMIT);
+				if (group instanceof Channel) {
+					items =
+						channelManager.getChannelDAO().loadItems(
+							(Channel) group,
+							range,
+							false,
+							RETRIEVE_LIMIT);
+				} else if (group instanceof Category) {
+					items =
+						channelManager.getChannelDAO().loadItems(
+							(Category) group,
+							range,
+							false,
+							RETRIEVE_LIMIT);
 				}
 
-				if(noItemsFound && items.size() == 0) {
+				if (noItemsFound && items.size() == 0) {
 					pw.println("420 No article(s) selected");
 					break;
-				} else if(items.size() > 0) {
+				} else if (items.size() > 0) {
 
 					Iterator itemIter = items.iterator();
 
@@ -1230,11 +1266,10 @@ public class ClientHandler implements Runnable {
 								.println(
 									item.getArticleNumber()
 									+ "\t"
-									+ processSubject(
-										MimeUtility.encodeText(
-											item.getTitle(),
+									+ MimeUtility.encodeText(
+											processSubject(item.getTitle()),
 											"UTF-8",
-											"Q"))
+											"Q")
 									+ "\t"
 									+ processAuthor(item.getChannel(), item)
 							//											+ author
@@ -1263,20 +1298,23 @@ public class ClientHandler implements Runnable {
 						}
 
 					}
-				
+
 					noItemsFound = false;
 
-					range[0] = ((Item)items.get(items.size() - 1)).getArticleNumber() + 1;
-					if(range[1] != AppConstants.OPEN_ENDED_RANGE && range[0] > range[1])
-//	   Reached end of items...					
+					range[0] =
+						((Item) items.get(items.size() - 1)).getArticleNumber()
+							+ 1;
+					if (range[1] != AppConstants.OPEN_ENDED_RANGE
+						&& range[0] > range[1])
+						//	   Reached end of items...					
 						retrieving = false;
 				} else {
-// end of articles
+					// end of articles
 					retrieving = false;
 				}
 			}
 
-			if(!noItemsFound)			
+			if (!noItemsFound)
 				pw.println(".");
 		}
 	}
