@@ -51,7 +51,7 @@ import javax.mail.internet.MailDateFormat;
 import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.Item;
-import org.methodize.nntprss.feed.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.util.Base64;
 import org.methodize.nntprss.util.RSSHelper;
 import org.methodize.nntprss.util.XMLHelper;
@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.2 2003/07/20 02:46:25 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.3 2003/09/28 20:16:30 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
@@ -144,7 +144,7 @@ public class RSSParser extends GenericParser {
 	public void processFeedItems(
 		Element rootElm,
 		Channel channel,
-		ChannelManagerDAO channelManagerDAO,
+		ChannelDAO channelDAO,
 		boolean keepHistory)
 		throws NoSuchAlgorithmException, IOException {
 		Element rssDocElm =
@@ -201,8 +201,8 @@ public class RSSParser extends GenericParser {
 		if (newItems.size() > 0) {
 			// Discover new items...
 			Set newItemSignatures =
-				channelManagerDAO.findNewItemSignatures(
-					channel.getId(),
+				channelDAO.findNewItemSignatures(
+					channel,
 					newItems.keySet());
 
 			if (newItemSignatures.size() > 0) {
@@ -227,7 +227,7 @@ public class RSSParser extends GenericParser {
 							XMLHelper.getChildElementAttributeValue(
 								itemElm,
 								"guid",
-								"guidIsPermaLink");
+								"isPermaLink");
 						if (guidIsPermaLinkStr != null) {
 							guidIsPermaLink =
 								guidIsPermaLinkStr.equalsIgnoreCase("true");
@@ -328,7 +328,7 @@ public class RSSParser extends GenericParser {
 					}
 
 					// persist to database...
-					channelManagerDAO.saveItem(item);
+					channelDAO.saveItem(item);
 					channel.setTotalArticles(channel.getTotalArticles() + 1);
 				}
 			}
@@ -336,7 +336,9 @@ public class RSSParser extends GenericParser {
 		}
 
 		if (!keepHistory) {
-			channelManagerDAO.deleteItemsNotInSet(channel, currentSignatures);
+			if(currentSignatures.size() > 0) {
+				channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+			}
 			channel.setTotalArticles(currentSignatures.size());
 		}
 	}
