@@ -1,0 +1,81 @@
+<!-- nntp//rss - Ant Build Script -->
+<!-- Copyright (c) 2002 Jason Brome.  All Rights Reserved -->
+<!-- Email: nntprss@methodize.org -->
+
+<project name="nntp//rss" default="all" basedir=".">
+
+  <property environment="env"/>
+  <property name="bin"        value="${basedir}/bin"/>
+  <property name="etc"            value="${basedir}/etc"/>
+  <property name="ext"            value="${basedir}/ext"/>
+  <property name="src"            value="${basedir}/src" />
+
+  <property name="nntprss-start.jar"              value="${basedir}/nntprss-start.jar"/>
+  <property name="nntprss.jar"           value="${basedir}/nntprss.jar"/>
+
+  <!-- ==================================================================== -->
+  <target name="classpath">
+    <path id="extpath">
+      <fileset dir="${ext}\lib">
+        <include name="*.jar"/>
+      </fileset>
+    </path>
+    <path id="classpath">
+      <path refid="extpath" />
+    </path>
+    <property name="expanded.classpath" refid="classpath"/>
+    <echo message="classpath=${expanded.classpath}" level="info"/>
+  </target>
+
+  <!-- ==================================================================== -->
+  <target name="prepare" depends="classpath">
+    <mkdir dir="${bin}" />
+  </target>
+  
+  <!-- ==================================================================== -->
+  <target name="clean" description="Remove generated files">
+    <delete file="${nntprss-start.jar}" quiet="true"/>
+    <delete file="${nntprss.jar}" quiet="true"/>
+  </target>
+
+  <!-- ==================================================================== -->
+  <target name="classes" depends="prepare" description="Compile the java classes" >
+    <javac srcdir="${src}"
+           destdir="${bin}"
+           debug="false"
+           optimize="true"
+           deprecation="true"
+           target="1.2"
+           >
+       <classpath refid="extpath" />
+       <include name="**/*.java"/>
+    </javac>
+  </target>
+
+  <!-- ==================================================================== -->
+  <target name="nntprss-start.jar" depends="classes">
+    <jar jarfile="${nntprss-start.jar}" basedir="${bin}" 
+     manifest="${etc}/MANIFEST.MF" >
+       <include name="org/methodize/nntprss/Startup.class" />
+    </jar>
+  </target>
+  
+  <!-- ==================================================================== -->
+  <target name="nntprss.jar" depends="classes">
+    <jar jarfile="${nntprss.jar}" basedir="${bin}" >
+       <include name="org/methodize/nntprss/**"  />
+       <exclude name="org/methodize/nntprss/Startup.class" />
+    </jar>
+  </target>
+
+  <!-- ==================================================================== -->
+  <target name="jars" depends="nntprss-start.jar,nntprss.jar"
+   description="Build the jar files" >
+  </target>
+
+  <!-- ==================================================================== -->
+  <target name="all" depends="prepare,jars"
+   description="Build everything"/>
+
+</project>
+
