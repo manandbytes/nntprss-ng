@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.5 2004/01/04 21:23:41 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.6 2004/03/23 01:44:40 jasonbrome Exp $
  */
 public class Channel
 	extends ItemContainer
@@ -751,7 +751,8 @@ public class Channel
 			log.info("Polling channel " + name);
 		}
 
-		poll();
+		if(!polling)
+			poll();
 
 		if (log.isInfoEnabled()) {
 			log.info("Finished polling channel " + name);
@@ -1180,7 +1181,15 @@ public class Channel
 
 		if (categoryId != 0) {
 			category = channelManager.categoryById(categoryId);
-			category.getChannels().put(new Integer(id), this);
+			if(category != null)
+			{
+				category.getChannels().put(new Integer(id), this);
+			}
+			else
+			{
+				// If category not found, reset to zero
+				categoryId = 0;
+			}
 		}
 	}
 
