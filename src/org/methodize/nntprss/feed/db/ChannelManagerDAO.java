@@ -30,39 +30,51 @@ package org.methodize.nntprss.feed.db;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
-import org.methodize.nntprss.nntp.NNTPServer;
-import org.methodize.nntprss.feed.Channel;
-import org.methodize.nntprss.feed.ChannelManager;
-import org.methodize.nntprss.feed.Item;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.1 2003/07/18 23:58:05 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.2 2003/09/28 20:10:56 jasonbrome Exp $
  */
-public class ChannelManagerDAO implements ChannelDAO {
-
-//	private static final int DBVERSION = 5;
+public class ChannelManagerDAO {
 
 	private Logger log = Logger.getLogger(ChannelManagerDAO.class);
 
 	private static final ChannelManagerDAO channelManagerDAO = new ChannelManagerDAO();
 
 // The actual DB specific channel DAO logic instance
+	private boolean initialized = false;
+	
 	private ChannelDAO channelDAO = null;
 
 	private ChannelManagerDAO() {
 	}
 
-	public static ChannelManagerDAO getChannelManagerDAO() {
+	public static ChannelManagerDAO getChannelManagerDAO(Document config) {
+		channelManagerDAO.initialize(config);
 		return channelManagerDAO;
 	}
+
+	public static ChannelManagerDAO getChannelManagerDAO() {
+		if(!channelManagerDAO.initialized) {
+			throw new RuntimeException("Channel Manager was not initialized");
+		}
+		return channelManagerDAO;
+	}
+
+	public ChannelDAO getChannelDAO() {
+		return channelDAO;
+	}
+
+	protected void upgradeDatabase(int dbVersion) {
+	}
+
+	protected void createTables(Document config) {
+	}
+
+
 
 	public void initialize(Document config) {
 		Element rootElm = config.getDocumentElement();
@@ -82,92 +94,7 @@ public class ChannelManagerDAO implements ChannelDAO {
 // Default to HSQLDB
 			channelDAO = new HSqlDbChannelDAO();
 		}
-
-		channelDAO.initialize(config);
-	}
-
-	public void loadConfiguration(ChannelManager channelManager) {
-		channelDAO.loadConfiguration(channelManager);
-	}
-
-	public void loadConfiguration(NNTPServer nntpServer) {
-		channelDAO.loadConfiguration(nntpServer);
-	}
-
-	public Map loadChannels() {
-		return channelDAO.loadChannels();
-	}
-
-	public void addChannel(Channel channel) {
-		channelDAO.addChannel(channel);
-	}
-
-	public void updateChannel(Channel channel) {
-		channelDAO.updateChannel(channel);
-	}
-
-
-	public void deleteChannel(Channel channel) {
-		channelDAO.deleteChannel(channel);
-	}
-
-	public Item loadItem(Channel channel, int articleNumber) {
-		return channelDAO.loadItem(channel, articleNumber);
-	}
-
-
-	public Item loadNextItem(Channel channel, int relativeArticleNumber) {
-		return channelDAO.loadNextItem(channel, relativeArticleNumber);
-	}
-	
-	public Item loadPreviousItem(Channel channel, int relativeArticleNumber) {
-		return channelDAO.loadPreviousItem(channel, relativeArticleNumber);
-	}
-
-	public Item loadItem(Channel channel, String signature) {
-		return channelDAO.loadItem(channel, signature);
-	}
-
-	public List loadItems(
-		Channel channel,
-		int[] articleRange,
-		boolean onlyHeaders) {
-
-		return channelDAO.loadItems(channel, articleRange, onlyHeaders);
-	}
-
-
-	public List loadArticleNumbers(
-		Channel channel) {
-		return channelDAO.loadArticleNumbers(channel);
-	}
-
-
-	public void saveItem(Item item) {
-		channelDAO.saveItem(item);
-	}
-
-	public void saveConfiguration(ChannelManager channelManager) {
-		channelDAO.saveConfiguration(channelManager);
-	}
-
-
-	public void saveConfiguration(NNTPServer nntpServer) {
-		channelDAO.saveConfiguration(nntpServer);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteItemsNotInSet(org.methodize.nntprss.feed.Channel, java.util.Set)
-	 */
-	public void deleteItemsNotInSet(Channel channel, Set itemSignatures) {
-		channelDAO.deleteItemsNotInSet(channel, itemSignatures);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.methodize.nntprss.feed.db.ChannelDAO#findNewItemSignatures(int, java.util.Set)
-	 */
-	public Set findNewItemSignatures(int channelId, Set itemSignatures) {
-		return channelDAO.findNewItemSignatures(channelId, itemSignatures);
+		initialized = true;
 	}
 
 }
