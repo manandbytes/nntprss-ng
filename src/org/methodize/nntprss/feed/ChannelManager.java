@@ -48,10 +48,12 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.6 2004/03/27 02:12:48 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.7 2004/10/26 01:13:10 jasonbrome Exp $
  */
 public class ChannelManager implements Externalizable {
 
@@ -65,6 +67,7 @@ public class ChannelManager implements Externalizable {
     private String proxyPassword = null;
     private boolean useProxy = false;
     private boolean observeHttp301 = false;
+	private int pollerThreads = 4;
 
     private Map channels;
     private Map categories;
@@ -111,6 +114,18 @@ public class ChannelManager implements Externalizable {
         //		// Start feed poller...
         //		startPoller();
 
+		// Get poller Configuration
+		Element rootElm = config.getDocumentElement();
+		NodeList cfgElms = rootElm.getElementsByTagName("poller");
+		if(cfgElms != null)
+		{
+			Element pollerElm = (Element)cfgElms.item(0);
+			String threadsStr = pollerElm.getAttribute("threads");
+			if(threadsStr != null)
+			{
+				pollerThreads = Integer.parseInt(threadsStr);
+			}
+		}
     }
 
     public void addChannel(Channel channel) {
@@ -193,7 +208,7 @@ public class ChannelManager implements Externalizable {
     }
 
     private void startPoller() {
-        channelPoller = new ChannelPoller(channels);
+        channelPoller = new ChannelPoller(channels, pollerThreads);
         channelPoller.start();
     }
 

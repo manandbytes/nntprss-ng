@@ -40,7 +40,7 @@ import org.methodize.nntprss.util.FixedThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.4 2004/10/26 01:13:33 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
@@ -60,13 +60,22 @@ public class ChannelPoller extends Thread {
     public ChannelPoller(Map channels) {
         super("Channel Poller");
         this.channels = channels;
-        //		simpleThreadPool = new SimpleThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
         fixedThreadPool =
             new FixedThreadPool(
                 "Channel Poll Workers",
                 "Channel Poll Worker",
                 MAX_POLL_THREADS);
     }
+
+	public ChannelPoller(Map channels, int threads) {
+		super("Channel Poller");
+		this.channels = channels;
+		fixedThreadPool =
+			new FixedThreadPool(
+				"Channel Poll Workers",
+				"Channel Poll Worker",
+				threads);
+	}
 
     public synchronized void shutdown() {
         active = false;
