@@ -45,7 +45,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.6 2003/07/19 00:08:57 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.7 2003/07/20 02:41:10 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -54,24 +54,33 @@ public class XMLHelper {
 		String elementName) {
 
 		String elementValue = null;
-		NodeList elemList = parentElm.getElementsByTagName(elementName);
-		if (elemList != null && elemList.getLength() > 0) {
-			// Use the first matching child element
-			Element elm = (Element) elemList.item(0);
-			NodeList childNodes = elm.getChildNodes();
-			StringBuffer value = new StringBuffer();
-			for (int elemCount = 0;
-				elemCount < childNodes.getLength();
-				elemCount++) {
-
-				if (childNodes.item(elemCount) instanceof org.w3c.dom.Text) {
-					value.append(childNodes.item(elemCount).getNodeValue());
-				}
+		NodeList elemList = parentElm.getChildNodes();
+		Element elm = null;
+		for(int i = 0; i < elemList.getLength(); i++) {
+			if(elemList.item(i).getNodeName().equals(elementName)) {
+				elm = (Element)elemList.item(i);
+				elementValue = getElementValue(elm);
+				break;
 			}
-			elementValue = value.toString();
 		}
+		
 		return elementValue;
+	}
 
+	public static String getElementValue(Element elm) {
+		String elementValue;
+		NodeList childNodes = elm.getChildNodes();
+		StringBuffer value = new StringBuffer();
+		for (int elemCount = 0;
+			elemCount < childNodes.getLength();
+			elemCount++) {
+		
+			if (childNodes.item(elemCount) instanceof org.w3c.dom.Text) {
+				value.append(childNodes.item(elemCount).getNodeValue());
+			}
+		}
+		elementValue = value.toString();
+		return elementValue;
 	}
 
 	public static String getChildElementAttributeValue(
