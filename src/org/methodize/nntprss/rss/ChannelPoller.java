@@ -2,7 +2,7 @@ package org.methodize.nntprss.rss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -34,11 +34,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.methodize.nntprss.util.FixedThreadPool;
 import org.methodize.nntprss.util.SimpleThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: ChannelPoller.java,v 1.2 2003/01/22 04:58:37 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
@@ -46,18 +47,25 @@ public class ChannelPoller extends Thread {
 
 	private Map channels;
 	private boolean active = true;
-	private SimpleThreadPool simpleThreadPool;
+//	private SimpleThreadPool simpleThreadPool;
+	private FixedThreadPool fixedThreadPool;
 
-	private static final int MAX_POLL_THREADS = 20;
+//	private static final int MAX_POLL_THREADS = 20;
+	private static final int MAX_POLL_THREADS = 4;
+	
+	// Check pending polls every 30 seconds
+	private static final int POLL_INTERVAL = 30 * 1000;
 
 	public ChannelPoller(Map channels) {
 		super("Channel Poller");
 		this.channels = channels;
-		simpleThreadPool = new SimpleThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
+//		simpleThreadPool = new SimpleThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
+		fixedThreadPool = new FixedThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
 	}
 
 	public synchronized void shutdown() {
 		active = false;
+		fixedThreadPool.shutdown();
 		this.notify();
 	}
 
@@ -73,7 +81,8 @@ public class ChannelPoller extends Thread {
 			while (channelIter.hasNext() && active) {
 				Channel channel = (Channel) channelIter.next();
 				if (channel.isAwaitingPoll()) {
-					simpleThreadPool.run(channel);
+//					simpleThreadPool.run(channel);
+					fixedThreadPool.run(channel);
 				}
 			}
 
@@ -85,7 +94,7 @@ public class ChannelPoller extends Thread {
 				if (active) {
 					try {
 						// Check pending polls every 30 seconds
-						wait(30 * 1000);
+						wait(POLL_INTERVAL);
 					} catch (InterruptedException e) {
 					}
 				}
