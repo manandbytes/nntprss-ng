@@ -36,19 +36,51 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.5 2003/01/27 22:42:02 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.6 2003/02/03 05:16:51 jasonbrome Exp $
  */
 public class AppConstants {
 
+	private static final AppConstants appConstants = new AppConstants();
+		
 	public static final String NNTPRSS_CONFIGURATION_FILE =
 		"nntprss-config.xml";
-	public static final String VERSION = "0.2";
-	
+	public static final String VERSION = "0.3-alpha";
+
+	private static String platform;
+	private static String userAgent;
+
 	public static final int OPEN_ENDED_RANGE = -1;
 
 	public static final int CONTENT_TYPE_TEXT = 1;
 	public static final int CONTENT_TYPE_HTML = 2;
 	public static final int CONTENT_TYPE_MIXED = 3;
+
+	private AppConstants() {
+// Private constructor... initialize platform string
+		StringBuffer pltfmBuf = new StringBuffer();
+		String osName = System.getProperty("os.name");
+		if(osName != null) {
+			pltfmBuf.append(osName);
+			pltfmBuf.append(' ');
+		}
+		
+		String osVersion = System.getProperty("os.version");
+		if(osVersion != null) {
+			pltfmBuf.append(osVersion);
+			pltfmBuf.append(' ');
+		}
+
+		String osArch = System.getProperty("os.arch");
+		if(osVersion != null) {
+			pltfmBuf.append(osArch);
+		}
+		
+		platform = pltfmBuf.toString();
+		userAgent = "nntp//rss v"+ VERSION
+			+ " ("
+			+ platform
+			+ ")";
+	}
 
 	private static DocumentBuilderFactory docBuilderFactory =
 		DocumentBuilderFactory.newInstance();
@@ -57,4 +89,13 @@ public class AppConstants {
 		throws ParserConfigurationException {
 		return docBuilderFactory.newDocumentBuilder();
 	}
+	
+	public static String getPlatform() {
+		return platform;
+	}
+	
+	public static String getUserAgent() {
+		return userAgent;
+	}
+	
 }
