@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.7 2004/03/27 02:12:48 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.8 2004/03/27 02:15:18 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer
@@ -1269,4 +1269,41 @@ public class Channel
         lastCleaned = date;
     }
 
+    public String toString() {
+        return "{Channel"
+            + " author="
+            + author
+            + " url="
+            + url
+            + " id="
+            + id
+            + " title="
+            + title
+            + " link="
+            + link
+            + " description="
+            + description
+            + " lastPolled="
+            + lastPolled
+            + " lastCleaned="
+            + lastCleaned
+            + " lastModified="
+            + lastModified
+            + " lastETag="
+            + lastETag
+            + " rssVersion="
+            + rssVersion
+            + " managingEditor="
+            + managingEditor
+            + " lastArticleNumber="
+            + lastArticleNumber
+            + " expiration="
+            + expiration
+            + " enabled="
+            + enabled
+            + " parseAtAllCost="
+            + parseAtAllCost
+        //+" publishConfig
+        	+"}";
+    }
 }

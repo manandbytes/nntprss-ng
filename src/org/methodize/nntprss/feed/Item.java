@@ -38,7 +38,7 @@ import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Item.java,v 1.6 2004/03/27 02:12:48 jasonbrome Exp $
+ * @version $Id: Item.java,v 1.7 2004/03/27 02:16:45 jasonbrome Exp $
  */
 public class Item implements Externalizable, Cloneable {
 
@@ -289,6 +289,41 @@ public class Item implements Externalizable, Cloneable {
      */
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    public String toString() {
+        String d = "";
+        if (description != null && description.length() > 80) {
+            d =
+                description.substring(0, 80)
+                    + " <length="
+                    + description.length()
+                    + ">";
+        }
+        return "{Item"
+            + " articleNumber="
+            + articleNumber
+            + " signature="
+            + signature
+            + " title="
+            + title
+            + " link="
+            + link
+            + " date="
+            + date
+            + " comments="
+            + comments
+            + " creator="
+            + creator
+            + " channel="
+            + channel.getName()
+            + " guid="
+            + guid
+            + " guidIsPermaLink="
+            + guidIsPermaLink
+            + " description="
+            + d
+            + "}";
     }
 
 }
