@@ -1,10 +1,34 @@
-/*
- * Created on Jul 19, 2003
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package org.methodize.nntprss.feed.parser;
+
+/* -----------------------------------------------------------
+ * nntp//rss - a bridge between the RSS world and NNTP clients
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
+ *
+ * email: nntprss@methodize.org
+ * mail:  Methodize Solutions
+ *        PO Box 3865
+ *        Grand Central Station
+ *        New York NY 10163
+ * 
+ * This file is part of nntp//rss
+ * 
+ * nntp//rss is free software; you can redistribute it 
+ * and/or modify it under the terms of the GNU General 
+ * Public License as published by the Free Software Foundation; 
+ * either version 2 of the License, or (at your option) any 
+ * later version.
+ *
+ * This program is distributed in the hope that it will be 
+ * useful, but WITHOUT ANY WARRANTY; without even the implied 
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE.  See the GNU General Public License for more 
+ * details.
+ *
+ * You should have received a copy of the GNU General Public 
+ * License along with this program; if not, write to the 
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
+ * Boston, MA  02111-1307  USA
+ * ----------------------------------------------------- */
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -14,10 +38,8 @@ import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.w3c.dom.Element;
 
 /**
- * @author jason
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @author Jason Brome <jason@methodize.org>
+ * @version $Id: GenericParser.java,v 1.3 2004/01/04 21:20:52 jasonbrome Exp $
  */
 public abstract class GenericParser {
 
