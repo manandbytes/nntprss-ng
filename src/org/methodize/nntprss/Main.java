@@ -2,7 +2,7 @@ package org.methodize.nntprss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -45,7 +45,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: Main.java,v 1.3 2003/01/22 05:02:16 jasonbrome Exp $
  */
 public class Main {
 
@@ -97,24 +97,27 @@ public class Main {
 			dbManager.configure(config);
 			dbManager.startup();
 
+			channelManager = ChannelManager.getChannelManager();
+			channelManager.configure(config);
+
 			// Start NNTP server
 			nntpServer = new NNTPServer();
 			nntpServer.configure(config);
 
-			channelManager = ChannelManager.getChannelManager();
-			channelManager.configure(config);
-
-			adminServer = new AdminServer(channelManager);
+			adminServer = new AdminServer(channelManager, nntpServer);
 			adminServer.configure(config);
 
 			Runtime.getRuntime().addShutdownHook(this.new ShutdownHook());
 
 			adminServer.start();
 			nntpServer.start();
-
+			channelManager.start();
 
 		} catch (Exception e) {
+			log.error("Exception thrown during startup",
+				e);
 			e.printStackTrace();
+			System.exit(-1);
 		}
 
 	}
