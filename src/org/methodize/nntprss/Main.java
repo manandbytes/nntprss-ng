@@ -45,7 +45,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Main.java,v 1.4 2003/03/22 16:26:18 jasonbrome Exp $
+ * @version $Id: Main.java,v 1.5 2003/03/24 03:09:18 jasonbrome Exp $
  */
 public class Main {
 
@@ -123,6 +123,8 @@ public class Main {
 			channelManager.start();
 			
 			if(windowsSysTray != null) {
+				windowsSysTray.setAdminURL("http://127.0.0.1:"
+					+ adminServer.getPort() + "/");
 				windowsSysTray.showStarted();
 			}
 
