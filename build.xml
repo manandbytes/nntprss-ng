@@ -94,6 +94,8 @@
         <include name="README.TXT"/>
         <include name="users.properties.sample"/>
         <include name="WINDOWS-SERVICE.TXT"/>
+        <include name="nntprss.ico"/>
+        <include name="systray4j.dll"/>
       </zipfileset>
     </zip>
 
@@ -112,6 +114,8 @@
         <include name="README.TXT"/>
         <include name="users.properties.sample"/>
         <include name="WINDOWS-SERVICE.TXT"/>
+        <include name="nntprss.ico"/>
+        <include name="systray4j.dll"/>
       </tarfileset>
     </tar>
 
