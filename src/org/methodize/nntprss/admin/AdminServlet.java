@@ -44,8 +44,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.mail.internet.MailDateFormat;
@@ -58,6 +60,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.methodize.nntprss.admin.search.Syndic8Search;
+import org.methodize.nntprss.feed.Category;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.feed.publish.BloggerPublisher;
@@ -74,16 +77,17 @@ import org.methodize.nntprss.util.XMLHelper;
 import org.mortbay.servlet.MultiPartRequest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.10 2003/09/28 20:05:12 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.11 2003/10/24 02:36:28 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
- * In its current implementation, it's a rather unelegant
+ * In its current implementation, it's a rather inelegant
  * bundle of admin + presentation logic.  When I find the
  * right lightweight template-driven solution, I'll switch
  * over to that...
@@ -95,6 +99,7 @@ public class AdminServlet extends HttpServlet {
 	private static final String TAB_CONFIG = "config";
 	private static final String TAB_QUICKEDIT = "quickedit";
 	private static final String TAB_ADD_CHANNEL = "add";
+	private static final String TAB_VIEW_CATEGORIES = "categories";
 	private static final String TAB_VIEW_CHANNELS = "channels";
 	private static final String TAB_FIND_FEEDS = "findfeeds";
 	private static final String CSS_HEADER =
@@ -115,6 +120,8 @@ public class AdminServlet extends HttpServlet {
 		+ "a.chlerror { color: #FFFFFF; text-decoration: underline} "
 		+ "a.head { color: #FFFFFF; text-decoration: none} "
 		+ "a:hover.head { text-decoration: underline; color : #FFF240; } "
+		+ "a.head2 { color: #FFFFFF; text-decoration: underline} "
+		+ "a:hover.head2 { text-decoration: underline; color : #FFF240; } "
 		+ "a.row { text-decoration: none} "
 		+ "a:hover.row { text-decoration: underline } "
 		+ "th	{ color: #FFF240; font-size: 11px; font-weight : bold; background-color: #408BFF; height: 25px; } "
@@ -145,18 +152,17 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<table width='100%' border='0' cellspacing='0' cellpadding='2'><tr><td class='bodyborder' bgcolor='#FFFFFF'>");
 
 		writer.write("<table width='100%' border='0' cellspacing='3' cellpadding='0'>");
-		writer.write("<tr><th colspan='6'>nntp//rss Administration</th></tr>");
+		writer.write("<tr><th colspan='7'>nntp//rss Administration</th></tr>");
 		writer.write("<tr>");
 		writer.write("<th class='subHead" + (tab.equals(TAB_FIND_FEEDS) ? "Selected" : "") + "' width='50%' align='left'>&nbsp;<a class='head' href='?action=findfeedsform'>Find Feeds</a></th>");
-		writer.write("<th class='subHead" + (tab.equals(TAB_VIEW_CHANNELS) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='/'>View Channels</a>&nbsp;</td>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_VIEW_CATEGORIES) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=categories'>Categories</a>&nbsp;</td>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_VIEW_CHANNELS) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='/'>Channels</a>&nbsp;</td>");
 		writer.write("<th class='subHead" + (tab.equals(TAB_ADD_CHANNEL) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=addform'>Add Channel</a>&nbsp;</td>");
 		writer.write("<th class='subHead" + (tab.equals(TAB_QUICKEDIT) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=quickedit'>Quick Edit</a>&nbsp;</td>");
 		writer.write("<th class='subHead" + (tab.equals(TAB_CONFIG) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=showconfig'>System Configuration</a>&nbsp;</td>");
 		writer.write("<th class='subHead" + (tab.equals(TAB_HELP) ? "Selected" : "") + "' width='50%' align='right'><a class='head' href='?action=help'>Help</a>&nbsp;</th>");
 		writer.write("</tr>");
 		writer.write("</table>");
-
-
 
 		writer.write("<table border='0' cellspacing='0' cellpadding='0' height='100%' width='100%'>");
 //		writer.write("<tr><td colspan='3' width='100%' bgcolor='#dddddd'><font size='+2'><b>&nbsp;nntp//rss Admin</b></font><hr width='100%'></td></tr>");
@@ -319,7 +325,6 @@ public class AdminServlet extends HttpServlet {
 
 		String footnoteUrls = request.getParameter("footnoteUrls");
 		nntpServer.setFootnoteUrls((footnoteUrls != null) && footnoteUrls.equals("true"));
-		nntpServer.saveConfiguration();
 
 // We will not allow the hostname to be blank - if the user erases the
 // contents of the field, default to the current host name
@@ -327,6 +332,7 @@ public class AdminServlet extends HttpServlet {
 		if(nntpServer.getHostName().length() == 0) {
 			nntpServer.setHostName(AppConstants.getCurrentHostName());
 		}
+		nntpServer.saveConfiguration();
 
 // Channel Manager config
 		channelManager.setPollingIntervalSeconds(Long.parseLong(request.getParameter("pollingInterval")));
@@ -378,15 +384,28 @@ public class AdminServlet extends HttpServlet {
 		if(channel == null) {
 			writer.write("<b>Channel " + channel.getName() + " not found!</b>");
 		} else {
+			ChannelManager channelManager =
+				(ChannelManager) getServletContext().getAttribute(
+					AdminServer.SERVLET_CTX_RSS_MANAGER);
+
 			DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
 
 			String url = ((!refresh) ? channel.getUrl() : request.getParameter("URL"));
 			boolean enabled = ((!refresh) ? channel.isEnabled() : isChecked(request, "enabled"));
 			boolean parseAtAllCost = ((!refresh) ? channel.isParseAtAllCost() : isChecked(request, "parseAtAllCost") );
-			boolean historical = ((!refresh) ? channel.isHistorical() : isChecked(request, "historical"));
+//			boolean historical = ((!refresh) ? channel.isHistorical() : isChecked(request, "historical"));
 			boolean postingEnabled = ((!refresh) ? channel.isPostingEnabled() : (!request.getParameter("postingEnabled").equals("false")));
 			String publishAPI = ((!refresh) ? channel.getPublishAPI() : request.getParameter("publishAPI"));
 			long pollingIntervalSeconds = ((!refresh) ? channel.getPollingIntervalSeconds() : Long.parseLong(request.getParameter("pollingInterval")));
+			long expiration = ((!refresh) ? channel.getExpiration() : Long.parseLong(request.getParameter("expiration")));
+			int categoryId = 0;
+			if(!refresh) {
+				if(channel.getCategory() != null) {
+					categoryId = channel.getCategory().getId();
+				}
+			} else {
+				categoryId = Integer.parseInt(request.getParameter("categoryId"));
+			}
 
 			writer.write("<form name='channel' action='?action=update' method='POST'>");
 			writer.write("<input type='hidden' name='name' value='" + HTMLHelper.escapeString(channel.getName()) + "'>");
@@ -481,9 +500,22 @@ public class AdminServlet extends HttpServlet {
 			}
 			writer.write("</td></tr>");
 
-			writer.write("<tr><td class='row1' align='right'>Historical</td><td class='row2'><input name='historical' type='checkbox' value='true' "
-				+ (historical ? "checked>" : ">")
-				+ "</td></tr>");
+//			writer.write("<tr><td class='row1' align='right'>Historical</td><td class='row2'><input name='historical' type='checkbox' value='true' "
+//				+ (historical ? "checked>" : ">")
+//				+ "</td></tr>");
+
+			writeExpiration(writer, channel);
+
+			writer.write("<tr><td class='row1' align='right'>Category</td>");
+			writer.write("<td class='row2'><select name='categoryId'>");
+
+			writeOption(writer, "[No Category]", 0, categoryId);
+			Iterator categories = channelManager.categories();
+			while(categories.hasNext()) {
+				Category category = (Category)categories.next();
+				writeOption(writer, category.getName(), category.getId(), categoryId);
+			}
+			writer.write("</select></td></tr>");
 
 			writer.write("<tr><td class='row1' align='right'>Managing Editor</td><td class='row2'>");
 			if(channel.getManagingEditor() != null) {
@@ -722,6 +754,82 @@ public class AdminServlet extends HttpServlet {
 			writer.write("</form>");
 		}
 	}
+
+	private void writeCategory(Writer writer, Category category, HttpServletRequest request) throws IOException {
+		if(category == null) {
+			writer.write("<b>Category " + category.getName() + " not found!</b>");
+		} else {
+			writer.write("<form name='category' action='?action=categoryupdate' method='POST'>");
+			writer.write("<input type='hidden' name='name' value='" + HTMLHelper.escapeString(category.getName()) + "'>");
+			writer.write("<table class='tableborder'>");
+			writer.write("<tr><th class='tableHead' colspan='2'>Category Configuration</th></tr>");
+			writer.write("<tr><td class='row1' align='right'>Newsgroup Name</td><td class='row2'>" + HTMLHelper.escapeString(category.getName()) + "</td></tr>");
+			writer.write("<tr><td class='row1' align='right'>Linked Channels</td>" +				"<td class='row2'>");
+				
+			Iterator channelIter = category.getChannels().values().iterator();
+			Set channelNames = new TreeSet(); 
+			while(channelIter.hasNext()) {
+				Channel channel = (Channel)channelIter.next();
+				channelNames.add(channel.getName());
+			}
+			
+			channelIter = channelNames.iterator();
+			while(channelIter.hasNext()) {
+				String channelName = (String)channelIter.next();
+				writer.write("<a class='row' title='Channel configuration' href='/?action=show&name=" + URLEncoder.encode(channelName) + "'>" + HTMLHelper.escapeString(channelName) + "</a><br>");
+			}
+				
+			writer.write("</td></tr>");
+
+			if(category.getChannels().size() == 0) {
+				writer.write("<tr><td class='row2' align='center' colspan='2'><input type='submit' name='delete' onClick='return confirm(\"Are you sure you want to delete this category?\");' value='Delete'></td></tr>");
+			} else {
+				writer.write("<tr><td class='row2' align='center' colspan='2'>Please disassociate channels from category to enable category deletion.</td></tr>");
+			}
+			writer.write("</table>");
+			writer.write("</form>");
+		}
+	}
+
+
+	private void writeExpiration(Writer writer, Channel channel)
+		throws IOException {
+		writer.write("<tr><td class='row1' align='right'>Expiration</td>");
+		writer.write("<td class='row2'><select name='expiration'>");
+
+		long expiration = channel.getExpiration();
+
+		writeOption(writer, "Keep all items", Channel.EXPIRATION_KEEP, expiration);
+		writeOption(writer, "Keep only current items", 0, expiration);
+		writeOption(writer, "Keep items for 1 day", (1000 * 60 * 60 * 24 * 1), expiration);
+		writeOption(writer, "Keep items for 2 days", (1000 * 60 * 60 * 24 * 2), expiration);
+		writeOption(writer, "Keep items for 4 days", (1000 * 60 * 60 * 24 * 4), expiration);
+		writeOption(writer, "Keep items for 1 week", (1000 * 60 * 60 * 24 * 7), expiration);
+		writeOption(writer, "Keep items for 2 weeks", (1000 * 60 * 60 * 24 * 14), expiration);
+		writeOption(writer, "Keep items for 4 weeks", (1000 * 60 * 60 * 24 * 28), expiration);
+
+		writer.write("</select></td></tr>");
+	}
+	
+	private void writeOption(Writer writer, String option, long value, long selectedValue) throws IOException {
+		if(value == selectedValue) {
+			writer.write("<option selected value='" + 
+				value + "'>" + option + "\n");
+		} else {
+			writer.write("<option value='" + 
+				value + "'>" + option + "\n");
+		}
+	}		
+
+	private void writeOption(StringBuffer buffer, String option, long value, long selectedValue) throws IOException {
+		if(value == selectedValue) {
+			buffer.append("<option selected value='" + 
+				value + "'>" + option + "\n");
+		} else {
+			buffer.append("<option value='" + 
+				value + "'>" + option + "\n");
+		}
+	}		
 	
 	private void cmdShowChannel(
 		HttpServletRequest request,
@@ -741,6 +849,25 @@ public class AdminServlet extends HttpServlet {
 
 		writeFooter(writer);
 	}
+
+	private void cmdShowCategory(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Writer writer = response.getWriter();
+		writeHeader(writer, TAB_VIEW_CATEGORIES);
+
+		String categoryName = request.getParameter("name");
+
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		Category category = channelManager.categoryByName(categoryName);
+		writeCategory(writer, category, request);		
+		writeFooter(writer);
+	}
+
 	
 	private void cmdUpdateChannel(
 		HttpServletRequest request,
@@ -751,9 +878,11 @@ public class AdminServlet extends HttpServlet {
 		writeHeader(writer, TAB_VIEW_CHANNELS);
 
 		String channelName = request.getParameter("name");
+
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
 				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		
 		Channel channel = channelManager.channelByName(channelName);
 
 		if(request.getParameter("update") != null) {
@@ -892,7 +1021,14 @@ public class AdminServlet extends HttpServlet {
 
 					if(valid) {
 						channel.setUrl(url);
-						channel.setHistorical(isChecked(request, "historical"));
+//						channel.setHistorical(isChecked(request, "historical"));
+						channel.setExpiration(Long.parseLong(request.getParameter("expiration")));
+						
+						int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+						boolean categoryChanged = ((!(categoryId == 0 && channel.getCategory() == null)) &&
+							((categoryId != 0 && channel.getCategory() == null)
+							|| (categoryId != channel.getCategory().getId())));
+						Category oldCategory = channel.getCategory();						
 
 						channel.setEnabled(enabled);
 						channel.setParseAtAllCost(parseAtAllCost);
@@ -902,6 +1038,18 @@ public class AdminServlet extends HttpServlet {
 						channel.setPublishConfig(publishConfig);
 
 						channel.setPollingIntervalSeconds(Long.parseLong(request.getParameter("pollingInterval")));
+
+						if(categoryChanged) {
+							Category category = null;
+							if(oldCategory != null) {
+								oldCategory.removeChannel(channel); 
+							} 
+							if(categoryId != 0) {
+								category = channelManager.categoryById(categoryId);
+								category.addChannel(channel);
+							}
+							channel.setCategory(category);							
+						}
 
 						channel.save();
 
@@ -934,6 +1082,29 @@ public class AdminServlet extends HttpServlet {
 
 		writeFooter(writer);
 	}
+
+	private void cmdUpdateCategory(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Writer writer = response.getWriter();
+		writeHeader(writer, TAB_VIEW_CATEGORIES);
+
+		String categoryName = request.getParameter("name");
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		Category category = channelManager.categoryByName(categoryName);
+
+		if(request.getParameter("delete") != null) {
+			channelManager.deleteCategory(category);
+			writer.write("Category <b>" + category.getName() + "</b> successfully deleted.");
+		}
+
+		writeFooter(writer);
+	}
+
 	
 	private void cmdEditChannelRefresh(
 		HttpServletRequest request,
@@ -1131,6 +1302,50 @@ public class AdminServlet extends HttpServlet {
 
 	}
 
+
+	private void cmdShowCurrentCategories(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Writer writer = response.getWriter();
+		writeHeader(writer, TAB_VIEW_CATEGORIES);
+		
+//		writeCheckboxSelector(writer, "checkAllChannels", "chl", "channels");
+		writer.write("<table class='tableborder' border='0'>");
+		
+		writer.write("<tr><th colspan='2' class='tableHead'>Categories</td></th>");
+		writer.write("<tr><th colspan='2' class='subHead'><a class='head2' href=\"?action=addcategoryform\">Add Category</a></th></tr>");
+//		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>RSS URL</th><th class='subHead'>Last Polled</th></tr>");
+		writer.write("<tr><th class='subHead'>&nbsp;Category Newsgroup Name&nbsp;</th><th class='subHead'>&nbsp;</th></tr>");
+
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		NNTPServer nntpServer =
+			(NNTPServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_NNTP_SERVER);
+
+		Iterator categoryIter = channelManager.categories();
+		String newsPrefix = getNewsURLPrefix(nntpServer);
+					
+		while (categoryIter.hasNext()) {
+			Category category = (Category) categoryIter.next();
+			writer.write("<tr>");
+			writer.write("<td class='row1'>"
+				+ "<a class='row' title='Channel configuration' href='/?action=showcategory&name=" + URLEncoder.encode(category.getName()) + "'>" + category.getName() + "</a></td>");
+				writer.write("<td class='row1'><a class='row' title='Read this category in your default newsreader' href='"
+				+ newsPrefix
+				+ HTMLHelper.escapeString(category.getName()) + "'>[Read]</a></td></tr>");
+		}
+
+		writer.write("</table>");
+		writeFooter(writer);
+		writer.flush();
+
+	}
+
+
 	private String getNewsURLPrefix(NNTPServer nntpServer) {
 		String newsPrefix;
 		if(nntpServer.getListenerPort() == 119) {
@@ -1157,7 +1372,7 @@ public class AdminServlet extends HttpServlet {
 
 		writeCheckboxSelector(writer, "checkAllEnabled", "enabled", "channels");
 		writeCheckboxSelector(writer, "checkAllParse", "parseAtAllCost", "channels");
-		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
+//		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
 
 		if(updated) {
 			writer.write("<b>Channels successfully updated!</b>");
@@ -1165,10 +1380,11 @@ public class AdminServlet extends HttpServlet {
 		
 		writer.write("<form name='channels' action='/?action=quickeditupdate' method='POST'>");
 		writer.write("<table class='tableborder' border='0'>");
-		writer.write("<tr><th colspan='5' class='tableHead'>Channels</td></th>");
+		writer.write("<tr><th colspan='6' class='tableHead'>Channels</td></th>");
 
 
-		writer.write("<tr><th class='subHead'>Newsgroup Name</th>" +			"<th class='subHead'><input type='checkbox' name='changeEnabled' onClick='checkAllEnabled(this);'>Enabled</th>" +			"<th class='subHead'>Polling Interval</th>" +			"<th class='subHead'><input type='checkbox' name='changeParse' onClick='checkAllParse(this);'>Parse-at-all-costs</th>" +			"<th class='subHead'><input type='checkbox' name='changeHistorical' onClick='checkAllHistorical(this);'>Historical</th></tr>");
+		writer.write("<tr><th class='subHead'>Newsgroup Name</th>" +			"<th class='subHead'><input type='checkbox' name='changeEnabled' onClick='checkAllEnabled(this);'>Enabled</th>" +
+			"<th class='subHead'>Category</th>" +			"<th class='subHead'>Polling Interval</th>" +			"<th class='subHead'><input type='checkbox' name='changeParse' onClick='checkAllParse(this);'>Parse-at-all-costs</th>" +			"<th class='subHead'>Expiration</th></tr>");
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -1195,18 +1411,32 @@ public class AdminServlet extends HttpServlet {
 					   + (channel.isEnabled() ? "checked>" : ">")
 			   + "</td>");
 
+// Category
+			int categoryId = 0;
+			if(channel.getCategory() != null) {
+				categoryId = channel.getCategory().getId();
+			} 
+			writer.write("<td class='row1'><select name='categoryId" + chlCount + "'>");
+			writeOption(writer, "[No Category]", 0, categoryId);
+			Iterator categories = channelManager.categories();
+   			while(categories.hasNext()) {
+	   			Category category = (Category)categories.next();
+	   			writeOption(writer, category.getName(), category.getId(), categoryId);
+			}
+   			writer.write("</select></td>");
+
 // Polling Interval
 			writer.write("<td class='row1'>"
 				+ "<select name='pollingInterval" + chlCount + "'>");
 
 			if(channel.getPollingIntervalSeconds() == Channel.DEFAULT_POLLING_INTERVAL) {
 				writer.write("<option selected value='" + 
-				Channel.DEFAULT_POLLING_INTERVAL + "'>Use Default Polling Interval\n");
+				Channel.DEFAULT_POLLING_INTERVAL + "'>Default Interval\n");
 			} else {
 				writer.write("<option selected value='" + channel.getPollingIntervalSeconds() + "'>" + channel.getPollingIntervalSeconds() / 60 + " minutes\n");
 			}
 			
-			writer.write("<option value='" + Channel.DEFAULT_POLLING_INTERVAL + "'>Use Default Polling Interval\n");
+			writer.write("<option value='" + Channel.DEFAULT_POLLING_INTERVAL + "'>Default Polling\n");
 			for(int interval = 10; interval <= 120; interval+=10) {
 				writer.write("<option value='" + (interval * 60) + "'>" + interval + " minutes\n");
 			}
@@ -1218,16 +1448,32 @@ public class AdminServlet extends HttpServlet {
 	   			+ "</td>");
 
 // Historical
-			writer.write("<td class='row1'><input name='historical" + chlCount + "' type='checkbox' value='true' "
-				+ (channel.isHistorical() ? "checked>" : ">")
-				+ "</td>");
-					
+//			writer.write("<td class='row1'><input name='historical" + chlCount + "' type='checkbox' value='true' "
+//				+ (channel.isHistorical() ? "checked>" : ">")
+//				+ "</td>");
+
+// @TODO Expiration
+			   writer.write("<td class='row1'><select name='expiration" + chlCount + "'>");
+			
+			   long expiration = channel.getExpiration();
+			
+			   writeOption(writer, "Keep all items", Channel.EXPIRATION_KEEP, expiration);
+			   writeOption(writer, "Keep only current items", 0, expiration);
+			   writeOption(writer, "Keep items for 1 day", (1000 * 60 * 60 * 24 * 1), expiration);
+			   writeOption(writer, "Keep items for 2 days", (1000 * 60 * 60 * 24 * 2), expiration);
+			   writeOption(writer, "Keep items for 4 days", (1000 * 60 * 60 * 24 * 4), expiration);
+			   writeOption(writer, "Keep items for 1 week", (1000 * 60 * 60 * 24 * 7), expiration);
+			   writeOption(writer, "Keep items for 2 weeks", (1000 * 60 * 60 * 24 * 14), expiration);
+			   writeOption(writer, "Keep items for 4 weeks", (1000 * 60 * 60 * 24 * 28), expiration);
+			
+			   writer.write("</select></td>");
+
 			writer.write("</tr>");
 			
 			chlCount++;				
 		}
 		
-		writer.write("<tr><td class='row2' colspan='5'>");
+		writer.write("<tr><td class='row2' colspan='6'>");
 		writer.write("<input type='submit' onClick='return confirm(\"Are you sure you want to update the configuration?\");' name='update' value='Update Channels'>"
 			+ "</td></tr>");
 
@@ -1252,22 +1498,51 @@ public class AdminServlet extends HttpServlet {
 			Channel channel = channelManager.channelByName(channelName);
 			if(channel != null) {
 				boolean enabled = isChecked(request, "enabled" + chlCount);
-				boolean historical = isChecked(request, "historical" + chlCount);
+// @TODO Expiration
+//				boolean historical = isChecked(request, "historical" + chlCount);
+				long expiration = Long.parseLong(request.getParameter("expiration" + chlCount));
 				long pollingInterval = Long.parseLong(request.getParameter("pollingInterval" + chlCount));
 				boolean parseAtAllCost = isChecked(request, "parseAtAllCost" + chlCount);
+				int categoryId = Integer.parseInt(request.getParameter("categoryId" + chlCount));
+				
+				boolean channelUpdated = true;
 				
 				if(channel.isEnabled() != enabled ||
-					channel.isHistorical() != historical ||
+					channel.getExpiration() != expiration ||
 					channel.getPollingIntervalSeconds() != pollingInterval ||
 					channel.isParseAtAllCost() != parseAtAllCost) {
 // Something changed, so update the channel
 					channel.setEnabled(enabled);
-					channel.setHistorical(historical);
+//					channel.setHistorical(historical);
+					channel.setExpiration(expiration);
 					channel.setPollingIntervalSeconds(pollingInterval);
 					channel.setParseAtAllCost(parseAtAllCost);
 
+					channelUpdated = true;
+				}
+
+				boolean categoryChanged = ((!(categoryId == 0 && channel.getCategory() == null)) &&
+					((categoryId != 0 && channel.getCategory() == null)
+					|| (categoryId != channel.getCategory().getId())));				
+
+				if(categoryChanged) {						
+					Category category = channel.getCategory();
+					if(category != null) {
+						category.removeChannel(channel); 
+					} 
+					if(categoryId != 0) {
+						category = channelManager.categoryById(categoryId);
+						category.addChannel(channel);
+					} else {
+						category = null;
+					}
+					channel.setCategory(category);
+					channelUpdated = true;							
+				}
+				
+				if(channelUpdated) {
 					channel.save();
-				}						
+				}
 			}
 
 			chlCount ++;
@@ -1307,6 +1582,10 @@ public class AdminServlet extends HttpServlet {
 		HttpServletResponse response)
 		throws ServletException, IOException {
 
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+
 		// If add has been called from an external page, passing in the URL
 		// Check for it
 		String urlString = request.getParameter("URL");
@@ -1319,10 +1598,16 @@ public class AdminServlet extends HttpServlet {
 				name = createChannelName(urlString);
 		}
 
-		String historicalStr = request.getParameter("historical");
-		boolean historical = true;
-		if(historicalStr != null) {
-			historical = historicalStr.equalsIgnoreCase("true");
+//		String historicalStr = request.getParameter("historical");
+//		boolean historical = true;
+//		if(historicalStr != null) {
+//			historical = historicalStr.equalsIgnoreCase("true");
+//		}
+
+		String expirationStr = request.getParameter("expiration");
+		long expiration = Channel.EXPIRATION_KEEP;
+		if(expirationStr != null) {
+			expiration = Long.parseLong(expirationStr);
 		}
 
 		String validateStr = request.getParameter("validate");
@@ -1353,15 +1638,37 @@ public class AdminServlet extends HttpServlet {
 				"<tr><td class='row1' align='right'>Feed URL:</td><td class='row2' ><input type='text' name='url' size='64' value='http://'><br><i>(nntp//rss supports both RSS and ATOM feeds)</i></td></tr>");
 		}
 
-		writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
-			+ (historical ? "checked" : "")
-			+ ">"
-			+ "<br><i>(Checked = Keep items removed from the original feed document)</i></td></tr>");
+
+		writer.write("<tr><td class='row1' align='right' valign='top'>Item Expiration</td><td class='row2'>");
+
+		writer.write("<select name='expiration'>");
+		writeOption(writer, "Keep all items", Channel.EXPIRATION_KEEP, expiration);
+		writeOption(writer, "Keep only current items", 0, expiration);
+		writeOption(writer, "Keep items for 1 day", (1000 * 60 * 60 * 24 * 1), expiration);
+		writeOption(writer, "Keep items for 2 days", (1000 * 60 * 60 * 24 * 2), expiration);
+		writeOption(writer, "Keep items for 4 days", (1000 * 60 * 60 * 24 * 4), expiration);
+		writeOption(writer, "Keep items for 1 week", (1000 * 60 * 60 * 24 * 7), expiration);
+		writeOption(writer, "Keep items for 2 weeks", (1000 * 60 * 60 * 24 * 14), expiration);
+		writeOption(writer, "Keep items for 4 weeks", (1000 * 60 * 60 * 24 * 28), expiration);
+
+		writer.write("</select></td></tr>");
+
 
 		writer.write("<tr><td class='row1' align='right' valign='top'>Validate</td><td class='row2'><input type='checkbox' value='true' name='validate' "
 			+ (validate ? "checked" : "")
 			+ ">"
 			+ "<br><i>(Checked = Ensure URL points to a valid RSS or ATOM document)</i></td></tr>");
+
+		writer.write("<tr><td class='row1' align='right'>Category</td>");
+		writer.write("<td class='row2'><select name='categoryId'>");
+
+		writeOption(writer, "[No Category]", 0, 0);
+		Iterator categories = channelManager.categories();
+		while(categories.hasNext()) {
+			Category category = (Category)categories.next();
+			writeOption(writer, category.getName(), category.getId(), 0);
+		}
+		writer.write("</select></td></tr>");
 
 		writer.write(
 			"<tr><td class='row2' align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
@@ -1371,6 +1678,26 @@ public class AdminServlet extends HttpServlet {
 		writer.flush();
 
 	}
+
+	private void cmdAddCategoryForm(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Writer writer = response.getWriter();
+		writeHeader(writer, TAB_VIEW_CATEGORIES);
+		writer.write("<form action='/?action=addcategory' method='post'>");
+		writer.write("<table class='tableborder'>");
+		writer.write("<tr><th colspan='2'>Add Category</th></tr>");
+		writer.write("<tr><td class='row1' align='right'>Category Newsgroup Name:</td><td class='row2'><input type='text' name='name' size='64'></td></tr>");
+		writer.write(
+			"<tr><td class='row2' align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
+		writer.write("</form>");
+
+		writeFooter(writer);
+		writer.flush();
+	}
+
 
 	private void writeErrors(Writer writer, List errors) throws IOException {
 		for(int errorCount = 0; errorCount < errors.size(); errorCount++) {
@@ -1393,15 +1720,18 @@ public class AdminServlet extends HttpServlet {
 
 		String name = request.getParameter("name").trim();
 		String urlString = request.getParameter("url").trim();
-		boolean historical = isChecked(request, "historical");
+//		boolean historical = isChecked(request, "historical");
 		boolean validate = isChecked(request, "validate");
+		long expiration = Long.parseLong(request.getParameter("expiration"));
+		int categoryId = Integer.parseInt(request.getParameter("categoryId"));
 
 		List errors = new ArrayList();
 		if(name.length() == 0) {
 			errors.add("Name cannot be empty");
 		} else if(name.indexOf(' ') > -1) {
 			errors.add("Name cannot contain spaces");
-		} else if(channelManager.channelByName(name) != null) {
+		} else if(channelManager.channelByName(name) != null ||
+			channelManager.categoryByName(name) != null) {
 			errors.add("Name is already is use");
 		}
 		
@@ -1418,7 +1748,8 @@ public class AdminServlet extends HttpServlet {
 		if(errors.size() == 0) {
 			try {
 				newChannel = new Channel(name, urlString);
-				newChannel.setHistorical(historical);
+//				newChannel.setHistorical(historical);
+				newChannel.setExpiration(expiration);
 				if(validate && !newChannel.isValid()) {
 					errors.add("URL does not point to valid RSS or ATOM document");
 					errors.add("<a target='validate' href='http://feedvalidator.org/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a>");
@@ -1453,21 +1784,53 @@ public class AdminServlet extends HttpServlet {
 			writer.write(
 				"<tr><td class='row1' align='right'>Feed URL:</td><td class='row2'><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'><br><i>(nntp//rss supports both RSS and ATOM feeds)</i></td></tr>");
 
-			writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
-				+ (historical ? "checked" : "")
-				+ ">"
-				+ "<br><i>(Checked = Keep items removed from the original RSS document)</i></td></tr>");
+//			writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
+//				+ (historical ? "checked" : "")
+//				+ ">"
+//				+ "<br><i>(Checked = Keep items removed from the original RSS document)</i></td></tr>");
+
+			writer.write("<tr><td class='row1' align='right' valign='top'>Item Expiration</td><td class='row2'>");
+
+			writer.write("<select name='expiration'>");
+			writeOption(writer, "Keep all items", Channel.EXPIRATION_KEEP, expiration);
+			writeOption(writer, "Keep only current items", 0, expiration);
+			writeOption(writer, "Keep items for 1 day", (1000 * 60 * 60 * 24 * 1), expiration);
+			writeOption(writer, "Keep items for 2 days", (1000 * 60 * 60 * 24 * 2), expiration);
+			writeOption(writer, "Keep items for 4 days", (1000 * 60 * 60 * 24 * 4), expiration);
+			writeOption(writer, "Keep items for 1 week", (1000 * 60 * 60 * 24 * 7), expiration);
+			writeOption(writer, "Keep items for 2 weeks", (1000 * 60 * 60 * 24 * 14), expiration);
+			writeOption(writer, "Keep items for 4 weeks", (1000 * 60 * 60 * 24 * 28), expiration);
+
+			writer.write("</select></td></tr>");
 
 			writer.write("<tr><td class='row1' align='right' valign='top'>Validate</td><td class='row2'><input type='checkbox'  value='true' name='validate' "
 				+ (validate ? "checked" : "")
 				+ ">"
 				+ "<br><i>(Checked = Ensure URL points to a valid RSS document)</i></td></tr>");
 
+			writer.write("<tr><td class='row1' align='right'>Category</td>");
+			writer.write("<td class='row2'><select name='categoryId'>");
+
+			writeOption(writer, "[No Category]", 0, categoryId);
+			Iterator categories = channelManager.categories();
+			while(categories.hasNext()) {
+				Category category = (Category)categories.next();
+				writeOption(writer, category.getName(), category.getId(), categoryId);
+			}
+			writer.write("</select></td></tr>");
+
+
 			writer.write(
 				"<tr><td class='row2' align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
 			writer.write("</form>");
 		} else {
 			channelManager.addChannel(newChannel);
+			if(categoryId != 0) {
+				Category category = channelManager.categoryById(categoryId);
+				category.addChannel(newChannel);
+				newChannel.setCategory(category);	
+				newChannel.save();						
+			}
 			
 			writer.write("Channel " + newChannel.getName() + " successfully added.<p>");
 			
@@ -1481,6 +1844,61 @@ public class AdminServlet extends HttpServlet {
 		writeFooter(writer);
 		writer.flush();
 
+	}
+
+
+	private void cmdAddCategory(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+
+		NNTPServer nntpServer =
+			(NNTPServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_NNTP_SERVER);
+
+		String name = request.getParameter("name").trim();
+
+		List errors = new ArrayList();
+		if(name.length() == 0) {
+			errors.add("Name cannot be empty");
+		} else if(name.indexOf(' ') > -1) {
+			errors.add("Name cannot contain spaces");
+		} else if(channelManager.channelByName(name) != null || 
+			channelManager.categoryByName(name) != null) {
+			errors.add("Name is already is use");
+		}
+		
+		Category newCategory = null;
+		if(errors.size() == 0) {
+			newCategory = new Category();
+			newCategory.setName(name);
+		}
+
+		Writer writer = response.getWriter();
+		writeHeader(writer, TAB_VIEW_CATEGORIES);
+
+		if(errors.size() > 0) {
+			writer.write("<b>There were errors adding your category:</b><p>");
+			writeErrors(writer, errors);
+			writer.write("<p>");
+			writer.write("<form action='/?action=addcategory' method='post'>");
+			writer.write("<table class='tableborder'>");
+			writer.write("<tr><th colspan='2'>Add Category</th></tr>");
+			writer.write("<tr><td class='row1' align='right'>Category Newsgroup Name:</td><td class='row2'><input type='text' name='name' size='64' value='" + HTMLHelper.escapeString(name) + "'></td></tr>");
+			writer.write(
+				"<tr><td class='row2' align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
+			writer.write("</form>");
+		} else {
+			channelManager.addCategory(newCategory);
+			writer.write("Category " + newCategory.getName() + " successfully added.<p>");
+		}
+
+		writeFooter(writer);
+		writer.flush();
 	}
 
 
@@ -1512,8 +1930,8 @@ public class AdminServlet extends HttpServlet {
 			writer.print(XMLHelper.escapeString(channel.getName()));
 			writer.print("' url='");
 			writer.print(XMLHelper.escapeString(channel.getUrl()));
-			writer.print("' historical='");
-			writer.print(channel.isHistorical() ? "true" : "false");
+			writer.print("' expiration='");
+			writer.print(channel.getExpiration());
 			writer.println("'/>");
 		}
 
@@ -1669,10 +2087,19 @@ public class AdminServlet extends HttpServlet {
 				String name = chanElm.getAttribute("name");
 				String urlString = chanElm.getAttribute("url");
 				boolean historical = false;
-				String historicalStr = chanElm.getAttribute("historical");
-				if(historicalStr != null) {
-					historical = historicalStr.equalsIgnoreCase("true");
+				Node historicalNode = chanElm.getAttributeNode("historical");
+				if(historicalNode != null) {
+					historical = historicalNode.getNodeValue().equalsIgnoreCase("true");
 				}
+				
+				long expiration = Channel.EXPIRATION_KEEP;
+				Node expirationNode = chanElm.getAttributeNode("expiration");
+				if(expirationNode != null) {
+					expiration = Long.parseLong(expirationNode.getNodeValue());
+				} else {
+					expiration = historical ? Channel.EXPIRATION_KEEP : 0;
+				}
+				
 
 // Check name...
 				List currentErrors = new ArrayList();
@@ -1702,7 +2129,8 @@ public class AdminServlet extends HttpServlet {
 					if(currentErrors.size() == 0) {
 						try {
 							newChannel = new Channel(name, urlString);
-							newChannel.setHistorical(historical);
+//							newChannel.setHistorical(historical);
+							newChannel.setExpiration(expiration);
 							channelManager.addChannel(newChannel);
 							channelsAdded++;
 						} catch(MalformedURLException me) {
@@ -1827,7 +2255,7 @@ public class AdminServlet extends HttpServlet {
 		writeHeader(writer, TAB_CONFIG);
 
 		writeCheckboxSelector(writer, "checkAllImport", "import", "channels");
-		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
+//		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
 
 
 		ChannelManager channelManager =
@@ -1854,8 +2282,7 @@ public class AdminServlet extends HttpServlet {
 				writer.write("<form name='channels' action='?action=importopml' method='POST'>");
 				writer.write("<table class='tableBorder'><tr><th>Import<br>"
 					+ "<input type='checkbox' name='changeImport' onClick='checkAllImport(this);' checked>"
-					+ "</th><th>Channel Name</th><th>Historical<br>"
-					+ "<input type='checkbox' name='changeHistorical' onClick='checkAllHistorical(this);'>"
+					+ "</th><th>Channel Name</th><th>Expiration"
 					+ "</th><th>URL</th></tr>");
 
 				int channelCount = 0;
@@ -1887,9 +2314,22 @@ public class AdminServlet extends HttpServlet {
 						+ "' value='"
 						+ HTMLHelper.escapeString(name)
 						+ "'></td>"
-						+ "<td class='" + rowClass + "' align='center'><input type='checkbox' name='historical"
-						+ channelCount
-						+ "'></td>"
+						+ "<td class='" + rowClass + "' align='center'>" 
+						+ "<select name='expiration" + channelCount + "'>");
+						
+					long expiration = Channel.EXPIRATION_KEEP;
+
+					writeOption(writer, "Keep all items", Channel.EXPIRATION_KEEP, expiration);
+					writeOption(writer, "Keep only current items", 0, expiration);
+					writeOption(writer, "Keep items for 1 day", (1000 * 60 * 60 * 24 * 1), expiration);
+					writeOption(writer, "Keep items for 2 days", (1000 * 60 * 60 * 24 * 2), expiration);
+					writeOption(writer, "Keep items for 4 days", (1000 * 60 * 60 * 24 * 4), expiration);
+					writeOption(writer, "Keep items for 1 week", (1000 * 60 * 60 * 24 * 7), expiration);
+					writeOption(writer, "Keep items for 2 weeks", (1000 * 60 * 60 * 24 * 14), expiration);
+					writeOption(writer, "Keep items for 4 weeks", (1000 * 60 * 60 * 24 * 28), expiration);
+					
+						
+					writer.write("</select></td>"
 						+ "<td class='" + rowClass + "' ><input type='hidden' name='url"
 						+ channelCount
 						+ "' value='"
@@ -1957,11 +2397,12 @@ public class AdminServlet extends HttpServlet {
 
 				String name = request.getParameter("name" + channelCount);
 				String historicalStr = request.getParameter("historical" + channelCount);
-				boolean historical = false;
-	// FIXME check
-				if(historicalStr != null) {
-					historical = true;
-				}
+				long expiration = Long.parseLong(request.getParameter("expiration" + channelCount));				
+//				boolean historical = false;
+//	// FIXME check
+//				if(historicalStr != null) {
+//					historical = true;
+//				}
 	
 	// Check name...
 				List currentErrors = new ArrayList();
@@ -1991,7 +2432,8 @@ public class AdminServlet extends HttpServlet {
 					if(currentErrors.size() == 0) {
 						try {
 							newChannel = new Channel(name, urlString);
-							newChannel.setHistorical(historical);
+//							newChannel.setHistorical(historical);
+							newChannel.setExpiration(expiration);
 							channelManager.addChannel(newChannel);
 							channelsAdded++;
 						} catch(MalformedURLException me) {
@@ -2013,11 +2455,19 @@ public class AdminServlet extends HttpServlet {
 						+ "' value='"
 						+ HTMLHelper.escapeString(name)
 						+ "'></td>"
-						+ "<td align='center'><input type='checkbox' name='historical"
-						+ newChannelCount
-						+ "' "
-						+ (historical ? "checked" : "")
-						+ "></td>"
+						+ "<td align='center'>" 
+						+ "<select name='expiration" + newChannelCount + "'>");
+
+					writeOption(errorContent, "Keep all items", Channel.EXPIRATION_KEEP, expiration);
+					writeOption(errorContent, "Keep only current items", 0, expiration);
+					writeOption(errorContent, "Keep items for 1 day", (1000 * 60 * 60 * 24 * 1), expiration);
+					writeOption(errorContent, "Keep items for 2 days", (1000 * 60 * 60 * 24 * 2), expiration);
+					writeOption(errorContent, "Keep items for 4 days", (1000 * 60 * 60 * 24 * 4), expiration);
+					writeOption(errorContent, "Keep items for 1 week", (1000 * 60 * 60 * 24 * 7), expiration);
+					writeOption(errorContent, "Keep items for 2 weeks", (1000 * 60 * 60 * 24 * 14), expiration);
+					writeOption(errorContent, "Keep items for 4 weeks", (1000 * 60 * 60 * 24 * 28), expiration);
+
+					errorContent.append("</select></td>"
 						+ "<td><input type='hidden' name='url"
 						+ newChannelCount++
 						+ "' value='"
@@ -2047,14 +2497,12 @@ public class AdminServlet extends HttpServlet {
 			}
 
 			writeCheckboxSelector(writer, "checkAllImport", "import", "channels");
-			writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
 
 			writer.write("Problems were encountered while adding channels.<p>");
 			writer.write("<form name='channels' action='?action=importopml' method='POST'>");
 			writer.write("<table border='1'><tr><th>Import<br>"
 				+ "<input type='checkbox' name='changeImport' onClick='checkAllImport(this);' checked>"
-				+ "</th><th>Channel Name</th><th>Historical<br>"
-				+ "<input type='checkbox' name='changeHistorical' onClick='checkAllHistorical(this);'>"
+				+ "</th><th>Channel Name</th><th>Expiration"
 				+ "</th><th>URL</th></tr>");
 			writer.write(errorContent.toString());
 			writer.write("</table>");
@@ -2279,16 +2727,24 @@ public class AdminServlet extends HttpServlet {
 				cmdShowCurrentChannels(request, response);
 			} else if (action.equals("add")) {
 				cmdAddChannel(request, response);
+			} else if (action.equals("addcategory")) {
+				cmdAddCategory(request, response);
 			} else if (action.equals("addform")) {
 				cmdAddChannelForm(request, response);
+			} else if (action.equals("addcategoryform")) {
+				cmdAddCategoryForm(request, response);
 			} else if (action.equals("showconfig")) {
 				cmdShowConfig(request, response);
 			} else if (action.equals("updateconfig")) {
 				cmdUpdateConfig(request, response);
 			} else if (action.equals("show")) {
 				cmdShowChannel(request, response);
+			} else if (action.equals("showcategory")) {
+				cmdShowCategory(request, response);
 			} else if (action.equals("update")) {
 				cmdUpdateChannel(request, response);
+			} else if (action.equals("categoryupdate")) {
+				cmdUpdateCategory(request, response);
 			} else if (action.equals("export")) {
 				cmdExportChannelConfig(request, response);
 			} else if (action.equals("exportopml")) {
@@ -2313,6 +2769,8 @@ public class AdminServlet extends HttpServlet {
 				cmdFindFeedsForm(request, response);
 			} else if (action.equals("findfeeds")) {
 				cmdFindFeeds(request, response);
+			} else if (action.equals("categories")) {
+				cmdShowCurrentCategories(request, response);
 			} else {
 				cmdShowCurrentChannels(request, response);
 			}
