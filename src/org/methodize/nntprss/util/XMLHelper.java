@@ -34,12 +34,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.3 2003/01/28 05:40:18 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.4 2003/02/08 06:21:35 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -53,13 +54,16 @@ public class XMLHelper {
 			// Use the first matching child element
 			Element elm = (Element) elemList.item(0);
 			NodeList childNodes = elm.getChildNodes();
+			StringBuffer value = new StringBuffer();
 			for (int elemCount = 0;
 				elemCount < childNodes.getLength();
 				elemCount++) {
+				
 				if (childNodes.item(elemCount) instanceof org.w3c.dom.Text) {
-					elementValue = childNodes.item(elemCount).getNodeValue();
-				}
+					value.append(childNodes.item(elemCount).getNodeValue());
+				} 
 			}
+			elementValue = value.toString();
 		}
 		return elementValue;
 
