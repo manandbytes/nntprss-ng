@@ -31,6 +31,10 @@ package org.methodize.nntprss.admin;
  * ----------------------------------------------------- */
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.feed.ChannelManager;
@@ -47,10 +51,11 @@ import org.mortbay.jetty.servlet.WebApplicationHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServer.java,v 1.5 2003/07/19 00:02:26 jasonbrome Exp $
+ * @version $Id: AdminServer.java,v 1.6 2003/09/28 20:03:30 jasonbrome Exp $
  */
 public class AdminServer {
 
@@ -58,10 +63,13 @@ public class AdminServer {
 	private ChannelManager channelManager;
 	private NNTPServer nntpServer;
 	private int port;
+	public static final String SERVLET_CTX_ADMIN_SERVER = "admin.server";
 	public static final String SERVLET_CTX_RSS_MANAGER = "rss.manager";
 	public static final String SERVLET_CTX_NNTP_SERVER = "nntp.server";
 
 	public static final String REALM_NAME = "nntprss-realm";
+
+	private Map subscriptionListeners = new HashMap();
 
 	/**
 	 * Constructor for AdminServer.
@@ -114,6 +122,7 @@ public class AdminServer {
 
 		context.setAttribute(SERVLET_CTX_RSS_MANAGER, channelManager);
 		context.setAttribute(SERVLET_CTX_NNTP_SERVER, nntpServer);
+		context.setAttribute(SERVLET_CTX_ADMIN_SERVER, this);
 
 		handler.addServlet("/", AdminServlet.class.getName());
 		context.addHandler(handler);
@@ -127,6 +136,38 @@ public class AdminServer {
 		}
 
 		httpServer.addListener(httpListener);
+
+// Add subscription listeners...
+		NodeList subListeners =
+			rootElm.getElementsByTagName("subscribe");
+			
+		for(int i = 0; i < subListeners.getLength(); i++) {
+			Element subscribe = (Element)subListeners.item(i);
+			SubscriptionListener subListener = 
+				new SubscriptionListener();
+			subListener.setName(subscribe.getAttribute("name"));
+			subListener.setPort(Integer.parseInt(subscribe.getAttribute("port")));
+			subListener.setPath(subscribe.getAttribute("path"));
+			subListener.setParam(subscribe.getAttribute("param"));
+			
+			Integer port = new Integer(subListener.getPort());
+			if(!subscriptionListeners.containsKey(port)) {
+				// Create new HTTP listener	
+				httpListener = new SocketListener();
+				httpListener.setPort(subListener.getPort());
+				if(address != null) {
+					httpListener.setHost(address);
+				}
+				httpServer.addListener(httpListener);
+
+				List subList = new ArrayList();
+				subList.add(subListener);
+				subscriptionListeners.put(port, subList);
+			} else {
+// Use existing HTTP listener, just add to map
+				((List)(subscriptionListeners.get(port))).add(subListener);	
+			}
+		}
 
 	}
 
@@ -147,6 +188,13 @@ public class AdminServer {
 	 */
 	public int getPort() {
 		return port;
+	}
+
+	/**
+	 * @return
+	 */
+	public Map getSubscriptionListeners() {
+		return subscriptionListeners;
 	}
 
 }
