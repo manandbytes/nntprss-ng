@@ -32,10 +32,17 @@ package org.methodize.nntprss.util;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSHelper.java,v 1.2 2003/03/24 03:15:06 jasonbrome Exp $
+ * @version $Id: RSSHelper.java,v 1.3 2003/07/19 00:07:59 jasonbrome Exp $
  */
 
 public class RSSHelper {
+
+// Namespace URL prefixes
+	public static final String XMLNS_DC = "http://purl.org/dc/elements/1.1/";
+	public static final String XMLNS_SY = "http://purl.org/rss/1.0/modules/syndication/";
+	public static final String XMLNS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	public static final String XMLNS_CONTENT = "http://purl.org/rss/1.0/modules/content/";
+	public static final String XMLNS_XHTML = "http://www.w3.org/1999/xhtml";
 
 	/**
 	 * Parses RSS email string to return email
