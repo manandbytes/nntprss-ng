@@ -31,6 +31,7 @@ package org.methodize.nntprss.nntp;
  * ----------------------------------------------------- */
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -39,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServerListener.java,v 1.2 2003/01/22 05:07:39 jasonbrome Exp $
+ * @version $Id: NNTPServerListener.java,v 1.3 2003/07/19 00:06:17 jasonbrome Exp $
  */
 public class NNTPServerListener extends Thread {
 
@@ -51,6 +52,11 @@ public class NNTPServerListener extends Thread {
 
 	public NNTPServerListener(NNTPServer nntpServer, int port) throws Exception {
 		serverSocket = new ServerSocket(port);
+		this.nntpServer = nntpServer;
+	}
+
+	public NNTPServerListener(NNTPServer nntpServer, int port, InetAddress address) throws Exception {
+		serverSocket = new ServerSocket(port, 0, address);
 		this.nntpServer = nntpServer;
 	}
 
