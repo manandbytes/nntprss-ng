@@ -30,13 +30,16 @@ package org.methodize.nntprss.util;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.8 2003/07/19 00:06:54 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.9 2003/09/28 20:24:15 jasonbrome Exp $
  */
 public final class AppConstants {
 
@@ -104,6 +107,24 @@ public final class AppConstants {
 	
 	public static String getUserAgent() {
 		return userAgent;
+	}
+	
+	public static String getCurrentHostName() {
+		InetAddress localAddr;
+		String hostName = null;
+		try {
+			localAddr = InetAddress.getLocalHost();
+			localAddr = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
+			hostName = localAddr.getHostName();
+		} catch (UnknownHostException e) {   
+		}
+
+// Drop down to localhost (127.0.0.1) if we cannot discover host name
+		if(hostName == null) {
+			hostName = "127.0.0.1";
+		}
+		
+		return hostName;
 	}
 	
 }
