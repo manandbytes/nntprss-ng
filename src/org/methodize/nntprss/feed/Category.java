@@ -42,11 +42,13 @@ import org.methodize.nntprss.feed.db.ChannelDAO;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Category.java,v 1.2 2004/01/04 21:22:14 jasonbrome Exp $
+ * @version $Id: Category.java,v 1.3 2004/03/23 01:45:14 jasonbrome Exp $
  */
 public class Category extends ItemContainer implements Externalizable {
 
-	public static final int EXTERNAL_VERSION = 1;  
+	public static final int EXTERNAL_VERSION = 2;
+	private static final int VERSION_UTF = 1;
+	private static final int VERSION_OBJECT = 2;  
 
 	private int id;
 
@@ -88,9 +90,13 @@ public class Category extends ItemContainer implements Externalizable {
 	 */
 	public void readExternal(ObjectInput in)
 		throws IOException, ClassNotFoundException {
-			in.readInt();
+			int version = in.readInt();
 			id = in.readInt();
-			name = in.readUTF();
+			
+			if(version == VERSION_UTF)
+				name = in.readUTF();
+			else
+				name = (String)in.readObject();
 
 			firstArticleNumber = in.readInt();
 			lastArticleNumber = in.readInt();
@@ -104,7 +110,7 @@ public class Category extends ItemContainer implements Externalizable {
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(EXTERNAL_VERSION);
 		out.writeInt(id);
-		out.writeUTF(name != null ? name : "");
+		out.writeObject(name != null ? name : "");
 
 		out.writeInt(firstArticleNumber);
 		out.writeInt(lastArticleNumber);
