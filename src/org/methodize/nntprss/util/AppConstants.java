@@ -9,24 +9,24 @@ package org.methodize.nntprss.util;
  *        PO Box 3865
  *        Grand Central Station
  *        New York NY 10163
- *
+ * 
  * This file is part of nntp//rss
- *
- * nntp//rss is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General
- * Public License as published by the Free Software Foundation;
- * either version 2 of the License, or (at your option) any
+ * 
+ * nntp//rss is free software; you can redistribute it 
+ * and/or modify it under the terms of the GNU General 
+ * Public License as published by the Free Software Foundation; 
+ * either version 2 of the License, or (at your option) any 
  * later version.
  *
- * This program is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.  See the GNU General Public License for more
+ * This program is distributed in the hope that it will be 
+ * useful, but WITHOUT ANY WARRANTY; without even the implied 
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE.  See the GNU General Public License for more 
  * details.
  *
- * You should have received a copy of the GNU General Public
- * License along with this program; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * You should have received a copy of the GNU General Public 
+ * License along with this program; if not, write to the 
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
@@ -39,7 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.16 2004/09/04 19:34:44 aslom Exp $
+ * @version $Id: AppConstants.java,v 1.17 2004/10/26 01:11:08 jasonbrome Exp $
  */
 public final class AppConstants {
 
@@ -57,7 +57,7 @@ public final class AppConstants {
 
     public static final String USERS_CONFIG = "users.properties";
 
-    public static final String VERSION = "0.4-beta-7";
+    public static final String VERSION = "0.5-beta-1";
 
     public static final int OPEN_ENDED_RANGE = -1;
 
@@ -131,4 +131,3 @@ public final class AppConstants {
     }
 
 }
-
