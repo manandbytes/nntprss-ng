@@ -34,6 +34,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.*;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashSet;
@@ -45,19 +46,23 @@ import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.methodize.nntprss.feed.db.ChannelDAO;
+import org.methodize.nntprss.plugin.ItemProcessor;
+import org.methodize.nntprss.plugin.PluginException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.7 2004/10/26 01:13:10 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.8 2004/12/15 04:10:40 jasonbrome Exp $
  */
 public class ChannelManager implements Externalizable {
 
     public static final int EXTERNAL_VERSION = 1;
+	private Logger log = Logger.getLogger(ChannelManager.class);
 
     private long pollingIntervalSeconds = 60 * 60;
 
@@ -78,6 +83,8 @@ public class ChannelManager implements Externalizable {
     private HostConfiguration hostConfig = null;
     //	private HttpState httpState = null;
     private MultiThreadedHttpConnectionManager httpConMgr;
+
+	private ItemProcessor[] itemProcessors = null;
 
     private ChannelManager() {
         // Private constructor - singleton class
@@ -117,15 +124,58 @@ public class ChannelManager implements Externalizable {
 		// Get poller Configuration
 		Element rootElm = config.getDocumentElement();
 		NodeList cfgElms = rootElm.getElementsByTagName("poller");
-		if(cfgElms != null)
+		if(cfgElms != null && cfgElms.getLength() > 0)
 		{
 			Element pollerElm = (Element)cfgElms.item(0);
 			String threadsStr = pollerElm.getAttribute("threads");
-			if(threadsStr != null)
-			{
+			if(threadsStr != null) {
 				pollerThreads = Integer.parseInt(threadsStr);
 			}
 		}
+
+		NodeList processorsElms = rootElm.getElementsByTagName("itemProcessors");
+		if(processorsElms != null && processorsElms.getLength() > 0) {
+			NodeList processorElms = ((Element)processorsElms.item(0)).getElementsByTagName("processor");
+			if(processorElms != null && processorElms.getLength() > 0) {
+				List processors = new ArrayList();
+				for(int i = 0; i < processorElms.getLength(); i++) {
+					Element processorElm = (Element)processorElms.item(i);
+
+					String itemProcessorClassName = processorElm.getAttribute("class");
+					if(itemProcessorClassName != null){
+						try {
+							Object itemProcessorObject = Class.forName(itemProcessorClassName).newInstance();
+							if(!(itemProcessorObject instanceof ItemProcessor))
+							{
+								log.warn(itemProcessorClassName + " not instance of org.methodize.nntprss.plugin.ItemProcessor, skipping");
+							}
+							else
+							{
+								try {
+									ItemProcessor itemProcessor = (ItemProcessor)itemProcessorObject;
+									itemProcessor.initialize(processorElm);
+									processors.add(itemProcessor);
+								} catch(PluginException pe) {
+									log.warn("Error initializing ItemProcessor plug-in: " + pe.getMessage() + ", skipping.", pe);
+								}
+							}
+						} catch(ClassNotFoundException cnfe) {
+							log.warn("Cannot find ItemProcessor class " + itemProcessorClassName, cnfe);
+						} catch(IllegalAccessException iae) {
+							log.warn("Error instantiating ItemProcessor class: " + iae.getMessage(), iae);
+						} catch(InstantiationException ie) {
+							log.warn("Error instantiating ItemProcessor class: " + ie.getMessage(), ie);
+						}
+					}
+					
+				}
+				if(processors.size() > 0)
+				{
+					itemProcessors = (ItemProcessor[])processors.toArray(new ItemProcessor[0]);
+				}
+			}
+		}
+					
     }
 
     public void addChannel(Channel channel) {
@@ -196,14 +246,17 @@ public class ChannelManager implements Externalizable {
 
     public Category categoryById(int id) {
         Category category = null;
-        Iterator categoryIter = categories.values().iterator();
-        while (categoryIter.hasNext()) {
-            Category nextCategory = (Category) categoryIter.next();
-            if (nextCategory.getId() == id) {
-                category = nextCategory;
-                break;
-            }
-        }
+        if(categories != null) // Null check for jdbm migrate
+        {
+	        Iterator categoryIter = categories.values().iterator();
+	        while (categoryIter.hasNext()) {
+	            Category nextCategory = (Category) categoryIter.next();
+	            if (nextCategory.getId() == id) {
+	                category = nextCategory;
+	                break;
+	            }
+	        }
+		}
         return category;
     }
 
@@ -447,6 +500,13 @@ public class ChannelManager implements Externalizable {
         out.writeUTF(proxyPassword != null ? proxyPassword : "");
         out.writeBoolean(useProxy);
         out.writeBoolean(observeHttp301);
+    }
+
+    /**
+     * @return
+     */
+    public ItemProcessor[] getItemProcessors() {
+        return itemProcessors;
     }
 
 }
