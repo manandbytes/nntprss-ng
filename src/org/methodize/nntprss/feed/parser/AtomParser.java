@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.4 2003/10/24 02:33:00 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.5 2004/01/04 21:19:49 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {

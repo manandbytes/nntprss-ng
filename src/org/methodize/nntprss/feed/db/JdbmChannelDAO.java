@@ -48,7 +48,7 @@ import org.w3c.dom.NodeList;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -78,7 +78,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.4 2003/10/24 02:31:58 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.5 2004/01/04 21:19:04 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
@@ -454,7 +454,7 @@ public class JdbmChannelDAO extends ChannelDAO {
 	/* (non-Javadoc)
 	 * @see org.methodize.nntprss.feed.db.ChannelDAO#loadChannels()
 	 */
-	public Map loadChannels(Map categories) {
+	public Map loadChannels(ChannelManager channelManager) {
 		Map channels = new TreeMap();
 		try {
 			TupleBrowser browser = btChannels.browse();
@@ -1194,7 +1194,7 @@ public class JdbmChannelDAO extends ChannelDAO {
 			Integer catId = new Integer(category.getId());
 			long recId = ((Long) btChannels.find(catId)).longValue();
 
-			// Delete channel
+			// Delete category
 			btCategories.remove(catId);
 			recMan.delete(recId);
 
