@@ -39,7 +39,7 @@ import java.net.URLClassLoader;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Startup.java,v 1.3 2003/03/22 16:25:42 jasonbrome Exp $
+ * @version $Id: Startup.java,v 1.4 2003/07/19 00:00:51 jasonbrome Exp $
  */
 public class Startup {
 
@@ -48,6 +48,8 @@ public class Startup {
 			"./ext/lib/log4j-1.2.7.jar",
 			"./ext/lib/commons-collections.jar",
 			"./ext/lib/commons-dbcp.jar",
+			"./ext/lib/commons-httpclient.jar",
+			"./ext/lib/commons-logging.jar",
 			"./ext/lib/commons-pool.jar",
 			"./ext/lib/javax.servlet.jar",
 			"./ext/lib/org.mortbay.jetty-jdk1.2.jar",
