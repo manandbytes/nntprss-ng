@@ -35,7 +35,7 @@ import java.util.ArrayList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: FixedThreadPool.java,v 1.2 2003/01/22 05:11:40 jasonbrome Exp $
+ * @version $Id: FixedThreadPool.java,v 1.3 2003/01/27 22:42:22 jasonbrome Exp $
  */
 
 
@@ -85,7 +85,7 @@ public class FixedThreadPool {
 
 				try {
 					task.run();
-				} catch (Throwable t) {
+				} catch (Exception e) {
 				}
 
 				task = null;
