@@ -45,7 +45,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.7 2003/07/20 02:41:10 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.8 2003/09/28 20:25:14 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -262,7 +262,7 @@ public class XMLHelper {
 								if (!footnoteLinks) {
 // Changed URL wrap characters from parenthesis to lt / gt to avoid
 // issue with certain newsreaders
-									strippedString.append(" <");
+									strippedString.append(" <URL:");
 									strippedString.append(lastURL);
 									strippedString.append('>');
 								} else {
@@ -279,7 +279,7 @@ public class XMLHelper {
 				} else if (upperToken.startsWith("/A")) {
 					if (lastURL != null) {
 						if (!footnoteLinks) {
-							strippedString.append(" <");
+							strippedString.append(" <URL:");
 							strippedString.append(lastURL);
 							strippedString.append('>');
 						} else {
@@ -385,6 +385,8 @@ public class XMLHelper {
 			mapXML.append("</map>");
 
 			mapXMLResult = mapXML.toString();
+		} else {
+			mapXMLResult = "";
 		}
 		return mapXMLResult;
 	}
