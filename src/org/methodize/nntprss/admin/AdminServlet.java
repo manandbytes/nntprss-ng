@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.11 2003/10/24 02:36:28 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.12 2004/01/04 21:09:33 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -1931,8 +1931,14 @@ public class AdminServlet extends HttpServlet {
 			writer.print("' url='");
 			writer.print(XMLHelper.escapeString(channel.getUrl()));
 			writer.print("' expiration='");
-			writer.print(channel.getExpiration());
-			writer.println("'/>");
+			writer.print(channel.getExpiration());			
+			writer.print("' ");
+			if(channel.getCategory() != null) {
+				writer.print("' category='");
+				writer.print(channel.getCategory().getName());
+				writer.print("' ");
+			}
+			writer.println("/>");
 		}
 
 		writer.println("</nntprss-channels>");		
@@ -2100,7 +2106,8 @@ public class AdminServlet extends HttpServlet {
 					expiration = historical ? Channel.EXPIRATION_KEEP : 0;
 				}
 				
-
+				String categoryName = chanElm.getAttribute("category");
+				
 // Check name...
 				List currentErrors = new ArrayList();
 				Channel existingChannel = channelManager.channelByName(name);
@@ -2139,7 +2146,20 @@ public class AdminServlet extends HttpServlet {
 						}
 					}				
 
-
+					if(categoryName.length() > 0) {
+//Handle category...
+						Category category = channelManager.categoryByName(categoryName);
+						if(category == null) {
+// Need to create category...
+							category = new Category();
+   							category.setName(name);
+   							channelManager.addCategory(category);
+						}
+						category.addChannel(newChannel);
+						newChannel.setCategory(category);
+						newChannel.save();
+					}
+					
 // Removed channel validation... channels will be validated
 // on next iteration of channel poller - will be highlighted
 // in channel list if invalid
