@@ -43,6 +43,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.util.AppConstants;
 import snoozesoft.systray4j.SysTrayMenu;
 import snoozesoft.systray4j.SysTrayMenuEvent;
@@ -52,7 +53,7 @@ import snoozesoft.systray4j.SysTrayMenuListener;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: WindowsSysTray.java,v 1.1 2003/03/24 03:15:45 jasonbrome Exp $
+ * @version $Id: WindowsSysTray.java,v 1.2 2003/07/19 00:01:27 jasonbrome Exp $
  */
 
 public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
@@ -68,7 +69,12 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 	private static final String MENU_EXIT_CMD = "exit";
 	private static final String MENU_PROPERTIES_TEXT = "Properties";
 	private static final String MENU_PROPERTIES_CMD = "properties";
+	private static final String MENU_REPOLL_TEXT = "Repoll All Channels";
+	private static final String MENU_REPOLL_CMD = "repoll";
+
 	private static final String ICON_FILE = "nntprss.ico";
+
+	private ChannelManager channelManager;
 
 	public WindowsSysTray() {
 
@@ -76,6 +82,11 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 
 		nntpIcon = new SysTrayMenuIcon(ICON_FILE);
 		nntpIcon.addSysTrayMenuListener(this);
+
+		SysTrayMenuItem itemRepoll =
+			new SysTrayMenuItem(MENU_REPOLL_TEXT, MENU_REPOLL_CMD);
+		itemRepoll.setEnabled(false);
+		itemRepoll.addSysTrayMenuListener(this);
 
 		SysTrayMenuItem itemCfg =
 			new SysTrayMenuItem(MENU_PROPERTIES_TEXT, MENU_PROPERTIES_CMD);
@@ -96,6 +107,7 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 		items.add(itemAbout);
 		items.add(SysTrayMenu.SEPARATOR);
 		items.add(itemCfg);
+		items.add(itemRepoll);
 
 		menu =
 			new SysTrayMenu(
@@ -107,11 +119,13 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 	public void showStarted() {
 		menu.setToolTip("nntp//rss v" + AppConstants.VERSION);
 		menu.getItem(MENU_PROPERTIES_TEXT).setEnabled(true);
+		menu.getItem(MENU_REPOLL_TEXT).setEnabled(true);
 	}
 
 	public void shutdown() {
 		menu.setToolTip(
 			"nntp//rss v" + AppConstants.VERSION + " shutting down...");
+		menu.getItem(MENU_REPOLL_TEXT).setEnabled(false);
 		menu.getItem(MENU_PROPERTIES_TEXT).setEnabled(false);
 		menu.getItem(MENU_ABOUT_TEXT).setEnabled(false);
 		menu.getItem(MENU_EXIT_TEXT).setEnabled(false);
@@ -209,6 +223,8 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 			}
 		} else if (e.getActionCommand().equals(MENU_PROPERTIES_CMD)) {
 			startBrowser(adminURL);
+		} else if (e.getActionCommand().equals(MENU_REPOLL_CMD)) {
+			channelManager.repollAllChannels();
 		} else {
 			// Invalid command, should not happen
 			JOptionPane.showMessageDialog(this, e.getActionCommand());
@@ -229,6 +245,14 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 	 */
 	public void setAdminURL(String adminURL) {
 		this.adminURL = adminURL;
+	}
+
+	/**
+	 * Sets the channelManager.
+	 * @param channelManager The channelManager to set
+	 */
+	public void setChannelManager(ChannelManager channelManager) {
+		this.channelManager = channelManager;
 	}
 
 }
