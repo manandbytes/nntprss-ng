@@ -5,6 +5,7 @@ package org.methodize.nntprss.rss.publish;
  * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
+ * web:   http://www.methodize.org/nntprss
  * mail:  Methodize Solutions
  *        PO Box 3865
  *        Grand Central Station
@@ -34,6 +35,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -42,7 +44,7 @@ import org.methodize.nntprss.rss.Item;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MetaWeblogPublisher.java,v 1.1 2003/03/22 16:33:26 jasonbrome Exp $
+ * @version $Id: MetaWeblogPublisher.java,v 1.2 2003/04/14 03:07:50 jasonbrome Exp $
  */
 
 public class MetaWeblogPublisher implements Publisher {
@@ -132,7 +134,7 @@ public class MetaWeblogPublisher implements Publisher {
 			// password (string): Password for said username. 
 			params.addElement(profile.get(PROP_PASSWORD));
 
-			Map userInfo = (Map) xmlrpc.execute(METHOD_GETCATEGORIES, params);
+			List categories = (List) xmlrpc.execute(METHOD_GETCATEGORIES, params);
 
 		} catch (Exception e) {
 			throw new PublisherException(e);
