@@ -65,6 +65,7 @@
     <jar jarfile="${nntprss.jar}" basedir="${bin}" >
        <include name="org/methodize/nntprss/**"  />
        <exclude name="org/methodize/nntprss/Startup.class" />
+       <include name="xml/**"  />
     </jar>
   </target>
 
@@ -78,13 +79,12 @@
    description="Build everything"/>
 
   <!-- ==================================================================== -->
-  <target name="package" depends="all" description="Build archives for distribution">
+
+
+  <target name="package-bin" depends="all" description="Build archives for distribution">
     <zip destfile="${basedir}/../nntprss.zip">
-      <zipfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
       <zipfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
-      <zipfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
       <zipfileset dir="." prefix="nntprss">
-        <include name="build.xml"/>
         <include name="CHANGELOG"/>
         <include name="LICENSE.TXT"/>
         <include name="log4j.properties"/>
@@ -100,11 +100,8 @@
     </zip>
 
     <tar destfile="${basedir}/../nntprss.tar">
-      <tarfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
       <tarfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
-      <tarfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
       <tarfileset dir="." prefix="nntprss">
-        <include name="build.xml"/>
         <include name="CHANGELOG"/>
         <include name="LICENSE.TXT"/>
         <include name="log4j.properties"/>
@@ -120,10 +117,41 @@
     </tar>
 
     <gzip src="${basedir}/../nntprss.tar" zipfile="${basedir}/../nntprss.tar.gz"/>
-
     <delete file="${basedir}/../nntprss.tar"/>
 
   </target>
+
+  <target name="package-src" depends="all" description="Build archives for distribution">
+    <zip destfile="${basedir}/../nntprss-src.zip">
+      <zipfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
+      <zipfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
+      <zipfileset dir="." prefix="nntprss">
+        <include name="build.xml"/>
+        <include name="CHANGELOG"/>
+        <include name="LICENSE.TXT"/>
+        <include name="README.TXT"/>
+      </zipfileset>
+    </zip>
+
+    <tar destfile="${basedir}/../nntprss-src.tar">
+      <tarfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
+      <tarfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
+      <tarfileset dir="." prefix="nntprss">
+        <include name="build.xml"/>
+        <include name="CHANGELOG"/>
+        <include name="LICENSE.TXT"/>
+        <include name="README.TXT"/>
+      </tarfileset>
+    </tar>
+
+    <gzip src="${basedir}/../nntprss-src.tar" zipfile="${basedir}/../nntprss-src.tar.gz"/>
+
+    <delete file="${basedir}/../nntprss-src.tar"/>
+  </target>
+
+  <target name="package" depends="package-bin, package-src" description="Build archives for distribution">
+  </target>
+
 
 </project>
 
