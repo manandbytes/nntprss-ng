@@ -32,22 +32,27 @@ package org.methodize.nntprss.nntp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.methodize.nntprss.rss.db.ChannelManagerDAO;
+import org.apache.log4j.Priority;
+import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.SimpleThreadPool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.4 2003/03/24 03:11:35 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.5 2003/07/19 00:05:43 jasonbrome Exp $
  */
 
 public class NNTPServer {
@@ -57,11 +62,18 @@ public class NNTPServer {
 	private NNTPServerListener listener = null;
 	private SimpleThreadPool simpleThreadPool;
 	private int listenerPort;
+	private InetAddress address = null;
 
 	private static final int MAX_NNTP_CLIENT_THREADS = 5;
 
+// 30 minute default timeout on NNTP client connections
+	private static final int DEFAULT_CONNECTION_TIMEOUT = 
+		30 * 60 * 1000;
+
 	private int contentType = AppConstants.CONTENT_TYPE_MIXED;
 	private boolean secure = false;
+	private boolean footnoteUrls = true;
+	
 
 	private ChannelManagerDAO channelManagerDAO;
 
@@ -83,11 +95,28 @@ public class NNTPServer {
 			(Element) rootElm.getElementsByTagName("nntp").item(0);
 		listenerPort = Integer.parseInt(adminConfig.getAttribute("port"));
 
+		Node addressNode = adminConfig.getAttributeNode("address");
+		if(addressNode != null) {
+			try {
+				address = InetAddress.getByName(addressNode.getNodeValue());
+			} catch(UnknownHostException uhe) {
+				if(log.isEnabledFor(Priority.ERROR)) {
+					log.error("nntp listener bind address unknown - binding listener against all interfaces",
+						uhe);
+				}
+			}
+		}
+
 		// Load DB persisted configuration
 		channelManagerDAO.loadConfiguration(this);
 
 		if (log.isInfoEnabled()) {
-			log.info("NNTP server listener port = " + listenerPort);
+			if(address == null) {
+				log.info("NNTP server listener port = " + listenerPort);
+			} else {
+				log.info("NNTP server listener port = " + listenerPort
+					+ ", address = " + address.toString());
+			}
 		}
 
 		InputStream userConfig =
@@ -117,7 +146,12 @@ public class NNTPServer {
 
 	public void start() throws Exception {
 		if (listener == null) {
-			listener = new NNTPServerListener(this, listenerPort);
+			if(address == null) {
+				listener = new NNTPServerListener(this, listenerPort);
+			} else {
+				listener = new NNTPServerListener(this, listenerPort,
+					address);
+			}
 		}
 		listener.start();
 	}
@@ -127,7 +161,15 @@ public class NNTPServer {
 	}
 
 	void handleConnection(Socket clientConnection) {
-		simpleThreadPool.run(new ClientHandler(this, clientConnection));
+		try {
+			clientConnection.setSoTimeout(DEFAULT_CONNECTION_TIMEOUT);
+			simpleThreadPool.run(new ClientHandler(this, clientConnection));
+		} catch(SocketException e) {
+			if(log.isEnabledFor(Priority.ERROR)) {
+				log.error("SocketException invoking setSoTimeout",
+					e);
+			}
+		}
 	}
 
 	public int getContentType() {
@@ -175,6 +217,22 @@ public class NNTPServer {
 	 */
 	public int getListenerPort() {
 		return listenerPort;
+	}
+
+	/**
+	 * Returns the footnoteUrls.
+	 * @return boolean
+	 */
+	public boolean isFootnoteUrls() {
+		return footnoteUrls;
+	}
+
+	/**
+	 * Sets the footnoteUrls.
+	 * @param footnoteUrls The footnoteUrls to set
+	 */
+	public void setFootnoteUrls(boolean footnoteUrls) {
+		this.footnoteUrls = footnoteUrls;
 	}
 
 }
