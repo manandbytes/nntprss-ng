@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import org.methodize.nntprss.feed.Channel;
-import org.methodize.nntprss.feed.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.w3c.dom.Element;
 
 /**
@@ -27,7 +27,7 @@ public abstract class GenericParser {
 	public abstract void processFeedItems(
 		Element rootElm,
 		Channel channel,
-		ChannelManagerDAO channelManagerDAO,
+		ChannelDAO channelDAO,
 		boolean keepHistory) throws NoSuchAlgorithmException, IOException ;
 
 	String stripControlChars(String string) {
