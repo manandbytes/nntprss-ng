@@ -54,211 +54,211 @@ import snoozesoft.systray4j.SysTrayMenuListener;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: WindowsSysTray.java,v 1.4 2004/01/04 21:06:45 jasonbrome Exp $
+ * @version $Id: WindowsSysTray.java,v 1.5 2004/03/27 02:11:00 jasonbrome Exp $
  */
 
 public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 
-	private SysTrayMenu menu;
-	private SysTrayMenuIcon nntpIcon;
+    private SysTrayMenu menu;
+    private SysTrayMenuIcon nntpIcon;
 
-	private String adminURL = "http://127.0.0.1:7810/";
+    private String adminURL = "http://127.0.0.1:7810/";
 
-	private static final String MENU_ABOUT_TEXT = "About nntp//rss...";
-	private static final String MENU_ABOUT_CMD = "about";
-	private static final String MENU_EXIT_TEXT = "Exit";
-	private static final String MENU_EXIT_CMD = "exit";
-	private static final String MENU_PROPERTIES_TEXT = "Properties";
-	private static final String MENU_PROPERTIES_CMD = "properties";
-	private static final String MENU_REPOLL_TEXT = "Repoll All Channels";
-	private static final String MENU_REPOLL_CMD = "repoll";
+    private static final String MENU_ABOUT_TEXT = "About nntp//rss...";
+    private static final String MENU_ABOUT_CMD = "about";
+    private static final String MENU_EXIT_TEXT = "Exit";
+    private static final String MENU_EXIT_CMD = "exit";
+    private static final String MENU_PROPERTIES_TEXT = "Properties";
+    private static final String MENU_PROPERTIES_CMD = "properties";
+    private static final String MENU_REPOLL_TEXT = "Repoll All Channels";
+    private static final String MENU_REPOLL_CMD = "repoll";
 
-	private static final String ICON_FILE = "nntprss.ico";
+    private static final String ICON_FILE = "nntprss.ico";
 
-	private ChannelManager channelManager;
+    private ChannelManager channelManager;
 
-	public WindowsSysTray() {
+    public WindowsSysTray() {
 
-		super("nntp//rss");
+        super("nntp//rss");
 
-		nntpIcon = new SysTrayMenuIcon(ICON_FILE);
-		nntpIcon.addSysTrayMenuListener(this);
+        nntpIcon = new SysTrayMenuIcon(ICON_FILE);
+        nntpIcon.addSysTrayMenuListener(this);
 
-		SysTrayMenuItem itemRepoll =
-			new SysTrayMenuItem(MENU_REPOLL_TEXT, MENU_REPOLL_CMD);
-		itemRepoll.setEnabled(false);
-		itemRepoll.addSysTrayMenuListener(this);
+        SysTrayMenuItem itemRepoll =
+            new SysTrayMenuItem(MENU_REPOLL_TEXT, MENU_REPOLL_CMD);
+        itemRepoll.setEnabled(false);
+        itemRepoll.addSysTrayMenuListener(this);
 
-		SysTrayMenuItem itemCfg =
-			new SysTrayMenuItem(MENU_PROPERTIES_TEXT, MENU_PROPERTIES_CMD);
-		itemCfg.setEnabled(false);
-		itemCfg.addSysTrayMenuListener(this);
+        SysTrayMenuItem itemCfg =
+            new SysTrayMenuItem(MENU_PROPERTIES_TEXT, MENU_PROPERTIES_CMD);
+        itemCfg.setEnabled(false);
+        itemCfg.addSysTrayMenuListener(this);
 
-		SysTrayMenuItem itemExit =
-			new SysTrayMenuItem(MENU_EXIT_TEXT, MENU_EXIT_CMD);
-		itemExit.addSysTrayMenuListener(this);
+        SysTrayMenuItem itemExit =
+            new SysTrayMenuItem(MENU_EXIT_TEXT, MENU_EXIT_CMD);
+        itemExit.addSysTrayMenuListener(this);
 
-		SysTrayMenuItem itemAbout =
-			new SysTrayMenuItem(MENU_ABOUT_TEXT, MENU_ABOUT_CMD);
-		itemAbout.addSysTrayMenuListener(this);
+        SysTrayMenuItem itemAbout =
+            new SysTrayMenuItem(MENU_ABOUT_TEXT, MENU_ABOUT_CMD);
+        itemAbout.addSysTrayMenuListener(this);
 
-		Vector items = new Vector();
-		items.add(itemExit);
-		items.add(SysTrayMenu.SEPARATOR);
-		items.add(itemAbout);
-		items.add(SysTrayMenu.SEPARATOR);
-		items.add(itemCfg);
-		items.add(itemRepoll);
+        Vector items = new Vector();
+        items.add(itemExit);
+        items.add(SysTrayMenu.SEPARATOR);
+        items.add(itemAbout);
+        items.add(SysTrayMenu.SEPARATOR);
+        items.add(itemCfg);
+        items.add(itemRepoll);
 
-		menu =
-			new SysTrayMenu(
-				nntpIcon,
-				"nntp//rss v" + AppConstants.VERSION + " starting...",
-				items);
-				
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch(Exception e) {
-		}
-	}
+        menu =
+            new SysTrayMenu(
+                nntpIcon,
+                "nntp//rss v" + AppConstants.VERSION + " starting...",
+                items);
 
-	public void showStarted() {
-		menu.setToolTip("nntp//rss v" + AppConstants.VERSION);
-		menu.getItem(MENU_PROPERTIES_TEXT).setEnabled(true);
-		menu.getItem(MENU_REPOLL_TEXT).setEnabled(true);
-	}
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+        }
+    }
 
-	public void shutdown() {
-		menu.setToolTip(
-			"nntp//rss v" + AppConstants.VERSION + " shutting down...");
-		menu.getItem(MENU_REPOLL_TEXT).setEnabled(false);
-		menu.getItem(MENU_PROPERTIES_TEXT).setEnabled(false);
-		menu.getItem(MENU_ABOUT_TEXT).setEnabled(false);
-		menu.getItem(MENU_EXIT_TEXT).setEnabled(false);
-	}
+    public void showStarted() {
+        menu.setToolTip("nntp//rss v" + AppConstants.VERSION);
+        menu.getItem(MENU_PROPERTIES_TEXT).setEnabled(true);
+        menu.getItem(MENU_REPOLL_TEXT).setEnabled(true);
+    }
 
-	/**
-	 * @see snoozesoft.systray4j.SysTrayMenuListener#iconLeftClicked(SysTrayMenuEvent)
-	 */
-	public void iconLeftClicked(SysTrayMenuEvent arg0) {
-	}
+    public void shutdown() {
+        menu.setToolTip(
+            "nntp//rss v" + AppConstants.VERSION + " shutting down...");
+        menu.getItem(MENU_REPOLL_TEXT).setEnabled(false);
+        menu.getItem(MENU_PROPERTIES_TEXT).setEnabled(false);
+        menu.getItem(MENU_ABOUT_TEXT).setEnabled(false);
+        menu.getItem(MENU_EXIT_TEXT).setEnabled(false);
+    }
 
-	/**
-	 * @see snoozesoft.systray4j.SysTrayMenuListener#iconLeftDoubleClicked(SysTrayMenuEvent)
-	 */
-	public void iconLeftDoubleClicked(SysTrayMenuEvent arg0) {
-		startBrowser(adminURL);
-	}
+    /**
+     * @see snoozesoft.systray4j.SysTrayMenuListener#iconLeftClicked(SysTrayMenuEvent)
+     */
+    public void iconLeftClicked(SysTrayMenuEvent arg0) {
+    }
 
-	private void startBrowser(String url) {
-		try {
-			Process process =
-				Runtime.getRuntime().exec(
-					new String[] {
-						"cmd.exe",
-						"/c",
-						"start",
-						"\"\"",
-						"\"" + url + "\"" });
-			process.waitFor();
-			process.exitValue();
+    /**
+     * @see snoozesoft.systray4j.SysTrayMenuListener#iconLeftDoubleClicked(SysTrayMenuEvent)
+     */
+    public void iconLeftDoubleClicked(SysTrayMenuEvent arg0) {
+        startBrowser(adminURL);
+    }
 
-		} catch (IOException ie) {
-		} catch (InterruptedException ie) {
-		}
-	}
+    private void startBrowser(String url) {
+        try {
+            Process process =
+                Runtime.getRuntime().exec(
+                    new String[] {
+                        "cmd.exe",
+                        "/c",
+                        "start",
+                        "\"\"",
+                        "\"" + url + "\"" });
+            process.waitFor();
+            process.exitValue();
 
-	/**
-	 * @see snoozesoft.systray4j.SysTrayMenuListener#menuItemSelected(SysTrayMenuEvent)
-	 */
-	public void menuItemSelected(SysTrayMenuEvent e) {
-		if (e.getActionCommand().equals(MENU_ABOUT_CMD)) {
-			final JLabel url =
-				new JLabel("<html><u><font color=blue>http://www.methodize.org/nntprss</font></u></html>");
-			url.addMouseListener(new MouseListener() {
-				/**
-				 * @see java.awt.event.MouseListener#mouseClicked(MouseEvent)
-				 */
-				public void mouseClicked(MouseEvent arg0) {
-					startBrowser("http://www.methodize.org/nntprss");
-				}
+        } catch (IOException ie) {
+        } catch (InterruptedException ie) {
+        }
+    }
 
-				public void mouseEntered(MouseEvent arg0) {
-					url.setText(
-						"<html><u><font color=red>http://www.methodize.org/nntprss</font></u></html>");
-				}
+    /**
+     * @see snoozesoft.systray4j.SysTrayMenuListener#menuItemSelected(SysTrayMenuEvent)
+     */
+    public void menuItemSelected(SysTrayMenuEvent e) {
+        if (e.getActionCommand().equals(MENU_ABOUT_CMD)) {
+            final JLabel url =
+                new JLabel("<html><u><font color=blue>http://www.methodize.org/nntprss</font></u></html>");
+            url.addMouseListener(new MouseListener() {
+                /**
+                 * @see java.awt.event.MouseListener#mouseClicked(MouseEvent)
+                 */
+                public void mouseClicked(MouseEvent arg0) {
+                    startBrowser("http://www.methodize.org/nntprss");
+                }
 
-				public void mouseExited(MouseEvent arg0) {
-					url.setText(
-						"<html><u><font color=blue>http://www.methodize.org/nntprss</font></u></html>");
-				}
+                public void mouseEntered(MouseEvent arg0) {
+                    url.setText(
+                        "<html><u><font color=red>http://www.methodize.org/nntprss</font></u></html>");
+                }
 
-				public void mousePressed(MouseEvent arg0) {
-				}
-				public void mouseReleased(MouseEvent arg0) {
-				}
+                public void mouseExited(MouseEvent arg0) {
+                    url.setText(
+                        "<html><u><font color=blue>http://www.methodize.org/nntprss</font></u></html>");
+                }
 
-			});
+                public void mousePressed(MouseEvent arg0) {
+                }
+                public void mouseReleased(MouseEvent arg0) {
+                }
 
-			Object[] message =
-				new Object[] {
-					"nntp//rss v" + AppConstants.VERSION,
-					url,
-					"\n",
-					"Copyright (c) 2002-2004 Jason Brome",
-					"Licensed under the GNU Public License\n" };
-			JOptionPane.showMessageDialog(
-				this,
-				message,
-				MENU_ABOUT_TEXT,
-				JOptionPane.INFORMATION_MESSAGE);
-		} else if (e.getActionCommand().equals(MENU_EXIT_CMD)) {
-			Object[] options = { "Shutdown", "Cancel" };
-			int option =
-				JOptionPane.showOptionDialog(
-					this,
-					"Are you sure you want to shutdown nntp//rss?",
-					"nntp//rss - Warning",
-					JOptionPane.DEFAULT_OPTION,
-					JOptionPane.WARNING_MESSAGE,
-					null,
-					options,
-					options[1]);
-			if (option == 0) {
-				System.exit(0);
-			}
-		} else if (e.getActionCommand().equals(MENU_PROPERTIES_CMD)) {
-			startBrowser(adminURL);
-		} else if (e.getActionCommand().equals(MENU_REPOLL_CMD)) {
-			channelManager.repollAllChannels();
-		} else {
-			// Invalid command, should not happen
-			JOptionPane.showMessageDialog(this, e.getActionCommand());
-		}
-	}
+            });
 
-	/**
-	 * Returns the adminURL.
-	 * @return String
-	 */
-	public String getAdminURL() {
-		return adminURL;
-	}
+            Object[] message =
+                new Object[] {
+                    "nntp//rss v" + AppConstants.VERSION,
+                    url,
+                    "\n",
+                    "Copyright (c) 2002-2004 Jason Brome",
+                    "Licensed under the GNU Public License\n" };
+            JOptionPane.showMessageDialog(
+                this,
+                message,
+                MENU_ABOUT_TEXT,
+                JOptionPane.INFORMATION_MESSAGE);
+        } else if (e.getActionCommand().equals(MENU_EXIT_CMD)) {
+            Object[] options = { "Shutdown", "Cancel" };
+            int option =
+                JOptionPane.showOptionDialog(
+                    this,
+                    "Are you sure you want to shutdown nntp//rss?",
+                    "nntp//rss - Warning",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    options[1]);
+            if (option == 0) {
+                System.exit(0);
+            }
+        } else if (e.getActionCommand().equals(MENU_PROPERTIES_CMD)) {
+            startBrowser(adminURL);
+        } else if (e.getActionCommand().equals(MENU_REPOLL_CMD)) {
+            channelManager.repollAllChannels();
+        } else {
+            // Invalid command, should not happen
+            JOptionPane.showMessageDialog(this, e.getActionCommand());
+        }
+    }
 
-	/**
-	 * Sets the adminURL.
-	 * @param adminURL The adminURL to set
-	 */
-	public void setAdminURL(String adminURL) {
-		this.adminURL = adminURL;
-	}
+    /**
+     * Returns the adminURL.
+     * @return String
+     */
+    public String getAdminURL() {
+        return adminURL;
+    }
 
-	/**
-	 * Sets the channelManager.
-	 * @param channelManager The channelManager to set
-	 */
-	public void setChannelManager(ChannelManager channelManager) {
-		this.channelManager = channelManager;
-	}
+    /**
+     * Sets the adminURL.
+     * @param adminURL The adminURL to set
+     */
+    public void setAdminURL(String adminURL) {
+        this.adminURL = adminURL;
+    }
+
+    /**
+     * Sets the channelManager.
+     * @param channelManager The channelManager to set
+     */
+    public void setChannelManager(ChannelManager channelManager) {
+        this.channelManager = channelManager;
+    }
 
 }

@@ -57,378 +57,380 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.6 2004/02/09 06:05:44 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.7 2004/03/27 02:11:00 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
 
-	public static final String XMLNS_ATOM = "http://purl.org/atom/ns#";
+    public static final String XMLNS_ATOM = "http://purl.org/atom/ns#";
 
-	private static ThreadLocal dateParsers = new ThreadLocal() {
-		public Object initialValue() {
-			SimpleDateFormat[] dcDateArray = 
-				new SimpleDateFormat[] {
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
-				new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
-				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'")};
+    private static ThreadLocal dateParsers = new ThreadLocal() {
+        public Object initialValue() {
+            SimpleDateFormat[] dcDateArray =
+                new SimpleDateFormat[] {
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'")};
 
-			TimeZone gmt = TimeZone.getTimeZone("GMT");
-			for (int tz = 0; tz < dcDateArray.length; tz++) {
-				dcDateArray[tz].setTimeZone(gmt);
-			}
+            TimeZone gmt = TimeZone.getTimeZone("GMT");
+            for (int tz = 0; tz < dcDateArray.length; tz++) {
+                dcDateArray[tz].setTimeZone(gmt);
+            }
 
-			return dcDateArray; 
-		}
-	};
-	
-	private static AtomParser atomParser = new AtomParser();
-	private Logger log = Logger.getLogger(AtomParser.class);
+            return dcDateArray;
+        }
+    };
 
-	private AtomParser() {
-	} 
+    private static AtomParser atomParser = new AtomParser();
+    private Logger log = Logger.getLogger(AtomParser.class);
 
-	public static GenericParser getParser() {
-		return atomParser;
-	}
+    private AtomParser() {
+    }
 
-	/**
-	 * @param docRootElement Root element of feed document
-	 * @return
-	 */
-	public boolean isParsable(Element docRootElement) {
-		if (docRootElement.getNodeName().equals("feed")) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public static GenericParser getParser() {
+        return atomParser;
+    }
 
-	public String getFormatVersion(Element docRootElement) {
-		String atomVersion;
+    /**
+     * @param docRootElement Root element of feed document
+     * @return
+     */
+    public boolean isParsable(Element docRootElement) {
+        if (docRootElement.getNodeName().equals("feed")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		if (docRootElement.getNodeName().equals("feed")) {
-			atomVersion = "Atom " + docRootElement.getAttribute("version");
-		} else {
-			atomVersion = "Unknown Atom";
-		}
-		return atomVersion;
-	}
+    public String getFormatVersion(Element docRootElement) {
+        String atomVersion;
 
-	public void extractFeedInfo(Element docRootElement, Channel channel) {
-		// Read header...
-		channel.setTitle(XMLHelper.getChildElementValue(docRootElement, "title"));
-		// XXX Currently assign channelTitle to author
-		channel.setAuthor(channel.getTitle());
-		channel.setLink(extractLink(docRootElement, "alternate"));
+        if (docRootElement.getNodeName().equals("feed")) {
+            atomVersion = "Atom " + docRootElement.getAttribute("version");
+        } else {
+            atomVersion = "Unknown Atom";
+        }
+        return atomVersion;
+    }
 
-// @TODO: Summary or Subtitle?
-		String description;
-		description =
-			XMLHelper.getChildElementValue(docRootElement, "summary");
-		if(description == null || description.length() == 0) { 
-			description =
-				XMLHelper.getChildElementValue(docRootElement, "subtitle");
-		}
-		channel.setDescription(description);
-		
-// Build author...
-		NodeList authorList = docRootElement.getElementsByTagName("author");
-		if(authorList.getLength() > 0) {
-			Element authorElm = (Element)authorList.item(0);
-			channel.setManagingEditor(extractAuthor(authorElm));
-		} else {
-			channel.setManagingEditor(null);
-		}
-	}
+    public void extractFeedInfo(Element docRootElement, Channel channel) {
+        // Read header...
+        channel.setTitle(
+            XMLHelper.getChildElementValue(docRootElement, "title"));
+        // XXX Currently assign channelTitle to author
+        channel.setAuthor(channel.getTitle());
+        channel.setLink(extractLink(docRootElement, "alternate"));
 
-	private String extractAuthor(Element authorElm) {
-		StringBuffer author = new StringBuffer();
-		String name = XMLHelper.getChildElementValue(authorElm, "name");
-		String email = XMLHelper.getChildElementValue(authorElm, "email");
-		if(name != null && name.length() > 0) {
-			author.append(name);
-		}
-		
-		if(email != null && email.length() > 0) {
-			if(author.length() > 0) {
-				author.append(" (").append(email).append(")");
-			} else {
-				author.append(email);
-			}
-		}
-		return author.toString();
-	}
+        // @TODO: Summary or Subtitle?
+        String description;
+        description = XMLHelper.getChildElementValue(docRootElement, "summary");
+        if (description == null || description.length() == 0) {
+            description =
+                XMLHelper.getChildElementValue(docRootElement, "subtitle");
+        }
+        channel.setDescription(description);
 
-	public void processFeedItems(
-		Element rootElm,
-		Channel channel,
-		ChannelDAO channelDAO,
-		boolean keepHistory)
-		throws NoSuchAlgorithmException, IOException {
+        // Build author...
+        NodeList authorList = docRootElement.getElementsByTagName("author");
+        if (authorList.getLength() > 0) {
+            Element authorElm = (Element) authorList.item(0);
+            channel.setManagingEditor(extractAuthor(authorElm));
+        } else {
+            channel.setManagingEditor(null);
+        }
+    }
 
-		NodeList entryList = rootElm.getElementsByTagName("entry");
+    private String extractAuthor(Element authorElm) {
+        StringBuffer author = new StringBuffer();
+        String name = XMLHelper.getChildElementValue(authorElm, "name");
+        String email = XMLHelper.getChildElementValue(authorElm, "email");
+        if (name != null && name.length() > 0) {
+            author.append(name);
+        }
 
-		Calendar retrievalDate = Calendar.getInstance();
-		retrievalDate.add(Calendar.SECOND, -entryList.getLength());
+        if (email != null && email.length() > 0) {
+            if (author.length() > 0) {
+                author.append(" (").append(email).append(")");
+            } else {
+                author.append(email);
+            }
+        }
+        return author.toString();
+    }
 
-		Set currentSignatures = null;
-		if (!keepHistory) {
-			currentSignatures = new HashSet();
-		}
+    public void processFeedItems(
+        Element rootElm,
+        Channel channel,
+        ChannelDAO channelDAO,
+        boolean keepHistory)
+        throws NoSuchAlgorithmException, IOException {
 
-		Map newItems = new HashMap();
-		Map newItemKeys = new HashMap();
-		// orderedItems maintains original document first-to-last order
-		// Assumption: Items in the Atom document go from most recent
-		// to earliest.  This is used to assign date/times in a reasonably
-		// sensible order to those feeds that do not provide a date
+        NodeList entryList = rootElm.getElementsByTagName("entry");
 
-		List orderedItems = new ArrayList();
+        Calendar retrievalDate = Calendar.getInstance();
+        retrievalDate.add(Calendar.SECOND, -entryList.getLength());
 
-		// Calculate signature
-		MessageDigest md = MessageDigest.getInstance("MD5");
+        Set currentSignatures = null;
+        if (!keepHistory) {
+            currentSignatures = new HashSet();
+        }
 
-		for (int itemCount = entryList.getLength() - 1;
-			itemCount >= 0;
-			itemCount--) {
-			Element itemElm = (Element) entryList.item(itemCount);
-			String title;
-			String link;
-			String description;
-			ByteArrayOutputStream bos;
-			byte[] signatureSource;
-			byte[] signature;
-			String signatureStr = generateEntrySignature(md, itemElm);
+        Map newItems = new HashMap();
+        Map newItemKeys = new HashMap();
+        // orderedItems maintains original document first-to-last order
+        // Assumption: Items in the Atom document go from most recent
+        // to earliest.  This is used to assign date/times in a reasonably
+        // sensible order to those feeds that do not provide a date
 
-			if (!keepHistory) {
-				currentSignatures.add(signatureStr);
-			}
-			newItems.put(signatureStr, itemElm);
-			newItemKeys.put(itemElm, signatureStr);
-			orderedItems.add(itemElm);
-		}
+        List orderedItems = new ArrayList();
 
-		if (newItems.size() > 0) {
-			// Discover new items...
-			Set newItemSignatures =
-				channelDAO.findNewItemSignatures(
-					channel,
-					newItems.keySet());
+        // Calculate signature
+        MessageDigest md = MessageDigest.getInstance("MD5");
 
-			if (newItemSignatures.size() > 0) {
-				for (int i = 0; i < orderedItems.size(); i++) {
-					Element entryElm = (Element) orderedItems.get(i);
-					String signatureStr = (String) newItemKeys.get(entryElm);
+        for (int itemCount = entryList.getLength() - 1;
+            itemCount >= 0;
+            itemCount--) {
+            Element itemElm = (Element) entryList.item(itemCount);
+            String title;
+            String link;
+            String description;
+            ByteArrayOutputStream bos;
+            byte[] signatureSource;
+            byte[] signature;
+            String signatureStr = generateEntrySignature(md, itemElm);
 
-					// If signature is not in new items set, skip...
-					if (!newItemSignatures.contains(signatureStr))
-						continue;
+            if (!keepHistory) {
+                currentSignatures.add(signatureStr);
+            }
+            newItems.put(signatureStr, itemElm);
+            newItemKeys.put(itemElm, signatureStr);
+            orderedItems.add(itemElm);
+        }
 
-					String title =
-						XMLHelper.getChildElementValue(entryElm, "title", "");
-//					String link =
-//						XMLHelper.getChildElementValue(entryElm, "link", "");
-					String link = 
-						extractLink(entryElm, "alternate");
+        if (newItems.size() > 0) {
+            // Discover new items...
+            Set newItemSignatures =
+                channelDAO.findNewItemSignatures(channel, newItems.keySet());
 
-					String guid =
-						XMLHelper.getChildElementValue(entryElm, "id");
-					boolean guidIsPermaLink = false;
-//					if (guid != null) {
-//						String guidIsPermaLinkStr =
-//							XMLHelper.getChildElementAttributeValue(
-//								itemElm,
-//								"guid",
-//								"guidIsPermaLink");
-//						if (guidIsPermaLinkStr != null) {
-//							guidIsPermaLink =
-//								guidIsPermaLinkStr.equalsIgnoreCase("true");
-//						}
-//					}
+            if (newItemSignatures.size() > 0) {
+                for (int i = 0; i < orderedItems.size(); i++) {
+                    Element entryElm = (Element) orderedItems.get(i);
+                    String signatureStr = (String) newItemKeys.get(entryElm);
 
-					// Handle xhtml:body / content:encoded / description
-					String description = processContent(entryElm);
+                    // If signature is not in new items set, skip...
+                    if (!newItemSignatures.contains(signatureStr))
+                        continue;
 
-// @TODO: Comments in Atom?
-					String comments = null;
+                    String title =
+                        XMLHelper.getChildElementValue(entryElm, "title", "");
+                    //					String link =
+                    //						XMLHelper.getChildElementValue(entryElm, "link", "");
+                    String link = extractLink(entryElm, "alternate");
 
-// Date - use modified, if not present use created
-					String pubDateStr = XMLHelper.getChildElementValue(entryElm,
-						"modified");
-					if(pubDateStr == null || pubDateStr.length() == 0) {
-						pubDateStr = XMLHelper.getChildElementValue(entryElm,
-							"created");
-					}
+                    String guid =
+                        XMLHelper.getChildElementValue(entryElm, "id");
+                    boolean guidIsPermaLink = false;
+                    //					if (guid != null) {
+                    //						String guidIsPermaLinkStr =
+                    //							XMLHelper.getChildElementAttributeValue(
+                    //								itemElm,
+                    //								"guid",
+                    //								"guidIsPermaLink");
+                    //						if (guidIsPermaLinkStr != null) {
+                    //							guidIsPermaLink =
+                    //								guidIsPermaLinkStr.equalsIgnoreCase("true");
+                    //						}
+                    //					}
 
-					Date pubDate = null;
+                    // Handle xhtml:body / content:encoded / description
+                    String description = processContent(entryElm);
 
-					if (pubDateStr != null && pubDateStr.length() > 0) {
-						log.debug("create/modified == " + pubDateStr);
-						SimpleDateFormat[] dateParserArray =
-							(SimpleDateFormat[]) dateParsers.get();
-						for (int parseCount = 0;
-							parseCount < dateParserArray.length;
-							parseCount++) {
-							try {
-								pubDate =
-									dateParserArray[parseCount].parse(
-										pubDateStr);
-							} catch (ParseException pe) {
-							}
-							if (pubDate != null)
-								break;
-						}
-						if (pubDate != null) {
-							log.debug("processed Atom feed date == " + pubDate);
-						} else {
-							log.debug(
-								"Invalid Atom feed date format - " + pubDateStr);
-						}
-					}
+                    // @TODO: Comments in Atom?
+                    String comments = null;
 
-					String creator = null;
-					NodeList authorList = entryElm.getElementsByTagName("author");
-					if(authorList.getLength() > 0) {
-						Element authorElm = (Element)authorList.item(0);
-						creator = extractAuthor(authorElm);
-					}
-					 
-					int lastArticleNumber = channel.getLastArticleNumber();
-					Item item = new Item(++lastArticleNumber, signatureStr);
-					channel.setLastArticleNumber(lastArticleNumber);
+                    // Date - use modified, if not present use created
+                    String pubDateStr =
+                        XMLHelper.getChildElementValue(entryElm, "modified");
+                    if (pubDateStr == null || pubDateStr.length() == 0) {
+                        pubDateStr =
+                            XMLHelper.getChildElementValue(entryElm, "created");
+                    }
 
-					item.setChannel(channel);
+                    Date pubDate = null;
 
-					if (title.length() > 0) {
-						item.setTitle(title);
-					} else {
-						// We need to create a initial title from the description, because
-						// we do have a description, don't we???
-						String strippedDesc =
-							stripControlChars(XMLHelper.stripTags(description));
-						int length =
-							strippedDesc.length() > 64
-								? 64
-								: strippedDesc.length();
-						item.setTitle(strippedDesc.substring(0, length));
-					}
-					item.setDescription(description);
-					item.setLink(link);
-					item.setGuid(guid);
-					item.setGuidIsPermaLink(guidIsPermaLink);
-					item.setComments(comments);
-					item.setCreator(creator);
+                    if (pubDateStr != null && pubDateStr.length() > 0) {
+                        log.debug("create/modified == " + pubDateStr);
+                        SimpleDateFormat[] dateParserArray =
+                            (SimpleDateFormat[]) dateParsers.get();
+                        for (int parseCount = 0;
+                            parseCount < dateParserArray.length;
+                            parseCount++) {
+                            try {
+                                pubDate =
+                                    dateParserArray[parseCount].parse(
+                                        pubDateStr);
+                            } catch (ParseException pe) {
+                            }
+                            if (pubDate != null)
+                                break;
+                        }
+                        if (pubDate != null) {
+                            log.debug("processed Atom feed date == " + pubDate);
+                        } else {
+                            log.debug(
+                                "Invalid Atom feed date format - "
+                                    + pubDateStr);
+                        }
+                    }
 
-					if (pubDate == null) {
-						item.setDate(retrievalDate.getTime());
-						// Add 1 second - to introduce some distinction date-wise
-						// between items
-						retrievalDate.add(Calendar.SECOND, 1);
-					} else {
-						item.setDate(pubDate);
-					}
+                    String creator = null;
+                    NodeList authorList =
+                        entryElm.getElementsByTagName("author");
+                    if (authorList.getLength() > 0) {
+                        Element authorElm = (Element) authorList.item(0);
+                        creator = extractAuthor(authorElm);
+                    }
 
-					// persist to database...
-					channelDAO.saveItem(item);
-					channel.setTotalArticles(channel.getTotalArticles() + 1);
-				}
-			}
+                    int lastArticleNumber = channel.getLastArticleNumber();
+                    Item item = new Item(++lastArticleNumber, signatureStr);
+                    channel.setLastArticleNumber(lastArticleNumber);
 
-		}
+                    item.setChannel(channel);
 
-		if (!keepHistory) {
-			if(currentSignatures.size() > 0) {
-				if(channel.getExpiration() == 0) {
-					channelDAO.deleteItemsNotInSet(channel, currentSignatures);
-				} else if(channel.getExpiration() > 0 &&
-					channel.getLastCleaned().before(new Date(System.currentTimeMillis() - Channel.CLEANING_INTERVAL))) {
-					channelDAO.deleteExpiredItems(channel, currentSignatures);
-					channel.setLastCleaned(new Date());	
-				}
-			}
-			channel.setTotalArticles(currentSignatures.size());
-		}
-	}
+                    if (title.length() > 0) {
+                        item.setTitle(title);
+                    } else {
+                        // We need to create a initial title from the description, because
+                        // we do have a description, don't we???
+                        String strippedDesc =
+                            stripControlChars(XMLHelper.stripTags(description));
+                        int length =
+                            strippedDesc.length() > 64
+                                ? 64
+                                : strippedDesc.length();
+                        item.setTitle(strippedDesc.substring(0, length));
+                    }
+                    item.setDescription(description);
+                    item.setLink(link);
+                    item.setGuid(guid);
+                    item.setGuidIsPermaLink(guidIsPermaLink);
+                    item.setComments(comments);
+                    item.setCreator(creator);
 
-	public String processContent(Element itemElm) {
-		// Check for xhtml:body
-		String description = null;
+                    if (pubDate == null) {
+                        item.setDate(retrievalDate.getTime());
+                        // Add 1 second - to introduce some distinction date-wise
+                        // between items
+                        retrievalDate.add(Calendar.SECOND, 1);
+                    } else {
+                        item.setDate(pubDate);
+                    }
 
-		NodeList contentList =
-			itemElm.getElementsByTagName("content");
-			
-		if (contentList.getLength() > 0) {
-			Element contentElm = (Element)contentList.item(0);
+                    // persist to database...
+                    channelDAO.saveItem(item);
+                    channel.setTotalArticles(channel.getTotalArticles() + 1);
+                }
+            }
 
-			String type = contentElm.getAttribute("type");
-			String mode = contentElm.getAttribute("mode");
-			if(type.startsWith("application/xhtml") && !mode.equalsIgnoreCase("escaped")) {
-// xhtml body 				
-			   NodeList children = contentElm.getChildNodes();
-			   StringBuffer content = new StringBuffer();
-			   for (int childCount = 0;
-				   childCount < children.getLength();
-				   childCount++) {
-				   content.append(children.item(childCount).toString());
-			   }
-			   description = content.toString();
-			} else {
-// escaped text...				
-			   description =
-	   			XMLHelper.getElementValue(contentElm);
-			}
-		}
+        }
 
-// If all else fails, drop back and use the contents of the summary...
-		if ((description == null) || (description.length() == 0)) {
-			description =
-				XMLHelper.getChildElementValue(itemElm, "summary", "");
-		}
-		return description;
-	}
+        if (!keepHistory) {
+            if (currentSignatures.size() > 0) {
+                if (channel.getExpiration() == 0) {
+                    channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+                } else if (
+                    channel.getExpiration() > 0
+                        && channel.getLastCleaned().before(
+                            new Date(
+                                System.currentTimeMillis()
+                                    - Channel.CLEANING_INTERVAL))) {
+                    channelDAO.deleteExpiredItems(channel, currentSignatures);
+                    channel.setLastCleaned(new Date());
+                }
+            }
+            channel.setTotalArticles(currentSignatures.size());
+        }
+    }
 
-	private String extractLink(Element itemElm, String rel) {
-		String link = null;
-		NodeList elemList = itemElm.getChildNodes();
-		for(int i = 0; i < elemList.getLength(); i++) {
-			if(elemList.item(i).getNodeName().equals("link")
-				&& elemList.item(i).getNamespaceURI().equals(XMLNS_ATOM)) {
-				Element linkElm = (Element)elemList.item(i);
-				String linkRel = linkElm.getAttribute("rel");
-				if(linkRel.equals(rel)) {
-					link = linkElm.getAttribute("href");
-					break;
-				}
-			}
-		}
-		return link;
-	}
+    public String processContent(Element itemElm) {
+        // Check for xhtml:body
+        String description = null;
 
-	private String generateEntrySignature(MessageDigest md, Element itemElm)
-		throws IOException {
-		String title = XMLHelper.getChildElementValue(itemElm, "title", "");
-		String link = XMLHelper.getChildElementValue(itemElm, "link", "");
+        NodeList contentList = itemElm.getElementsByTagName("content");
 
-		// Handle xhtml:body / content:encoded / description
-		String description = processContent(itemElm);
+        if (contentList.getLength() > 0) {
+            Element contentElm = (Element) contentList.item(0);
 
-		String signatureStr = null;
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            String type = contentElm.getAttribute("type");
+            String mode = contentElm.getAttribute("mode");
+            if (type.startsWith("application/xhtml")
+                && !mode.equalsIgnoreCase("escaped")) {
+                // xhtml body 				
+                NodeList children = contentElm.getChildNodes();
+                StringBuffer content = new StringBuffer();
+                for (int childCount = 0;
+                    childCount < children.getLength();
+                    childCount++) {
+                    content.append(children.item(childCount).toString());
+                }
+                description = content.toString();
+            } else {
+                // escaped text...				
+                description = XMLHelper.getElementValue(contentElm);
+            }
+        }
 
-		// Used trimmed forms of content, ignore whitespace changes
-		bos.write(title.trim().getBytes());
-		bos.write(link.trim().getBytes());
-		bos.write(description.trim().getBytes());
-		bos.flush();
-		bos.close();
+        // If all else fails, drop back and use the contents of the summary...
+        if ((description == null) || (description.length() == 0)) {
+            description =
+                XMLHelper.getChildElementValue(itemElm, "summary", "");
+        }
+        return description;
+    }
 
-		byte[] signatureSource = bos.toByteArray();
-		md.reset();
-		byte[] signature = md.digest(signatureSource);
+    private String extractLink(Element itemElm, String rel) {
+        String link = null;
+        NodeList elemList = itemElm.getChildNodes();
+        for (int i = 0; i < elemList.getLength(); i++) {
+            if (elemList.item(i).getNodeName().equals("link")
+                && elemList.item(i).getNamespaceURI().equals(XMLNS_ATOM)) {
+                Element linkElm = (Element) elemList.item(i);
+                String linkRel = linkElm.getAttribute("rel");
+                if (linkRel.equals(rel)) {
+                    link = linkElm.getAttribute("href");
+                    break;
+                }
+            }
+        }
+        return link;
+    }
 
-		signatureStr = Base64.encodeBytes(signature);
-		return signatureStr;
-	}
+    private String generateEntrySignature(MessageDigest md, Element itemElm)
+        throws IOException {
+        String title = XMLHelper.getChildElementValue(itemElm, "title", "");
+        String link = XMLHelper.getChildElementValue(itemElm, "link", "");
+
+        // Handle xhtml:body / content:encoded / description
+        String description = processContent(itemElm);
+
+        String signatureStr = null;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        // Used trimmed forms of content, ignore whitespace changes
+        bos.write(title.trim().getBytes());
+        bos.write(link.trim().getBytes());
+        bos.write(description.trim().getBytes());
+        bos.flush();
+        bos.close();
+
+        byte[] signatureSource = bos.toByteArray();
+        md.reset();
+        byte[] signature = md.digest(signatureSource);
+
+        signatureStr = Base64.encodeBytes(signature);
+        return signatureStr;
+    }
 
 }

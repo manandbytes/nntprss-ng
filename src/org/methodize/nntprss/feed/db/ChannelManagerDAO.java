@@ -36,65 +36,65 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.4 2004/01/04 21:14:38 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.5 2004/03/27 02:12:48 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
 
-	private Logger log = Logger.getLogger(ChannelManagerDAO.class);
+    private Logger log = Logger.getLogger(ChannelManagerDAO.class);
 
-	private static final ChannelManagerDAO channelManagerDAO = new ChannelManagerDAO();
+    private static final ChannelManagerDAO channelManagerDAO =
+        new ChannelManagerDAO();
 
-// The actual DB specific channel DAO logic instance
-	private boolean initialized = false;
-	
-	private ChannelDAO channelDAO = null;
+    // The actual DB specific channel DAO logic instance
+    private boolean initialized = false;
 
-	private ChannelManagerDAO() {
-	}
+    private ChannelDAO channelDAO = null;
 
-	public static ChannelManagerDAO getChannelManagerDAO(Document config) {
-		channelManagerDAO.initialize(config);
-		return channelManagerDAO;
-	}
+    private ChannelManagerDAO() {
+    }
 
-	public static ChannelManagerDAO getChannelManagerDAO() {
-		if(!channelManagerDAO.initialized) {
-			throw new RuntimeException("Channel Manager was not initialized");
-		}
-		return channelManagerDAO;
-	}
+    public static ChannelManagerDAO getChannelManagerDAO(Document config) {
+        channelManagerDAO.initialize(config);
+        return channelManagerDAO;
+    }
 
-	public ChannelDAO getChannelDAO() {
-		return channelDAO;
-	}
+    public static ChannelManagerDAO getChannelManagerDAO() {
+        if (!channelManagerDAO.initialized) {
+            throw new RuntimeException("Channel Manager was not initialized");
+        }
+        return channelManagerDAO;
+    }
 
-	protected void upgradeDatabase(int dbVersion) {
-	}
+    public ChannelDAO getChannelDAO() {
+        return channelDAO;
+    }
 
-	protected void createTables(Document config) {
-	}
+    protected void upgradeDatabase(int dbVersion) {
+    }
 
+    protected void createTables(Document config) {
+    }
 
+    public void initialize(Document config) {
+        Element rootElm = config.getDocumentElement();
+        Element dbConfig = (Element) rootElm.getElementsByTagName("db").item(0);
+        String daoClass = dbConfig.getAttribute("daoClass");
 
-	public void initialize(Document config) {
-		Element rootElm = config.getDocumentElement();
-		Element dbConfig = (Element)rootElm.getElementsByTagName("db").item(0);
-		String daoClass = dbConfig.getAttribute("daoClass");
-		
-		if(daoClass != null && daoClass.length() > 0) {
-			try {
-				channelDAO = (ChannelDAO)Class.forName(daoClass).newInstance();
-			} catch(Exception e) {
-				throw new RuntimeException("Problem initializing database class "
-					+ daoClass 
-					+ ", exception="
-					+ e);
-			}
-		} else {
-// Default to JDBM
-			channelDAO = new JdbmChannelDAO();
-		}
-		initialized = true;
-	}
+        if (daoClass != null && daoClass.length() > 0) {
+            try {
+                channelDAO = (ChannelDAO) Class.forName(daoClass).newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    "Problem initializing database class "
+                        + daoClass
+                        + ", exception="
+                        + e);
+            }
+        } else {
+            // Default to JDBM
+            channelDAO = new JdbmChannelDAO();
+        }
+        initialized = true;
+    }
 
 }

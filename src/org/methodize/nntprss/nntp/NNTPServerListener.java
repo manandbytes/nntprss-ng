@@ -37,58 +37,62 @@ import java.net.Socket;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServerListener.java,v 1.5 2004/01/04 21:25:26 jasonbrome Exp $
+ * @version $Id: NNTPServerListener.java,v 1.6 2004/03/27 02:13:10 jasonbrome Exp $
  */
 public class NNTPServerListener extends Thread {
 
-	private Logger log = Logger.getLogger(NNTPServerListener.class);
+    private Logger log = Logger.getLogger(NNTPServerListener.class);
 
-	private ServerSocket serverSocket = null;
-	private boolean active = true;
-	private NNTPServer nntpServer = null;
+    private ServerSocket serverSocket = null;
+    private boolean active = true;
+    private NNTPServer nntpServer = null;
 
-	public NNTPServerListener(NNTPServer nntpServer, int port) throws Exception {
-		serverSocket = new ServerSocket(port);
-		this.nntpServer = nntpServer;
-	}
+    public NNTPServerListener(NNTPServer nntpServer, int port)
+        throws Exception {
+        serverSocket = new ServerSocket(port);
+        this.nntpServer = nntpServer;
+    }
 
-	public NNTPServerListener(NNTPServer nntpServer, int port, InetAddress address) throws Exception {
-		serverSocket = new ServerSocket(port, 0, address);
-		this.nntpServer = nntpServer;
-	}
+    public NNTPServerListener(
+        NNTPServer nntpServer,
+        int port,
+        InetAddress address)
+        throws Exception {
+        serverSocket = new ServerSocket(port, 0, address);
+        this.nntpServer = nntpServer;
+    }
 
-	public synchronized void shutdown() {
-		active = false;
-		this.notify();
-	}
+    public synchronized void shutdown() {
+        active = false;
+        this.notify();
+    }
 
-	/**
-	 * @see java.lang.Runnable#run()
-	 */
-	public void run() {
-		while (active) {
-			try {
-				Socket clientSocket = serverSocket.accept();
+    /**
+     * @see java.lang.Runnable#run()
+     */
+    public void run() {
+        while (active) {
+            try {
+                Socket clientSocket = serverSocket.accept();
 
-				clientSocket.setTcpNoDelay(true);
-	
-				if (log.isInfoEnabled()) {
-					log.info(
-						"NNTP Client connection from "
-							+ clientSocket.getInetAddress().getHostAddress());
-//					log.info(
-//						"NNTP Client connection from "
-//							+ clientSocket.getInetAddress());
-				}
+                clientSocket.setTcpNoDelay(true);
 
-				nntpServer.handleConnection(clientSocket);
-			} catch (IOException ie) {
-				// FIXME what to do???
-			}
-		}
-	}
+                if (log.isInfoEnabled()) {
+                    log.info(
+                        "NNTP Client connection from "
+                            + clientSocket.getInetAddress().getHostAddress());
+                    //					log.info(
+                    //						"NNTP Client connection from "
+                    //							+ clientSocket.getInetAddress());
+                }
+
+                nntpServer.handleConnection(clientSocket);
+            } catch (IOException ie) {
+                // FIXME what to do???
+            }
+        }
+    }
 
 }

@@ -43,55 +43,55 @@ import jdbm.helper.Serializer;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: GenericJdbmSerializer.java,v 1.2 2004/01/04 21:14:51 jasonbrome Exp $
+ * @version $Id: GenericJdbmSerializer.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 
 public class GenericJdbmSerializer implements Serializer {
 
-	private static final Map serializerMap = 
-		new HashMap();
+    private static final Map serializerMap = new HashMap();
 
-	private Class clazz = null;
+    private Class clazz = null;
 
-	private GenericJdbmSerializer(Class clazz) {
-		this.clazz = clazz;
-	}
+    private GenericJdbmSerializer(Class clazz) {
+        this.clazz = clazz;
+    }
 
-	public static final Serializer getSerializer(Class clazz) {
-		Serializer serializer = (Serializer)serializerMap.get(clazz);
-		if(serializer == null) {
-			serializer = new GenericJdbmSerializer(clazz);
-			serializerMap.put(clazz, serializer);
-		}
-		return serializer;
-	}
+    public static final Serializer getSerializer(Class clazz) {
+        Serializer serializer = (Serializer) serializerMap.get(clazz);
+        if (serializer == null) {
+            serializer = new GenericJdbmSerializer(clazz);
+            serializerMap.put(clazz, serializer);
+        }
+        return serializer;
+    }
 
-	/* (non-Javadoc)
-	 * @see jdbm.helper.Serializer#deserialize(byte[])
-	 */
-	public Object deserialize(byte[] buf) throws IOException {
-		ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(buf));
-		Externalizable inst = null;
-		try {
-			inst = (Externalizable)clazz.newInstance();
-			inst.readExternal(is);
-		} catch(Exception e) {
-			throw new IOException(e.getMessage());
-		}
-		return inst;
-	}
+    /* (non-Javadoc)
+     * @see jdbm.helper.Serializer#deserialize(byte[])
+     */
+    public Object deserialize(byte[] buf) throws IOException {
+        ObjectInputStream is =
+            new ObjectInputStream(new ByteArrayInputStream(buf));
+        Externalizable inst = null;
+        try {
+            inst = (Externalizable) clazz.newInstance();
+            inst.readExternal(is);
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+        return inst;
+    }
 
-	/* (non-Javadoc)
-	 * @see jdbm.helper.Serializer#serialize(java.lang.Object)
-	 */
-	public byte[] serialize(Object obj) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		((Externalizable)obj).writeExternal(oos);
-		oos.flush();
-		oos.close();
-		byte[] serializedObj = baos.toByteArray();
-		return serializedObj;
-	}
+    /* (non-Javadoc)
+     * @see jdbm.helper.Serializer#serialize(java.lang.Object)
+     */
+    public byte[] serialize(Object obj) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        ((Externalizable) obj).writeExternal(oos);
+        oos.flush();
+        oos.close();
+        byte[] serializedObj = baos.toByteArray();
+        return serializedObj;
+    }
 
 }

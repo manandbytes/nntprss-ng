@@ -42,129 +42,132 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: PublishManager.java,v 1.2 2004/01/04 21:21:58 jasonbrome Exp $
+ * @version $Id: PublishManager.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 
 public class PublishManager {
 
-	private static PublishManager publishManager = new PublishManager();
+    private static PublishManager publishManager = new PublishManager();
 
-	private Map interfaceMap;
-	private Map systemMap;
+    private Map interfaceMap;
+    private Map systemMap;
 
-	private PublishManager() {
-	}
+    private PublishManager() {
+    }
 
-	public static PublishManager getPublishManager() {
-		return publishManager;
-	}
+    public static PublishManager getPublishManager() {
+        return publishManager;
+    }
 
-	public void configure(Document config) {
-		Document publishDoc = null;
+    public void configure(Document config) {
+        Document publishDoc = null;
 
-		InputStream publishFile =
-			getClass().getClassLoader().getResourceAsStream(
-				AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE);
-		if (publishFile == null) {
-			throw new RuntimeException(
-				"Cannot load "
-					+ AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
-					+ " configuration file");
-		}
+        InputStream publishFile =
+            getClass().getClassLoader().getResourceAsStream(
+                AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE);
+        if (publishFile == null) {
+            throw new RuntimeException(
+                "Cannot load "
+                    + AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
+                    + " configuration file");
+        }
 
-		try {
-			DocumentBuilder db = AppConstants.newDocumentBuilder();
-			publishDoc = db.parse(publishFile);
-		} catch (Exception e) {
-			// FIXME more granular exception?
-			throw new RuntimeException(
-				"Error parsing "
-					+ AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
-					+ " configuration file");
-		}
+        try {
+            DocumentBuilder db = AppConstants.newDocumentBuilder();
+            publishDoc = db.parse(publishFile);
+        } catch (Exception e) {
+            // FIXME more granular exception?
+            throw new RuntimeException(
+                "Error parsing "
+                    + AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
+                    + " configuration file");
+        }
 
+        interfaceMap = new HashMap();
+        systemMap = new HashMap();
 
-		interfaceMap = new HashMap();
-		systemMap = new HashMap();
-		
-// Extract and instantiate interfaces...
-		Element rootElm = publishDoc.getDocumentElement();
-		NodeList interfaceList = rootElm.getElementsByTagName("interface");
+        // Extract and instantiate interfaces...
+        Element rootElm = publishDoc.getDocumentElement();
+        NodeList interfaceList = rootElm.getElementsByTagName("interface");
 
-		String className = null;
-		try {
-			for(int i = 0; i < interfaceList.getLength(); i++) {
-				Element interfaceElm = (Element)interfaceList.item(i);
-				className = interfaceElm.getAttribute("class");
-				Publisher pubClazz = (Publisher)Class.forName(className).newInstance();
-				interfaceMap.put(interfaceElm.getAttribute("name"), pubClazz);
-			}
-		} catch(Exception e) {
-			throw new RuntimeException(
-				"Error instantiating publisher class "
-					+ className);			
-		}
-// Extract and configure publishing systems...
+        String className = null;
+        try {
+            for (int i = 0; i < interfaceList.getLength(); i++) {
+                Element interfaceElm = (Element) interfaceList.item(i);
+                className = interfaceElm.getAttribute("class");
+                Publisher pubClazz =
+                    (Publisher) Class.forName(className).newInstance();
+                interfaceMap.put(interfaceElm.getAttribute("name"), pubClazz);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(
+                "Error instantiating publisher class " + className);
+        }
+        // Extract and configure publishing systems...
 
-	   NodeList systemList = rootElm.getElementsByTagName("system");
-	   for(int i = 0; i < interfaceList.getLength(); i++) {
-		   Element systemElm = (Element)systemList.item(i);
-		   Publisher publisher = (Publisher)interfaceMap.get(systemElm.getAttribute("interface")); 
+        NodeList systemList = rootElm.getElementsByTagName("system");
+        for (int i = 0; i < interfaceList.getLength(); i++) {
+            Element systemElm = (Element) systemList.item(i);
+            Publisher publisher =
+                (Publisher) interfaceMap.get(
+                    systemElm.getAttribute("interface"));
 
-// @TODO check for null publisher...
-			String name = systemElm.getAttribute("name");
+            // @TODO check for null publisher...
+            String name = systemElm.getAttribute("name");
 
-		   System system = new System(
-		   		name,
-		   		systemElm.getAttribute("title"),
-		   		publisher,
-				systemElm.getAttribute("homePage"),
-		   		systemElm.getAttribute("url")
-		   		);
-		   
-		   systemMap.put(name, system);
-	   }
+            System system =
+                new System(
+                    name,
+                    systemElm.getAttribute("title"),
+                    publisher,
+                    systemElm.getAttribute("homePage"),
+                    systemElm.getAttribute("url"));
 
-	}
-	
-	
-	public class System {
-		
-		private String name;
-		private String title;
-		private Publisher publisher;
-		private String homePage;
-		private String url;
-		
-		public System(String name, String title,
-			Publisher publisher, String homePage,
-			String url) {
-				
-				this.name = name;
-				this.title = title;
-				this.publisher = publisher;
-				this.homePage = homePage;
-				this.url = url;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		public String getTitle() {
-			return title;
-		}
-		
-		public Publisher getPublisher() {
-			return publisher;
-		}
-		
-		public String getHomePage() {
-			return homePage;
-		}
-		
-		public String getUrl() {
-			return url;
-		}
-	}
+            systemMap.put(name, system);
+        }
+
+    }
+
+    public class System {
+
+        private String name;
+        private String title;
+        private Publisher publisher;
+        private String homePage;
+        private String url;
+
+        public System(
+            String name,
+            String title,
+            Publisher publisher,
+            String homePage,
+            String url) {
+
+            this.name = name;
+            this.title = title;
+            this.publisher = publisher;
+            this.homePage = homePage;
+            this.url = url;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public Publisher getPublisher() {
+            return publisher;
+        }
+
+        public String getHomePage() {
+            return homePage;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+    }
 }

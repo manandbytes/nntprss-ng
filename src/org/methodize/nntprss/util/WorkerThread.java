@@ -32,66 +32,66 @@ package org.methodize.nntprss.util;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: WorkerThread.java,v 1.3 2004/01/04 21:26:46 jasonbrome Exp $
+ * @version $Id: WorkerThread.java,v 1.4 2004/03/27 02:13:22 jasonbrome Exp $
  */
 public class WorkerThread extends Thread {
 
-	private boolean active = true;
-	private Runnable job = null;
-	private SimpleThreadPool threadPool = null;
+    private boolean active = true;
+    private Runnable job = null;
+    private SimpleThreadPool threadPool = null;
 
-	public WorkerThread(
-		ThreadGroup threadGroup,
-		SimpleThreadPool threadPool,
-		String threadName) {
-		super(threadGroup, (Runnable) null, threadName);
-		this.threadPool = threadPool;
-	}
+    public WorkerThread(
+        ThreadGroup threadGroup,
+        SimpleThreadPool threadPool,
+        String threadName) {
+        super(threadGroup, (Runnable) null, threadName);
+        this.threadPool = threadPool;
+    }
 
-	public synchronized void run(Runnable newJob) {
-		if (this.job != null) {
-			throw new IllegalStateException("Thread is already handling job");
-		} else {
-			this.job = newJob;
-			this.notify();
-		}
-	}
+    public synchronized void run(Runnable newJob) {
+        if (this.job != null) {
+            throw new IllegalStateException("Thread is already handling job");
+        } else {
+            this.job = newJob;
+            this.notify();
+        }
+    }
 
-	public synchronized void end() {
-		active = false;
-		this.notify();
-	}
+    public synchronized void end() {
+        active = false;
+        this.notify();
+    }
 
-	/**
-	 * @see java.lang.Runnable#run()
-	 */
-	public void run() {
-		while (active) {
-			// We have work to do?
-			if (job != null) {
-				try {
-					job.run();
-				} catch (Exception e) {
-					// Need to log the exception..
-				}
-			}
+    /**
+     * @see java.lang.Runnable#run()
+     */
+    public void run() {
+        while (active) {
+            // We have work to do?
+            if (job != null) {
+                try {
+                    job.run();
+                } catch (Exception e) {
+                    // Need to log the exception..
+                }
+            }
 
-			job = null;
+            job = null;
 
-			// Return thread to the pool
-			threadPool.makeThreadAvailable(this);
+            // Return thread to the pool
+            threadPool.makeThreadAvailable(this);
 
-			// Wait for next job
-			synchronized (this) {
-				while (active && job == null) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-					}
-				}
-			}
+            // Wait for next job
+            synchronized (this) {
+                while (active && job == null) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
 
-		}
-	}
+        }
+    }
 
 }

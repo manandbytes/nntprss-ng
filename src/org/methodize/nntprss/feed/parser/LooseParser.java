@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: LooseParser.java,v 1.2 2004/01/04 21:21:03 jasonbrome Exp $
+ * @version $Id: LooseParser.java,v 1.3 2004/03/27 02:11:00 jasonbrome Exp $
  * 
  * 'Loose' Parser - when enabled, will parse those
  * not well-formed RSS/RDF xml documents on which the 
@@ -69,118 +69,118 @@ import org.w3c.dom.Element;
  */
 public class LooseParser {
 
-	private static DTD dtd = null;
+    private static DTD dtd = null;
 
-	static {
-		try {
-			dtd = DTD.getDTD("html32");
-		} catch (IOException ie) {
-		}
+    static {
+        try {
+            dtd = DTD.getDTD("html32");
+        } catch (IOException ie) {
+        }
 
-		dtd.getElement("description");
-		javax.swing.text.html.parser.Element element = dtd.getElement("rss");
-		element.getAttribute("version");
+        dtd.getElement("description");
+        javax.swing.text.html.parser.Element element = dtd.getElement("rss");
+        element.getAttribute("version");
 
-		dtd.getElement("rdf");
-		dtd.getElement("channel");
-		dtd.getElement("category");
-		dtd.getElement("link");
-		dtd.getElement("language");
-		dtd.getElement("title");
-		dtd.getElement("admin");
-		dtd.getElement("item");
+        dtd.getElement("rdf");
+        dtd.getElement("channel");
+        dtd.getElement("category");
+        dtd.getElement("link");
+        dtd.getElement("language");
+        dtd.getElement("title");
+        dtd.getElement("admin");
+        dtd.getElement("item");
 
-		dtd.defEntity("lt", DTDConstants.GENERAL, '<');
-		dtd.defEntity("gt", DTDConstants.GENERAL, '>');
-		dtd.defEntity("nbsp", DTDConstants.GENERAL, ' ');
-		dtd.defEntity("amp", DTDConstants.GENERAL, '&');
-		dtd.defEntity("quot", DTDConstants.GENERAL, '"');
-		dtd.defEntity("apos", DTDConstants.GENERAL, '\'');
-	}
+        dtd.defEntity("lt", DTDConstants.GENERAL, '<');
+        dtd.defEntity("gt", DTDConstants.GENERAL, '>');
+        dtd.defEntity("nbsp", DTDConstants.GENERAL, ' ');
+        dtd.defEntity("amp", DTDConstants.GENERAL, '&');
+        dtd.defEntity("quot", DTDConstants.GENERAL, '"');
+        dtd.defEntity("apos", DTDConstants.GENERAL, '\'');
+    }
 
-	public static Document parse(InputStream is)
-		throws IOException, ParserConfigurationException {
+    public static Document parse(InputStream is)
+        throws IOException, ParserConfigurationException {
 
-		DocumentBuilder db = AppConstants.newDocumentBuilder();
+        DocumentBuilder db = AppConstants.newDocumentBuilder();
 
-		Document doc = db.newDocument();
-		Element rootElm = doc.createElement("rss");
-		doc.appendChild(rootElm);
-		Element channelElm = doc.createElement("channel");
-		rootElm.appendChild(channelElm);
+        Document doc = db.newDocument();
+        Element rootElm = doc.createElement("rss");
+        doc.appendChild(rootElm);
+        Element channelElm = doc.createElement("channel");
+        rootElm.appendChild(channelElm);
 
-		Reader reader = new InputStreamReader(is);
+        Reader reader = new InputStreamReader(is);
 
-		CharArrayWriter caw = new CharArrayWriter();
+        CharArrayWriter caw = new CharArrayWriter();
 
-		// A little hack to use Swing's parser
-		// This informs the parser that the content is within
-		// the body, and therefore all text should be passed
-		// to the callback.
+        // A little hack to use Swing's parser
+        // This informs the parser that the content is within
+        // the body, and therefore all text should be passed
+        // to the callback.
 
-		// TODO: Extract XML PI 
-		caw.write("<html><body>");
-		char[] buf = new char[1024];
-		int charsRead = reader.read(buf);
-		while (charsRead > -1) {
-			if (charsRead > 0) {
-				caw.write(buf, 0, charsRead);
-			}
-			charsRead = reader.read(buf);
-		}
-		caw.write("</body></html>");
-		caw.flush();
-		caw.close();
-		reader.close();
+        // TODO: Extract XML PI 
+        caw.write("<html><body>");
+        char[] buf = new char[1024];
+        int charsRead = reader.read(buf);
+        while (charsRead > -1) {
+            if (charsRead > 0) {
+                caw.write(buf, 0, charsRead);
+            }
+            charsRead = reader.read(buf);
+        }
+        caw.write("</body></html>");
+        caw.flush();
+        caw.close();
+        reader.close();
 
-		reader = new CharArrayReader(caw.toCharArray());
+        reader = new CharArrayReader(caw.toCharArray());
 
-		DocumentParser docParser = new DocumentParser(dtd);
-		docParser.parse(reader, new ParserCallback(doc), false);
+        DocumentParser docParser = new DocumentParser(dtd);
+        docParser.parse(reader, new ParserCallback(doc), false);
 
-		reader.close();
+        reader.close();
 
-		return doc;
+        return doc;
 
-	}
+    }
 
-	public static void main(String args[]) {
-		try {
-			Channel tstChannel = new Channel("test", "http://localhost/");
-			List items = new ArrayList();
+    public static void main(String args[]) {
+        try {
+            Channel tstChannel = new Channel("test", "http://localhost/");
+            List items = new ArrayList();
 
-			InputStream is = new FileInputStream("c:\\test.xml");
-			Document doc = parse(is);
+            InputStream is = new FileInputStream("c:\\test.xml");
+            Document doc = parse(is);
 
-			System.out.println(
-				"Channel: "
-					+ XMLHelper.getChildElementValue(
-						(Element) doc
-							.getDocumentElement()
-							.getElementsByTagName(
-							"channel").item(
-							0),
-						"title"));
-			System.out.println(
-				"Items: "
-					+ doc
-						.getDocumentElement()
-						.getElementsByTagName("item")
-						.getLength());
-			System.out.println(
-				"Version: "
-					+ (
-						(Element) doc
-							.getDocumentElement()
-							.getElementsByTagName(
-							"channel").item(
-							0)).getAttribute(
-						"version"));
+            System.out.println(
+                "Channel: "
+                    + XMLHelper.getChildElementValue(
+                        (Element) doc
+                            .getDocumentElement()
+                            .getElementsByTagName(
+                            "channel").item(
+                            0),
+                        "title"));
+            System.out.println(
+                "Items: "
+                    + doc
+                        .getDocumentElement()
+                        .getElementsByTagName("item")
+                        .getLength());
+            System.out.println(
+                "Version: "
+                    + (
+                        (Element) doc
+                            .getDocumentElement()
+                            .getElementsByTagName(
+                            "channel").item(
+                            0)).getAttribute(
+                        "version"));
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println("finished...");
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("finished...");
+    }
 
 }

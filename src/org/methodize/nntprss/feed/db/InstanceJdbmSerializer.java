@@ -41,40 +41,41 @@ import jdbm.helper.Serializer;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: InstanceJdbmSerializer.java,v 1.2 2004/01/04 21:15:17 jasonbrome Exp $
+ * @version $Id: InstanceJdbmSerializer.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 
 public class InstanceJdbmSerializer implements Serializer {
 
-	private Externalizable clazz = null;
+    private Externalizable clazz = null;
 
-	public InstanceJdbmSerializer(Externalizable clazz) {
-		this.clazz = clazz;
-	}
+    public InstanceJdbmSerializer(Externalizable clazz) {
+        this.clazz = clazz;
+    }
 
-	/* (non-Javadoc)
-	 * @see jdbm.helper.Serializer#deserialize(byte[])
-	 */
-	public Object deserialize(byte[] buf) throws IOException {
-		ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(buf));
-		try {
-			clazz.readExternal(is);
-		} catch(Exception e) {
-			throw new IOException(e.getMessage());
-		}
-		return clazz;
-	}
+    /* (non-Javadoc)
+     * @see jdbm.helper.Serializer#deserialize(byte[])
+     */
+    public Object deserialize(byte[] buf) throws IOException {
+        ObjectInputStream is =
+            new ObjectInputStream(new ByteArrayInputStream(buf));
+        try {
+            clazz.readExternal(is);
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+        return clazz;
+    }
 
-	/* (non-Javadoc)
-	 * @see jdbm.helper.Serializer#serialize(java.lang.Object)
-	 */
-	public byte[] serialize(Object obj) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		((Externalizable)obj).writeExternal(oos);
-		oos.flush();
-		oos.close();
-		return baos.toByteArray();
-	}
+    /* (non-Javadoc)
+     * @see jdbm.helper.Serializer#serialize(java.lang.Object)
+     */
+    public byte[] serialize(Object obj) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        ((Externalizable) obj).writeExternal(oos);
+        oos.flush();
+        oos.close();
+        return baos.toByteArray();
+    }
 
 }

@@ -36,64 +36,65 @@ import org.apache.xmlrpc.XmlRpcClient;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: FeedsterSearch.java,v 1.2 2004/01/04 21:09:49 jasonbrome Exp $
+ * @version $Id: FeedsterSearch.java,v 1.3 2004/03/27 02:12:15 jasonbrome Exp $
  */
 
 public class FeedsterSearch {
 
-	private static final String METHOD_FINDFEEDS = "syndic8.FindFeeds";
-	private static final String METHOD_GETFEEDINFO = "syndic8.GetFeedInfo";
+    private static final String METHOD_FINDFEEDS = "syndic8.FindFeeds";
+    private static final String METHOD_GETFEEDINFO = "syndic8.GetFeedInfo";
 
-	private static final String SYNDIC8_ENDPOINT = "http://www.syndic8.com/xmlrpc.php";
+    private static final String SYNDIC8_ENDPOINT =
+        "http://www.syndic8.com/xmlrpc.php";
 
-	public static final String FIELD_HOMEPAGE_URL = "siteurl";
-	public static final String FIELD_FEED_URL = "dataurl";
-	public static final String FIELD_DESCRIPTION = "description";
+    public static final String FIELD_HOMEPAGE_URL = "siteurl";
+    public static final String FIELD_FEED_URL = "dataurl";
+    public static final String FIELD_DESCRIPTION = "description";
 
-	private static final int MAX_RESULTS = 100;
+    private static final int MAX_RESULTS = 100;
 
-	/**
-	 * @see org.methodize.nntprss.feed.publish.Publisher#publish(Map, String)
-	 */
-	public Vector search(String searchTerm) throws Exception {
+    /**
+     * @see org.methodize.nntprss.feed.publish.Publisher#publish(Map, String)
+     */
+    public Vector search(String searchTerm) throws Exception {
 
-		// blogger.newPost takes the following parameters. All are required: 
-		//
-		XmlRpcClient xmlrpc =
-			new XmlRpcClient(SYNDIC8_ENDPOINT);
-			
-		Vector params = new Vector();
-		params.add(searchTerm);
+        // blogger.newPost takes the following parameters. All are required: 
+        //
+        XmlRpcClient xmlrpc = new XmlRpcClient(SYNDIC8_ENDPOINT);
 
-		Vector matchedFeedIds = (Vector)xmlrpc.execute(METHOD_FINDFEEDS, params);
+        Vector params = new Vector();
+        params.add(searchTerm);
 
-		Vector feedId = new Vector();
-		for(int i = 0; i < MAX_RESULTS && i < matchedFeedIds.size(); i++) {
-			feedId.add(matchedFeedIds.get(i));
-		}
+        Vector matchedFeedIds =
+            (Vector) xmlrpc.execute(METHOD_FINDFEEDS, params);
 
-		Vector fields = new Vector();
-		fields.add(FIELD_HOMEPAGE_URL);
-		fields.add(FIELD_FEED_URL);
-		fields.add(FIELD_DESCRIPTION);
+        Vector feedId = new Vector();
+        for (int i = 0; i < MAX_RESULTS && i < matchedFeedIds.size(); i++) {
+            feedId.add(matchedFeedIds.get(i));
+        }
 
-		params.clear();
-		params.add(feedId);
-		params.add(fields);
+        Vector fields = new Vector();
+        fields.add(FIELD_HOMEPAGE_URL);
+        fields.add(FIELD_FEED_URL);
+        fields.add(FIELD_DESCRIPTION);
 
-		Vector feedInfo = (Vector)xmlrpc.execute(METHOD_GETFEEDINFO, params);
+        params.clear();
+        params.add(feedId);
+        params.add(fields);
 
-		System.out.println(feedInfo);
+        Vector feedInfo = (Vector) xmlrpc.execute(METHOD_GETFEEDINFO, params);
 
-		return feedInfo;
-	}
-	
-	public static void main(String[] args) {
-			Syndic8Search s = new Syndic8Search();
-			try {
-				s.search("nntp");
-			} catch(Exception e) {
-				e.printStackTrace();	
-			}			
-	}
+        System.out.println(feedInfo);
+
+        return feedInfo;
+    }
+
+    public static void main(String[] args) {
+        Syndic8Search s = new Syndic8Search();
+        try {
+            s.search("nntp");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -39,27 +39,30 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: GenericParser.java,v 1.3 2004/01/04 21:20:52 jasonbrome Exp $
+ * @version $Id: GenericParser.java,v 1.4 2004/03/27 02:11:00 jasonbrome Exp $
  */
 public abstract class GenericParser {
 
-	public abstract boolean isParsable(Element docRootElement);
-	public abstract String getFormatVersion(Element docRootElement);	
-	public abstract void extractFeedInfo(Element docRootElement, Channel channel);
-	public abstract void processFeedItems(
-		Element rootElm,
-		Channel channel,
-		ChannelDAO channelDAO,
-		boolean keepHistory) throws NoSuchAlgorithmException, IOException ;
+    public abstract boolean isParsable(Element docRootElement);
+    public abstract String getFormatVersion(Element docRootElement);
+    public abstract void extractFeedInfo(
+        Element docRootElement,
+        Channel channel);
+    public abstract void processFeedItems(
+        Element rootElm,
+        Channel channel,
+        ChannelDAO channelDAO,
+        boolean keepHistory)
+        throws NoSuchAlgorithmException, IOException;
 
-	String stripControlChars(String string) {
-		StringBuffer strippedString = new StringBuffer();
-		for (int charCount = 0; charCount < string.length(); charCount++) {
-			char c = string.charAt(charCount);
-			if (c >= 32) {
-				strippedString.append(c);
-			}
-		}
-		return strippedString.toString();
-	}	
+    String stripControlChars(String string) {
+        StringBuffer strippedString = new StringBuffer();
+        for (int charCount = 0; charCount < string.length(); charCount++) {
+            char c = string.charAt(charCount);
+            if (c >= 32) {
+                strippedString.append(c);
+            }
+        }
+        return strippedString.toString();
+    }
 }

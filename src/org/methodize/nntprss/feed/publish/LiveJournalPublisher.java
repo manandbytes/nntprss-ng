@@ -44,164 +44,164 @@ import org.methodize.nntprss.util.AppConstants;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: LiveJournalPublisher.java,v 1.2 2004/01/04 21:21:58 jasonbrome Exp $
+ * @version $Id: LiveJournalPublisher.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 
 public class LiveJournalPublisher implements Publisher {
 
-	private static final String METHOD_POSTEVENT = "LJ.XMLRPC.postevent";
+    private static final String METHOD_POSTEVENT = "LJ.XMLRPC.postevent";
 
-	private static final String METHOD_LOGIN = "LJ.XMLRPC.login";
+    private static final String METHOD_LOGIN = "LJ.XMLRPC.login";
 
-	private static final String STRUCT_USERNAME = "username";
+    private static final String STRUCT_USERNAME = "username";
 
-	private static final String STRUCT_PASSWORD = "password";
+    private static final String STRUCT_PASSWORD = "password";
 
-	private static final String STRUCT_VER = "ver";
+    private static final String STRUCT_VER = "ver";
 
-	private static final String STRUCT_EVENT = "event";
+    private static final String STRUCT_EVENT = "event";
 
-	private static final String STRUCT_LINEENDINGS = "lineendings";
+    private static final String STRUCT_LINEENDINGS = "lineendings";
 
-	private static final String STRUCT_SUBJECT = "subject";
+    private static final String STRUCT_SUBJECT = "subject";
 
-	private static final String STRUCT_YEAR = "year";
+    private static final String STRUCT_YEAR = "year";
 
-	private static final String STRUCT_MON = "mon";
+    private static final String STRUCT_MON = "mon";
 
-	private static final String STRUCT_DAY = "day";
+    private static final String STRUCT_DAY = "day";
 
-	private static final String STRUCT_HOUR = "hour";
+    private static final String STRUCT_HOUR = "hour";
 
-	private static final String STRUCT_MIN = "min";
+    private static final String STRUCT_MIN = "min";
 
-	private static final String STRUCT_CLIENTVERSION = "clientversion";
+    private static final String STRUCT_CLIENTVERSION = "clientversion";
 
-	/**
-	 * @see org.methodize.nntprss.feed.publish.Publisher#publish(Map, String)
-	 */
-	public void publish(Map profile, Item content) throws PublisherException {
+    /**
+     * @see org.methodize.nntprss.feed.publish.Publisher#publish(Map, String)
+     */
+    public void publish(Map profile, Item content) throws PublisherException {
 
-		// LJ.XMLRPC.postevent
-		//
-		try {
-			XmlRpcClient xmlrpc =
-				new XmlRpcClient((String) profile.get(PROP_PUBLISHER_URL));
-			Vector params = new Vector();
+        // LJ.XMLRPC.postevent
+        //
+        try {
+            XmlRpcClient xmlrpc =
+                new XmlRpcClient((String) profile.get(PROP_PUBLISHER_URL));
+            Vector params = new Vector();
 
-			Map struct = new Hashtable();
+            Map struct = new Hashtable();
 
-			// username (string): Login for a Blogger user who has permission to post to the blog. 
-			struct.put(STRUCT_USERNAME, profile.get(PROP_USERNAME));
-			// password (string): Password for said username. 
-			struct.put(STRUCT_PASSWORD, profile.get(PROP_PASSWORD));
-			// LiveJournal API version
-			struct.put(STRUCT_VER, "1");
-			// Event - content of the post
-			struct.put(STRUCT_EVENT, content.getDescription());
-			// Line Endings - set to PC (default \r\n)
-			struct.put(STRUCT_LINEENDINGS, "pc");
-			// Subject / Title
-			struct.put(STRUCT_SUBJECT, content.getTitle());
+            // username (string): Login for a Blogger user who has permission to post to the blog. 
+            struct.put(STRUCT_USERNAME, profile.get(PROP_USERNAME));
+            // password (string): Password for said username. 
+            struct.put(STRUCT_PASSWORD, profile.get(PROP_PASSWORD));
+            // LiveJournal API version
+            struct.put(STRUCT_VER, "1");
+            // Event - content of the post
+            struct.put(STRUCT_EVENT, content.getDescription());
+            // Line Endings - set to PC (default \r\n)
+            struct.put(STRUCT_LINEENDINGS, "pc");
+            // Subject / Title
+            struct.put(STRUCT_SUBJECT, content.getTitle());
 
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(System.currentTimeMillis());
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(System.currentTimeMillis());
 
-			struct.put(STRUCT_YEAR, new Integer(cal.get(Calendar.YEAR)));
-			struct.put(STRUCT_MON, new Integer(cal.get(Calendar.MONTH) + 1));
-			struct.put(STRUCT_DAY, new Integer(cal.get(Calendar.DAY_OF_MONTH)));
-			struct.put(STRUCT_HOUR, new Integer(cal.get(Calendar.HOUR_OF_DAY)));
-			struct.put(STRUCT_MIN, new Integer(cal.get(Calendar.MINUTE)));
+            struct.put(STRUCT_YEAR, new Integer(cal.get(Calendar.YEAR)));
+            struct.put(STRUCT_MON, new Integer(cal.get(Calendar.MONTH) + 1));
+            struct.put(STRUCT_DAY, new Integer(cal.get(Calendar.DAY_OF_MONTH)));
+            struct.put(STRUCT_HOUR, new Integer(cal.get(Calendar.HOUR_OF_DAY)));
+            struct.put(STRUCT_MIN, new Integer(cal.get(Calendar.MINUTE)));
 
-			params.add(struct);
+            params.add(struct);
 
-			Map response = (Map) xmlrpc.execute(METHOD_POSTEVENT, params);
+            Map response = (Map) xmlrpc.execute(METHOD_POSTEVENT, params);
 
-			// Discard response
-			// anum - The key number used to calculate the public itemid ID number for URLs.
-			// itemid - The unique number the server assigned to the post.
+            // Discard response
+            // anum - The key number used to calculate the public itemid ID number for URLs.
+            // itemid - The unique number the server assigned to the post.
 
-		} catch (Exception e) {
-			throw new PublisherException(e);
-		}
-	}
+        } catch (Exception e) {
+            throw new PublisherException(e);
+        }
+    }
 
-	/**
-	 * @see org.methodize.nntprss.feed.publish.Publisher#validate(Map)
-	 */
-	public void validate(Map profile) throws PublisherException {
-		// LJ.XMLRPC.login takes the following parameters. 
-		//
-		try {
-			XmlRpcClient xmlrpc =
-				new XmlRpcClient((String) profile.get(PROP_PUBLISHER_URL));
-			Vector params = new Vector();
+    /**
+     * @see org.methodize.nntprss.feed.publish.Publisher#validate(Map)
+     */
+    public void validate(Map profile) throws PublisherException {
+        // LJ.XMLRPC.login takes the following parameters. 
+        //
+        try {
+            XmlRpcClient xmlrpc =
+                new XmlRpcClient((String) profile.get(PROP_PUBLISHER_URL));
+            Vector params = new Vector();
 
-			Map struct = new Hashtable();
+            Map struct = new Hashtable();
 
-			// username (string): Login for a Blogger user who has permission to post to the blog. 
-			struct.put(STRUCT_USERNAME, profile.get(PROP_USERNAME));
-			// password (string): Password for said username. 
-			struct.put(STRUCT_PASSWORD, profile.get(PROP_PASSWORD));
-			// LiveJournal API version
-			struct.put(STRUCT_VER, "1");
+            // username (string): Login for a Blogger user who has permission to post to the blog. 
+            struct.put(STRUCT_USERNAME, profile.get(PROP_USERNAME));
+            // password (string): Password for said username. 
+            struct.put(STRUCT_PASSWORD, profile.get(PROP_PASSWORD));
+            // LiveJournal API version
+            struct.put(STRUCT_VER, "1");
 
-			struct.put(
-				STRUCT_CLIENTVERSION,
-				"Java-nntprss/" + AppConstants.VERSION);
+            struct.put(
+                STRUCT_CLIENTVERSION,
+                "Java-nntprss/" + AppConstants.VERSION);
 
-			params.add(struct);
+            params.add(struct);
 
-			Map userInfo = (Map) xmlrpc.execute(METHOD_LOGIN, params);
+            Map userInfo = (Map) xmlrpc.execute(METHOD_LOGIN, params);
 
-			//TODO: think about message returned in userInfo
+            //TODO: think about message returned in userInfo
 
-		} catch (Exception e) {
-			throw new PublisherException(e);
-		}
+        } catch (Exception e) {
+            throw new PublisherException(e);
+        }
 
-	}
+    }
 
-	public static void main(String args[]) {
-		// Tester...
-		LiveJournalPublisher pub = new LiveJournalPublisher();
+    public static void main(String args[]) {
+        // Tester...
+        LiveJournalPublisher pub = new LiveJournalPublisher();
 
-		Map profile = new HashMap();
+        Map profile = new HashMap();
 
-		try {
-			BufferedReader reader =
-				new BufferedReader(new InputStreamReader(System.in));
+        try {
+            BufferedReader reader =
+                new BufferedReader(new InputStreamReader(System.in));
 
-			System.out.println("Username?");
-			String userName = reader.readLine();
+            System.out.println("Username?");
+            String userName = reader.readLine();
 
-			System.out.println("Password?");
-			String password = reader.readLine();
+            System.out.println("Password?");
+            String password = reader.readLine();
 
-			System.out.println("Title?");
-			String title = reader.readLine();
+            System.out.println("Title?");
+            String title = reader.readLine();
 
-			System.out.println("Content?");
-			String content = reader.readLine();
+            System.out.println("Content?");
+            String content = reader.readLine();
 
-			profile.put(PROP_PASSWORD, password);
-			profile.put(PROP_USERNAME, userName);
+            profile.put(PROP_PASSWORD, password);
+            profile.put(PROP_USERNAME, userName);
 
-			profile.put(
-				Publisher.PROP_PUBLISHER_URL,
-				"http://www.livejournal.com/interface/xmlrpc");
+            profile.put(
+                Publisher.PROP_PUBLISHER_URL,
+                "http://www.livejournal.com/interface/xmlrpc");
 
-			pub.validate(profile);
+            pub.validate(profile);
 
-			Item newItem = new Item();
-			newItem.setDescription(content);
-			newItem.setTitle(title);
+            Item newItem = new Item();
+            newItem.setDescription(content);
+            newItem.setTitle(title);
 
-			pub.publish(profile, newItem);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+            pub.publish(profile, newItem);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	}
+    }
 
 }

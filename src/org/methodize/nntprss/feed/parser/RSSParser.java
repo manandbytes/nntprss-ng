@@ -61,370 +61,382 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.6 2004/02/28 23:56:35 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.7 2004/03/27 02:11:00 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
 
-	private static ThreadLocal dcDates = new ThreadLocal() {
-		public Object initialValue() {
-			SimpleDateFormat[] dcDateArray = 
-				new SimpleDateFormat[] {
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
-				new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
-				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'"),
-				new SimpleDateFormat("yyyy-MM-dd")};
+    private static ThreadLocal dcDates = new ThreadLocal() {
+        public Object initialValue() {
+            SimpleDateFormat[] dcDateArray =
+                new SimpleDateFormat[] {
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'"),
+                    new SimpleDateFormat("yyyy-MM-dd")};
 
-			TimeZone gmt = TimeZone.getTimeZone("GMT");
-			for (int tz = 0; tz < dcDateArray.length; tz++) {
-				dcDateArray[tz].setTimeZone(gmt);
-			}
+            TimeZone gmt = TimeZone.getTimeZone("GMT");
+            for (int tz = 0; tz < dcDateArray.length; tz++) {
+                dcDateArray[tz].setTimeZone(gmt);
+            }
 
-			return dcDateArray; 
-		}
-	};
-	
-	private static ThreadLocal date822Parser = new ThreadLocal() {
-		public Object initialValue() {
-			return new MailDateFormat();
-		} 
-	};
+            return dcDateArray;
+        }
+    };
 
-	private static RSSParser rssParser = new RSSParser();
-	private Logger log = Logger.getLogger(RSSParser.class);
+    private static ThreadLocal date822Parser = new ThreadLocal() {
+        public Object initialValue() {
+            return new MailDateFormat();
+        }
+    };
 
-	private RSSParser() {
-	} 
+    private static RSSParser rssParser = new RSSParser();
+    private Logger log = Logger.getLogger(RSSParser.class);
 
-	public static GenericParser getParser() {
-		return rssParser;
-	}
+    private RSSParser() {
+    }
 
-	/**
-	 * @param docRootElement Root element of feed document
-	 * @return
-	 */
-	public boolean isParsable(Element docRootElement) {
-		if (docRootElement.getNodeName().equals("rss")
-			|| docRootElement.getNodeName().equals("rdf:RDF")) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public static GenericParser getParser() {
+        return rssParser;
+    }
 
-	public String getFormatVersion(Element docRootElement) {
-		String rssVersion;
+    /**
+     * @param docRootElement Root element of feed document
+     * @return
+     */
+    public boolean isParsable(Element docRootElement) {
+        if (docRootElement.getNodeName().equals("rss")
+            || docRootElement.getNodeName().equals("rdf:RDF")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		if (docRootElement.getNodeName().equals("rss")) {
-			rssVersion = "RSS " + docRootElement.getAttribute("version");
-		} else if (docRootElement.getNodeName().equals("rdf:RDF")) {
-			rssVersion = "RDF";
-		} else {
-			rssVersion = "Unknown RSS";
-		}
-		return rssVersion;
-	}
+    public String getFormatVersion(Element docRootElement) {
+        String rssVersion;
 
-	public void extractFeedInfo(Element docRootElement, Channel channel) {
-		Element channelElm =
-			(Element) docRootElement.getElementsByTagName("channel").item(0);
+        if (docRootElement.getNodeName().equals("rss")) {
+            rssVersion = "RSS " + docRootElement.getAttribute("version");
+        } else if (docRootElement.getNodeName().equals("rdf:RDF")) {
+            rssVersion = "RDF";
+        } else {
+            rssVersion = "Unknown RSS";
+        }
+        return rssVersion;
+    }
 
-		// Read header...
-		channel.setTitle(XMLHelper.getChildElementValue(channelElm, "title"));
-		// XXX Currently assign channelTitle to author
-		channel.setAuthor(channel.getTitle());
-		channel.setLink(XMLHelper.getChildElementValue(channelElm, "link"));
-		channel.setDescription(
-			XMLHelper.getChildElementValue(channelElm, "description"));
-		channel.setManagingEditor(
-			XMLHelper.getChildElementValue(channelElm, "managingEditor"));
-	}
+    public void extractFeedInfo(Element docRootElement, Channel channel) {
+        Element channelElm =
+            (Element) docRootElement.getElementsByTagName("channel").item(0);
 
-	public void processFeedItems(
-		Element rootElm,
-		Channel channel,
-		ChannelDAO channelDAO,
-		boolean keepHistory)
-		throws NoSuchAlgorithmException, IOException {
-		Element rssDocElm =
-			(Element) rootElm.getElementsByTagName("channel").item(0);
-		// Check for items within channel element and outside 
-		// channel element
-		NodeList itemList = rssDocElm.getElementsByTagName("item");
+        // Read header...
+        channel.setTitle(XMLHelper.getChildElementValue(channelElm, "title"));
+        // XXX Currently assign channelTitle to author
+        channel.setAuthor(channel.getTitle());
+        channel.setLink(XMLHelper.getChildElementValue(channelElm, "link"));
+        channel.setDescription(
+            XMLHelper.getChildElementValue(channelElm, "description"));
+        channel.setManagingEditor(
+            XMLHelper.getChildElementValue(channelElm, "managingEditor"));
+    }
 
-		if (itemList.getLength() == 0) {
-			itemList = rootElm.getElementsByTagName("item");
-		}
+    public void processFeedItems(
+        Element rootElm,
+        Channel channel,
+        ChannelDAO channelDAO,
+        boolean keepHistory)
+        throws NoSuchAlgorithmException, IOException {
+        Element rssDocElm =
+            (Element) rootElm.getElementsByTagName("channel").item(0);
+        // Check for items within channel element and outside 
+        // channel element
+        NodeList itemList = rssDocElm.getElementsByTagName("item");
 
-		Calendar retrievalDate = Calendar.getInstance();
-		retrievalDate.add(Calendar.SECOND, -itemList.getLength());
+        if (itemList.getLength() == 0) {
+            itemList = rootElm.getElementsByTagName("item");
+        }
 
-		Set currentSignatures = null;
-		if (!keepHistory) {
-			currentSignatures = new HashSet();
-		}
+        Calendar retrievalDate = Calendar.getInstance();
+        retrievalDate.add(Calendar.SECOND, -itemList.getLength());
 
-		Map newItems = new HashMap();
-		Map newItemKeys = new HashMap();
-		// orderedItems maintains original document first-to-last order
-		// Assumption: Items in the RSS document go from most recent
-		// to earliest.  This is used to assign date/times in a reasonably
-		// sensible order to those feeds that do not provide either pubDate
-		// or dc:date
+        Set currentSignatures = null;
+        if (!keepHistory) {
+            currentSignatures = new HashSet();
+        }
 
-		List orderedItems = new ArrayList();
+        Map newItems = new HashMap();
+        Map newItemKeys = new HashMap();
+        // orderedItems maintains original document first-to-last order
+        // Assumption: Items in the RSS document go from most recent
+        // to earliest.  This is used to assign date/times in a reasonably
+        // sensible order to those feeds that do not provide either pubDate
+        // or dc:date
 
-		// Calculate signature
-		MessageDigest md = MessageDigest.getInstance("MD5");
+        List orderedItems = new ArrayList();
 
-		for (int itemCount = itemList.getLength() - 1;
-			itemCount >= 0;
-			itemCount--) {
-			Element itemElm = (Element) itemList.item(itemCount);
-			String title;
-			String link;
-			String description;
-			ByteArrayOutputStream bos;
-			byte[] signatureSource;
-			byte[] signature;
-			String signatureStr = generateItemSignature(md, itemElm);
+        // Calculate signature
+        MessageDigest md = MessageDigest.getInstance("MD5");
 
-			if (!keepHistory) {
-				currentSignatures.add(signatureStr);
-			}
-			newItems.put(signatureStr, itemElm);
-			newItemKeys.put(itemElm, signatureStr);
-			orderedItems.add(itemElm);
-		}
+        for (int itemCount = itemList.getLength() - 1;
+            itemCount >= 0;
+            itemCount--) {
+            Element itemElm = (Element) itemList.item(itemCount);
+            String title;
+            String link;
+            String description;
+            ByteArrayOutputStream bos;
+            byte[] signatureSource;
+            byte[] signature;
+            String signatureStr = generateItemSignature(md, itemElm);
 
-		if (newItems.size() > 0) {
-			// Discover new items...
-			Set newItemSignatures =
-				channelDAO.findNewItemSignatures(
-					channel,
-					newItems.keySet());
+            if (!keepHistory) {
+                currentSignatures.add(signatureStr);
+            }
+            newItems.put(signatureStr, itemElm);
+            newItemKeys.put(itemElm, signatureStr);
+            orderedItems.add(itemElm);
+        }
 
-			if (newItemSignatures.size() > 0) {
-				for (int i = 0; i < orderedItems.size(); i++) {
-					Element itemElm = (Element) orderedItems.get(i);
-					String signatureStr = (String) newItemKeys.get(itemElm);
+        if (newItems.size() > 0) {
+            // Discover new items...
+            Set newItemSignatures =
+                channelDAO.findNewItemSignatures(channel, newItems.keySet());
 
-					// If signature is not in new items set, skip...
-					if (!newItemSignatures.contains(signatureStr))
-						continue;
+            if (newItemSignatures.size() > 0) {
+                for (int i = 0; i < orderedItems.size(); i++) {
+                    Element itemElm = (Element) orderedItems.get(i);
+                    String signatureStr = (String) newItemKeys.get(itemElm);
 
-					String title =
-						XMLHelper.getChildElementValue(itemElm, "title", "");
-					String link =
-						XMLHelper.getChildElementValue(itemElm, "link", "");
+                    // If signature is not in new items set, skip...
+                    if (!newItemSignatures.contains(signatureStr))
+                        continue;
 
-					String guid =
-						XMLHelper.getChildElementValue(itemElm, "guid");
-					boolean guidIsPermaLink = true;
-					if (guid != null) {
-						String guidIsPermaLinkStr =
-							XMLHelper.getChildElementAttributeValue(
-								itemElm,
-								"guid",
-								"isPermaLink");
-						if (guidIsPermaLinkStr != null) {
-							guidIsPermaLink =
-								guidIsPermaLinkStr.equalsIgnoreCase("true");
-						}
-					}
+                    String title =
+                        XMLHelper.getChildElementValue(itemElm, "title", "");
+                    String link =
+                        XMLHelper.getChildElementValue(itemElm, "link", "");
 
-					// Handle xhtml:body / content:encoded / description
-					String description = processContent(itemElm);
+                    String guid =
+                        XMLHelper.getChildElementValue(itemElm, "guid");
+                    boolean guidIsPermaLink = true;
+                    if (guid != null) {
+                        String guidIsPermaLinkStr =
+                            XMLHelper.getChildElementAttributeValue(
+                                itemElm,
+                                "guid",
+                                "isPermaLink");
+                        if (guidIsPermaLinkStr != null) {
+                            guidIsPermaLink =
+                                guidIsPermaLinkStr.equalsIgnoreCase("true");
+                        }
+                    }
 
-					String comments =
-						XMLHelper.getChildElementValue(itemElm, "comments", "");
+                    // Handle xhtml:body / content:encoded / description
+                    String description = processContent(itemElm);
 
-					Date pubDate = null;
-					String pubDateStr =
-						XMLHelper.getChildElementValue(itemElm, "pubDate");
-					if (pubDateStr != null && pubDateStr.length() > 0) {
-						// Parse Date...
-						log.info("pubDate == " + pubDateStr);
-						try {
-							pubDate = ((MailDateFormat)date822Parser.get()).parse(pubDateStr);
-							log.debug("processed pubDate == " + pubDate);
-						} catch (ParseException pe) {
-							log.debug("Invalid pubDate format - " + pubDateStr);
-						}
-					}
+                    String comments =
+                        XMLHelper.getChildElementValue(itemElm, "comments", "");
 
-					if (pubDate == null) {
-						// Try for Dublin Core Date
-						String dcDateStr =
-							XMLHelper.getChildElementValueNS(
-								itemElm,
-								RSSHelper.XMLNS_DC,
-								"date");
-						if (dcDateStr != null && dcDateStr.length() > 0) {
-							log.debug("dc:date == " + dcDateStr);
+                    Date pubDate = null;
+                    String pubDateStr =
+                        XMLHelper.getChildElementValue(itemElm, "pubDate");
+                    if (pubDateStr != null && pubDateStr.length() > 0) {
+                        // Parse Date...
+                        log.info("pubDate == " + pubDateStr);
+                        try {
+                            pubDate =
+                                ((MailDateFormat) date822Parser.get()).parse(
+                                    pubDateStr);
+                            log.debug("processed pubDate == " + pubDate);
+                        } catch (ParseException pe) {
+                            log.debug("Invalid pubDate format - " + pubDateStr);
+                        }
+                    }
 
-							if(dcDateStr.indexOf("GMT") == -1) {
-// Check for : in RFC822 time zone...
-								int hourColon = dcDateStr.indexOf(":");
-								if(hourColon != -1) {
-									int minuteColon = dcDateStr.indexOf(":", hourColon + 1);
-									if(minuteColon != -1) {
-										int timeZoneColon = dcDateStr.indexOf(":", minuteColon + 1);
-										if(timeZoneColon != -1) {
-											if(dcDateStr.length() > timeZoneColon) {
-												dcDateStr = dcDateStr.substring(0, timeZoneColon) +
-													dcDateStr.substring(timeZoneColon + 1);
-											}
-										}
-									}
-								}
-								
-								
-							}
+                    if (pubDate == null) {
+                        // Try for Dublin Core Date
+                        String dcDateStr =
+                            XMLHelper.getChildElementValueNS(
+                                itemElm,
+                                RSSHelper.XMLNS_DC,
+                                "date");
+                        if (dcDateStr != null && dcDateStr.length() > 0) {
+                            log.debug("dc:date == " + dcDateStr);
 
-							SimpleDateFormat[] dcDateArray =
-								(SimpleDateFormat[]) dcDates.get();
-							for (int parseCount = 0;
-								parseCount < dcDateArray.length;
-								parseCount++) {
-								try {
-									pubDate =
-										dcDateArray[parseCount].parse(
-											dcDateStr);
-								} catch (ParseException pe) {
-								}
-								if (pubDate != null)
-									break;
-							}
-							if (pubDate != null) {
-								log.debug("processed dc:date == " + pubDate);
-							} else {
-								log.debug(
-									"Invalid dc:date format - " + dcDateStr);
-							}
-						}
-					}
+                            if (dcDateStr.indexOf("GMT") == -1) {
+                                // Check for : in RFC822 time zone...
+                                int hourColon = dcDateStr.indexOf(":");
+                                if (hourColon != -1) {
+                                    int minuteColon =
+                                        dcDateStr.indexOf(":", hourColon + 1);
+                                    if (minuteColon != -1) {
+                                        int timeZoneColon =
+                                            dcDateStr.indexOf(
+                                                ":",
+                                                minuteColon + 1);
+                                        if (timeZoneColon != -1) {
+                                            if (dcDateStr.length()
+                                                > timeZoneColon) {
+                                                dcDateStr =
+                                                    dcDateStr.substring(
+                                                        0,
+                                                        timeZoneColon)
+                                                        + dcDateStr.substring(
+                                                            timeZoneColon + 1);
+                                            }
+                                        }
+                                    }
+                                }
 
-					String dcCreator =
-						XMLHelper.getChildElementValueNS(
-							itemElm,
-							RSSHelper.XMLNS_DC,
-							"creator");
+                            }
 
-					int lastArticleNumber = channel.getLastArticleNumber();
-					Item item = new Item(++lastArticleNumber, signatureStr);
-					channel.setLastArticleNumber(lastArticleNumber);
+                            SimpleDateFormat[] dcDateArray =
+                                (SimpleDateFormat[]) dcDates.get();
+                            for (int parseCount = 0;
+                                parseCount < dcDateArray.length;
+                                parseCount++) {
+                                try {
+                                    pubDate =
+                                        dcDateArray[parseCount].parse(
+                                            dcDateStr);
+                                } catch (ParseException pe) {
+                                }
+                                if (pubDate != null)
+                                    break;
+                            }
+                            if (pubDate != null) {
+                                log.debug("processed dc:date == " + pubDate);
+                            } else {
+                                log.debug(
+                                    "Invalid dc:date format - " + dcDateStr);
+                            }
+                        }
+                    }
 
-					item.setChannel(channel);
+                    String dcCreator =
+                        XMLHelper.getChildElementValueNS(
+                            itemElm,
+                            RSSHelper.XMLNS_DC,
+                            "creator");
 
-					if (title.length() > 0) {
-						item.setTitle(title);
-					} else {
-						// We need to create a initial title from the description, because
-						// we do have a description, don't we???
-						String strippedDesc =
-							stripControlChars(XMLHelper.stripTags(description));
-						int length =
-							strippedDesc.length() > 64
-								? 64
-								: strippedDesc.length();
-						item.setTitle(strippedDesc.substring(0, length));
-					}
-					item.setDescription(description);
-					item.setLink(link);
-					item.setGuid(guid);
-					item.setGuidIsPermaLink(guidIsPermaLink);
-					item.setComments(comments);
-					item.setCreator(dcCreator);
+                    int lastArticleNumber = channel.getLastArticleNumber();
+                    Item item = new Item(++lastArticleNumber, signatureStr);
+                    channel.setLastArticleNumber(lastArticleNumber);
 
-					if (pubDate == null) {
-						item.setDate(retrievalDate.getTime());
-						// Add 1 second - to introduce some distinction date-wise
-						// between items
-						retrievalDate.add(Calendar.SECOND, 1);
-					} else {
-						item.setDate(pubDate);
-					}
+                    item.setChannel(channel);
 
-					// persist to database...
-					channelDAO.saveItem(item);
-					channel.setTotalArticles(channel.getTotalArticles() + 1);
-				}
-			}
+                    if (title.length() > 0) {
+                        item.setTitle(title);
+                    } else {
+                        // We need to create a initial title from the description, because
+                        // we do have a description, don't we???
+                        String strippedDesc =
+                            stripControlChars(XMLHelper.stripTags(description));
+                        int length =
+                            strippedDesc.length() > 64
+                                ? 64
+                                : strippedDesc.length();
+                        item.setTitle(strippedDesc.substring(0, length));
+                    }
+                    item.setDescription(description);
+                    item.setLink(link);
+                    item.setGuid(guid);
+                    item.setGuidIsPermaLink(guidIsPermaLink);
+                    item.setComments(comments);
+                    item.setCreator(dcCreator);
 
-		}
+                    if (pubDate == null) {
+                        item.setDate(retrievalDate.getTime());
+                        // Add 1 second - to introduce some distinction date-wise
+                        // between items
+                        retrievalDate.add(Calendar.SECOND, 1);
+                    } else {
+                        item.setDate(pubDate);
+                    }
 
-		if (!keepHistory) {
-			if(currentSignatures.size() > 0) {
-				if(channel.getExpiration() == 0) {
-					channelDAO.deleteItemsNotInSet(channel, currentSignatures);
-				} else if(channel.getExpiration() > 0 &&
-					channel.getLastCleaned().before(new Date(System.currentTimeMillis() - Channel.CLEANING_INTERVAL))) {
-					channelDAO.deleteExpiredItems(channel, currentSignatures);
-					channel.setLastCleaned(new Date());	
-				}
-			}
-			channel.setTotalArticles(currentSignatures.size());
-		}
-	}
+                    // persist to database...
+                    channelDAO.saveItem(item);
+                    channel.setTotalArticles(channel.getTotalArticles() + 1);
+                }
+            }
 
-	public String processContent(Element itemElm) {
-		// Check for xhtml:body
-		String description = null;
+        }
 
-		NodeList bodyList =
-			itemElm.getElementsByTagNameNS(RSSHelper.XMLNS_XHTML, "body");
-		if (bodyList.getLength() > 0) {
-			Node bodyElm = bodyList.item(0);
-			NodeList children = bodyElm.getChildNodes();
-			StringBuffer content = new StringBuffer();
-			for (int childCount = 0;
-				childCount < children.getLength();
-				childCount++) {
-				content.append(children.item(childCount).toString());
-			}
-			description = content.toString();
-		}
+        if (!keepHistory) {
+            if (currentSignatures.size() > 0) {
+                if (channel.getExpiration() == 0) {
+                    channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+                } else if (
+                    channel.getExpiration() > 0
+                        && channel.getLastCleaned().before(
+                            new Date(
+                                System.currentTimeMillis()
+                                    - Channel.CLEANING_INTERVAL))) {
+                    channelDAO.deleteExpiredItems(channel, currentSignatures);
+                    channel.setLastCleaned(new Date());
+                }
+            }
+            channel.setTotalArticles(currentSignatures.size());
+        }
+    }
 
-		// Fix for content:encoded section of RSS 1.0/2.0
-		if ((description == null) || (description.length() == 0)) {
-			description =
-				XMLHelper.getChildElementValue(itemElm, "content:encoded");
-		}
+    public String processContent(Element itemElm) {
+        // Check for xhtml:body
+        String description = null;
 
-		if ((description == null) || (description.length() == 0)) {
-			description =
-				XMLHelper.getChildElementValue(itemElm, "description", "");
-		}
-		return description;
-	}
+        NodeList bodyList =
+            itemElm.getElementsByTagNameNS(RSSHelper.XMLNS_XHTML, "body");
+        if (bodyList.getLength() > 0) {
+            Node bodyElm = bodyList.item(0);
+            NodeList children = bodyElm.getChildNodes();
+            StringBuffer content = new StringBuffer();
+            for (int childCount = 0;
+                childCount < children.getLength();
+                childCount++) {
+                content.append(children.item(childCount).toString());
+            }
+            description = content.toString();
+        }
 
-	private String generateItemSignature(MessageDigest md, Element itemElm)
-		throws IOException {
-		String title = XMLHelper.getChildElementValue(itemElm, "title", "");
-		String link = XMLHelper.getChildElementValue(itemElm, "link", "");
+        // Fix for content:encoded section of RSS 1.0/2.0
+        if ((description == null) || (description.length() == 0)) {
+            description =
+                XMLHelper.getChildElementValue(itemElm, "content:encoded");
+        }
 
-		// Handle xhtml:body / content:encoded / description
-		String description = processContent(itemElm);
+        if ((description == null) || (description.length() == 0)) {
+            description =
+                XMLHelper.getChildElementValue(itemElm, "description", "");
+        }
+        return description;
+    }
 
-		String signatureStr = null;
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private String generateItemSignature(MessageDigest md, Element itemElm)
+        throws IOException {
+        String title = XMLHelper.getChildElementValue(itemElm, "title", "");
+        String link = XMLHelper.getChildElementValue(itemElm, "link", "");
 
-		// Used trimmed forms of content, ignore whitespace changes
-		bos.write(title.trim().getBytes());
-		bos.write(link.trim().getBytes());
-		bos.write(description.trim().getBytes());
-		bos.flush();
-		bos.close();
+        // Handle xhtml:body / content:encoded / description
+        String description = processContent(itemElm);
 
-		byte[] signatureSource = bos.toByteArray();
-		md.reset();
-		byte[] signature = md.digest(signatureSource);
+        String signatureStr = null;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-		signatureStr = Base64.encodeBytes(signature);
-		return signatureStr;
-	}
+        // Used trimmed forms of content, ignore whitespace changes
+        bos.write(title.trim().getBytes());
+        bos.write(link.trim().getBytes());
+        bos.write(description.trim().getBytes());
+        bos.flush();
+        bos.close();
+
+        byte[] signatureSource = bos.toByteArray();
+        md.reset();
+        byte[] signature = md.digest(signatureSource);
+
+        signatureStr = Base64.encodeBytes(signature);
+        return signatureStr;
+    }
 
 }

@@ -32,71 +32,70 @@ package org.methodize.nntprss.admin;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: SubscriptionListener.java,v 1.2 2004/01/04 21:08:36 jasonbrome Exp $
+ * @version $Id: SubscriptionListener.java,v 1.3 2004/03/27 02:10:59 jasonbrome Exp $
  */
 
 public class SubscriptionListener {
 
-	private String name = null;
-	private int port = 0;
-	private String path = null;
-	private String param = null;
-	
-	
-	/**
-	 * @return
-	 */
-	public String getName() {
-		return name;
-	}
+    private String name = null;
+    private int port = 0;
+    private String path = null;
+    private String param = null;
 
-	/**
-	 * @return
-	 */
-	public String getParam() {
-		return param;
-	}
+    /**
+     * @return
+     */
+    public String getName() {
+        return name;
+    }
 
-	/**
-	 * @return
-	 */
-	public String getPath() {
-		return path;
-	}
+    /**
+     * @return
+     */
+    public String getParam() {
+        return param;
+    }
 
-	/**
-	 * @return
-	 */
-	public int getPort() {
-		return port;
-	}
+    /**
+     * @return
+     */
+    public String getPath() {
+        return path;
+    }
 
-	/**
-	 * @param string
-	 */
-	public void setName(String string) {
-		name = string;
-	}
+    /**
+     * @return
+     */
+    public int getPort() {
+        return port;
+    }
 
-	/**
-	 * @param string
-	 */
-	public void setParam(String string) {
-		param = string;
-	}
+    /**
+     * @param string
+     */
+    public void setName(String string) {
+        name = string;
+    }
 
-	/**
-	 * @param string
-	 */
-	public void setPath(String string) {
-		path = string;
-	}
+    /**
+     * @param string
+     */
+    public void setParam(String string) {
+        param = string;
+    }
 
-	/**
-	 * @param i
-	 */
-	public void setPort(int i) {
-		port = i;
-	}
+    /**
+     * @param string
+     */
+    public void setPath(String string) {
+        path = string;
+    }
+
+    /**
+     * @param i
+     */
+    public void setPort(int i) {
+        port = i;
+    }
 
 }

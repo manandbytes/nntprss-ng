@@ -48,157 +48,163 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Main.java,v 1.8 2004/03/23 01:43:50 jasonbrome Exp $
+ * @version $Id: Main.java,v 1.9 2004/03/27 02:11:00 jasonbrome Exp $
  */
 public class Main {
 
-	private Logger log = Logger.getLogger(Main.class);
+    private Logger log = Logger.getLogger(Main.class);
 
-	private DBManager dbManager = null;
-	private NNTPServer nntpServer = null;
-	private ChannelManager channelManager = null;
-	private PublishManager publishManager = null;
-	private AdminServer adminServer = null;
-	private WindowsSysTray windowsSysTray = null;
+    private DBManager dbManager = null;
+    private NNTPServer nntpServer = null;
+    private ChannelManager channelManager = null;
+    private PublishManager publishManager = null;
+    private AdminServer adminServer = null;
+    private WindowsSysTray windowsSysTray = null;
 
-	private class ShutdownHook extends Thread {
+    private class ShutdownHook extends Thread {
 
-		private Logger log = Logger.getLogger(Main.ShutdownHook.class);
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run() {
-			if(log.isInfoEnabled()) {
-				log.info("Shutting down nntp//rss...");
-			}
-			
-			if(windowsSysTray != null) {
-				windowsSysTray.shutdown();
-			}
+        private Logger log = Logger.getLogger(Main.ShutdownHook.class);
+        /**
+         * @see java.lang.Runnable#run()
+         */
+        public void run() {
+            if (log.isInfoEnabled()) {
+                log.info("Shutting down nntp//rss...");
+            }
 
-			adminServer.shutdown();
+            if (windowsSysTray != null) {
+                windowsSysTray.shutdown();
+            }
 
-			nntpServer.shutdown();
+            adminServer.shutdown();
 
-			channelManager.shutdown();
+            nntpServer.shutdown();
 
-			dbManager.shutdown();
+            channelManager.shutdown();
 
-			if(log.isInfoEnabled()) {
-				log.info("nntp//rss shutdown successfully...");
-			}
-		}
+            dbManager.shutdown();
 
-	}
+            if (log.isInfoEnabled()) {
+                log.info("nntp//rss shutdown successfully...");
+            }
+        }
 
-	public void startNntpRss() {
+    }
 
-		if (log.isInfoEnabled()) {
-			log.info("Starting nntp//rss v" + AppConstants.VERSION);
-		}
+    public void startNntpRss() {
 
-		try {
-// Set DNS cache properties to sensible values...
-// Cache successful DNS for one hour
-			System.setProperty("networkaddress.cache.ttl", Integer.toString(60 * 60));
-			System.setProperty("networkaddress.cache.negative.ttl", "1");
+        if (log.isInfoEnabled()) {
+            log.info("Starting nntp//rss v" + AppConstants.VERSION);
+        }
 
-// Initialize SSL 
-			try {
-				Class providerClass = Class.forName("com.sun.net.ssl.internal.ssl.Provider");
-				Security.addProvider((Provider)providerClass.newInstance());
-				System.setProperty("java.protocol.handler.pkgs",
-					 "com.sun.net.ssl.internal.www.protocol");
-			} catch(ClassNotFoundException cnfe) {
-				log.warn("JSSE not found - HTTPS support not available");
-			}
+        try {
+            // Set DNS cache properties to sensible values...
+            // Cache successful DNS for one hour
+            System.setProperty(
+                "networkaddress.cache.ttl",
+                Integer.toString(60 * 60));
+            System.setProperty("networkaddress.cache.negative.ttl", "1");
 
-			if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-				windowsSysTray = new WindowsSysTray();
-			}
+            // Initialize SSL 
+            try {
+                Class providerClass =
+                    Class.forName("com.sun.net.ssl.internal.ssl.Provider");
+                Security.addProvider((Provider) providerClass.newInstance());
+                System.setProperty(
+                    "java.protocol.handler.pkgs",
+                    "com.sun.net.ssl.internal.www.protocol");
+            } catch (ClassNotFoundException cnfe) {
+                log.warn("JSSE not found - HTTPS support not available");
+            }
 
-			// Load configuration
-			Document config = loadConfiguration();
+            if (System
+                .getProperty("os.name")
+                .toLowerCase()
+                .startsWith("windows")) {
+                windowsSysTray = new WindowsSysTray();
+            }
 
-			// Start DB server
-			dbManager = new DBManager();
-			dbManager.configure(config);
-			dbManager.startup();
+            // Load configuration
+            Document config = loadConfiguration();
 
-			channelManager = ChannelManager.getChannelManager();
-			channelManager.configure(config);
+            // Start DB server
+            dbManager = new DBManager();
+            dbManager.configure(config);
+            dbManager.startup();
 
-			publishManager = PublishManager.getPublishManager();
-			publishManager.configure(config);
+            channelManager = ChannelManager.getChannelManager();
+            channelManager.configure(config);
 
-			// Start NNTP server
-			nntpServer = new NNTPServer();
-			nntpServer.configure(config);
+            publishManager = PublishManager.getPublishManager();
+            publishManager.configure(config);
 
-			adminServer = new AdminServer(channelManager, nntpServer);
-			adminServer.configure(config);
+            // Start NNTP server
+            nntpServer = new NNTPServer();
+            nntpServer.configure(config);
 
-			Runtime.getRuntime().addShutdownHook(this.new ShutdownHook());
+            adminServer = new AdminServer(channelManager, nntpServer);
+            adminServer.configure(config);
 
-			adminServer.start();
-			nntpServer.start();
-			channelManager.start();
-			
-			if(windowsSysTray != null) {
-				windowsSysTray.setAdminURL("http://127.0.0.1:"
-					+ adminServer.getPort() + "/");
-				windowsSysTray.setChannelManager(channelManager);
-				windowsSysTray.showStarted();
-			}
+            Runtime.getRuntime().addShutdownHook(this.new ShutdownHook());
 
-		} catch (Exception e) {
-			log.error("Exception thrown during startup",
-				e);
-			e.printStackTrace();
-			System.exit(-1);
-		}
+            adminServer.start();
+            nntpServer.start();
+            channelManager.start();
 
-	}
+            if (windowsSysTray != null) {
+                windowsSysTray.setAdminURL(
+                    "http://127.0.0.1:" + adminServer.getPort() + "/");
+                windowsSysTray.setChannelManager(channelManager);
+                windowsSysTray.showStarted();
+            }
 
-	private Document loadConfiguration() {
-		Document configDoc = null;
+        } catch (Exception e) {
+            log.error("Exception thrown during startup", e);
+            e.printStackTrace();
+            System.exit(-1);
+        }
 
-		InputStream configFile =
-			getClass().getClassLoader().getResourceAsStream(
-				AppConstants.NNTPRSS_CONFIGURATION_FILE);
-		if (configFile == null) {
-			throw new RuntimeException(
-				"Cannot load "
-					+ AppConstants.NNTPRSS_CONFIGURATION_FILE
-					+ " configuration file");
-		}
+    }
 
-		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			configDoc = db.parse(configFile);
-		} catch (Exception e) {
-			log.error("Error parsing configuration", e);
-			throw new RuntimeException(
-				"Error parsing "
-					+ AppConstants.NNTPRSS_CONFIGURATION_FILE
-					+ " configuration file");
-		}
+    private Document loadConfiguration() {
+        Document configDoc = null;
 
-		return configDoc;
+        InputStream configFile =
+            getClass().getClassLoader().getResourceAsStream(
+                AppConstants.NNTPRSS_CONFIGURATION_FILE);
+        if (configFile == null) {
+            throw new RuntimeException(
+                "Cannot load "
+                    + AppConstants.NNTPRSS_CONFIGURATION_FILE
+                    + " configuration file");
+        }
 
-	}
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            configDoc = db.parse(configFile);
+        } catch (Exception e) {
+            log.error("Error parsing configuration", e);
+            throw new RuntimeException(
+                "Error parsing "
+                    + AppConstants.NNTPRSS_CONFIGURATION_FILE
+                    + " configuration file");
+        }
 
-	public static void main(String[] args) {
+        return configDoc;
 
-		Main startup = new Main();
-		startup.startNntpRss();
+    }
 
-	}
-	
-	// Shutdown hook for Windows Java Service Wrappers
-	// e.g. JNT
-	public static void stopApplication() {
-		System.exit(0);
-	}
+    public static void main(String[] args) {
+
+        Main startup = new Main();
+        startup.startNntpRss();
+
+    }
+
+    // Shutdown hook for Windows Java Service Wrappers
+    // e.g. JNT
+    public static void stopApplication() {
+        System.exit(0);
+    }
 }

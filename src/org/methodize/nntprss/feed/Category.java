@@ -42,112 +42,112 @@ import org.methodize.nntprss.feed.db.ChannelDAO;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Category.java,v 1.3 2004/03/23 01:45:14 jasonbrome Exp $
+ * @version $Id: Category.java,v 1.4 2004/03/27 02:12:48 jasonbrome Exp $
  */
 public class Category extends ItemContainer implements Externalizable {
 
-	public static final int EXTERNAL_VERSION = 2;
-	private static final int VERSION_UTF = 1;
-	private static final int VERSION_OBJECT = 2;  
+    public static final int EXTERNAL_VERSION = 2;
+    private static final int VERSION_UTF = 1;
+    private static final int VERSION_OBJECT = 2;
 
-	private int id;
+    private int id;
 
-	private Map channels = new HashMap();
+    private Map channels = new HashMap();
 
-	private ChannelManager channelManager;
-	private ChannelDAO channelDAO;
+    private ChannelManager channelManager;
+    private ChannelDAO channelDAO;
 
-	public Category() {
-		initialize();
-	}
+    public Category() {
+        initialize();
+    }
 
-	private void initialize() {
-		channelManager = ChannelManager.getChannelManager();
-		channelDAO = channelManager.getChannelDAO();
-	}
+    private void initialize() {
+        channelManager = ChannelManager.getChannelManager();
+        channelDAO = channelManager.getChannelDAO();
+    }
 
-	/**
-	 * @return
-	 */
-	public int getId() {
-		return id;
-	}
+    /**
+     * @return
+     */
+    public int getId() {
+        return id;
+    }
 
-	/**
-	 * @param i
-	 */
-	public void setId(int i) {
-		id = i;
-	}
+    /**
+     * @param i
+     */
+    public void setId(int i) {
+        id = i;
+    }
 
-	public void save() {
-		// Update channel in database...
-		channelDAO.updateCategory(this);
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-	 */
-	public void readExternal(ObjectInput in)
-		throws IOException, ClassNotFoundException {
-			int version = in.readInt();
-			id = in.readInt();
-			
-			if(version == VERSION_UTF)
-				name = in.readUTF();
-			else
-				name = (String)in.readObject();
+    public void save() {
+        // Update channel in database...
+        channelDAO.updateCategory(this);
+    }
 
-			firstArticleNumber = in.readInt();
-			lastArticleNumber = in.readInt();
-			totalArticles = in.readInt();
-			created = new Date(in.readLong());
-	}
+    /* (non-Javadoc)
+     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+     */
+    public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException {
+        int version = in.readInt();
+        id = in.readInt();
 
-	/* (non-Javadoc)
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-	 */
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeInt(EXTERNAL_VERSION);
-		out.writeInt(id);
-		out.writeObject(name != null ? name : "");
+        if (version == VERSION_UTF)
+            name = in.readUTF();
+        else
+            name = (String) in.readObject();
 
-		out.writeInt(firstArticleNumber);
-		out.writeInt(lastArticleNumber);
-		out.writeInt(totalArticles);		
-		out.writeLong(created != null ? created.getTime() : 0);
-	
-	}
+        firstArticleNumber = in.readInt();
+        lastArticleNumber = in.readInt();
+        totalArticles = in.readInt();
+        created = new Date(in.readLong());
+    }
 
-	/**
-	 * @return
-	 */
-	public Map getChannels() {
-		return channels;
-	}
+    /* (non-Javadoc)
+     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+     */
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(EXTERNAL_VERSION);
+        out.writeInt(id);
+        out.writeObject(name != null ? name : "");
 
-	/**
-	 * @param map
-	 */
-	public void setChannels(Map map) {
-		channels = map;
-	}
+        out.writeInt(firstArticleNumber);
+        out.writeInt(lastArticleNumber);
+        out.writeInt(totalArticles);
+        out.writeLong(created != null ? created.getTime() : 0);
 
-	public synchronized int nextArticleNumber() {
-		lastArticleNumber++;
-		return lastArticleNumber;
-	}
+    }
 
-	public void removeChannel(Channel channel) {
-		// Update channel in database...
-		channelDAO.removeChannelFromCategory(channel, this);
-		channels.remove(new Integer(channel.getId()));
-	}
-	
-	public void addChannel(Channel channel) {
-		// Update channel in database...
-		channelDAO.addChannelToCategory(channel, this);
-		channels.put(new Integer(channel.getId()), channel);
-	}
+    /**
+     * @return
+     */
+    public Map getChannels() {
+        return channels;
+    }
+
+    /**
+     * @param map
+     */
+    public void setChannels(Map map) {
+        channels = map;
+    }
+
+    public synchronized int nextArticleNumber() {
+        lastArticleNumber++;
+        return lastArticleNumber;
+    }
+
+    public void removeChannel(Channel channel) {
+        // Update channel in database...
+        channelDAO.removeChannelFromCategory(channel, this);
+        channels.remove(new Integer(channel.getId()));
+    }
+
+    public void addChannel(Channel channel) {
+        // Update channel in database...
+        channelDAO.addChannelToCategory(channel, this);
+        channels.put(new Integer(channel.getId()), channel);
+    }
 
 }

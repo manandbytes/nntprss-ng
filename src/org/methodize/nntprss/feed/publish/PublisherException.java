@@ -32,12 +32,12 @@ package org.methodize.nntprss.feed.publish;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: PublisherException.java,v 1.2 2004/01/04 21:21:58 jasonbrome Exp $
+ * @version $Id: PublisherException.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 
 public class PublisherException extends Exception {
 
-	public PublisherException(Throwable cause) {
-		super(cause);
-	}
+    public PublisherException(Throwable cause) {
+        super(cause);
+    }
 }

@@ -39,92 +39,95 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.14 2004/03/26 11:56:08 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.15 2004/03/27 02:13:22 jasonbrome Exp $
  */
 public final class AppConstants {
 
-	private static DocumentBuilderFactory docBuilderFactory;
-	private static String platform;
-	private static String userAgent;
+    private static DocumentBuilderFactory docBuilderFactory;
+    private static String platform;
+    private static String userAgent;
 
-	public static final AppConstants appConstants = new AppConstants();
-		
-	public static final String NNTPRSS_CONFIGURATION_FILE =
-		"nntprss-config.xml";
+    public static final AppConstants appConstants = new AppConstants();
 
-	public static final String NNTPRSS_PUBLISH_CONFIGURATION_FILE =
-		"xml/publish-config.xml";
+    public static final String NNTPRSS_CONFIGURATION_FILE =
+        "nntprss-config.xml";
 
-	public static final String USERS_CONFIG = "users.properties";
+    public static final String NNTPRSS_PUBLISH_CONFIGURATION_FILE =
+        "xml/publish-config.xml";
 
-	public static final String VERSION = "0.4-beta-6";
+    public static final String USERS_CONFIG = "users.properties";
 
+    public static final String VERSION = "0.4-beta-6";
 
-	public static final int OPEN_ENDED_RANGE = -1;
+    public static final int OPEN_ENDED_RANGE = -1;
 
-	public static final int CONTENT_TYPE_TEXT = 1;
-	public static final int CONTENT_TYPE_HTML = 2;
-	public static final int CONTENT_TYPE_MIXED = 3;
+    public static final int CONTENT_TYPE_TEXT = 1;
+    public static final int CONTENT_TYPE_HTML = 2;
+    public static final int CONTENT_TYPE_MIXED = 3;
 
-	private AppConstants() {
-// Private constructor... initialize platform string
-		StringBuffer pltfmBuf = new StringBuffer();
-		String osName = System.getProperty("os.name");
-		if(osName != null) {
-			pltfmBuf.append(osName);
-			pltfmBuf.append(' ');
-		}
-		
-		String osVersion = System.getProperty("os.version");
-		if(osVersion != null) {
-			pltfmBuf.append(osVersion);
-			pltfmBuf.append(' ');
-		}
+    private AppConstants() {
+        // Private constructor... initialize platform string
+        StringBuffer pltfmBuf = new StringBuffer();
+        String osName = System.getProperty("os.name");
+        if (osName != null) {
+            pltfmBuf.append(osName);
+            pltfmBuf.append(' ');
+        }
 
-		String osArch = System.getProperty("os.arch");
-		if(osVersion != null) {
-			pltfmBuf.append(osArch);
-		}
-		
-		platform = pltfmBuf.toString();
-		userAgent = "nntprss/"+ VERSION
-			+ " ("
-			+ platform
-			+ "; http://www.methodize.org/nntprss/)";
-			
-		docBuilderFactory = DocumentBuilderFactory.newInstance();
-		docBuilderFactory.setNamespaceAware(true);
-	}
+        String osVersion = System.getProperty("os.version");
+        if (osVersion != null) {
+            pltfmBuf.append(osVersion);
+            pltfmBuf.append(' ');
+        }
 
-	public static DocumentBuilder newDocumentBuilder()
-		throws ParserConfigurationException {
-		return docBuilderFactory.newDocumentBuilder();
-	}
-	
-	public static String getPlatform() {
-		return platform;
-	}
-	
-	public static String getUserAgent() {
-		return userAgent;
-	}
-	
-	public static String getCurrentHostName() {
-		InetAddress localAddr;
-		String hostName = null;
-		try {
-			localAddr = InetAddress.getLocalHost();
-			localAddr = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
-			hostName = localAddr.getHostName();
-		} catch (UnknownHostException e) {   
-		}
+        String osArch = System.getProperty("os.arch");
+        if (osVersion != null) {
+            pltfmBuf.append(osArch);
+        }
 
-// Drop down to localhost (127.0.0.1) if we cannot discover host name
-		if(hostName == null) {
-			hostName = "127.0.0.1";
-		}
-		
-		return hostName;
-	}
-	
+        platform = pltfmBuf.toString();
+        userAgent =
+            "nntprss/"
+                + VERSION
+                + " ("
+                + platform
+                + "; http://www.methodize.org/nntprss/)";
+
+        docBuilderFactory = DocumentBuilderFactory.newInstance();
+        docBuilderFactory.setNamespaceAware(true);
+    }
+
+    public static DocumentBuilder newDocumentBuilder()
+        throws ParserConfigurationException {
+        return docBuilderFactory.newDocumentBuilder();
+    }
+
+    public static String getPlatform() {
+        return platform;
+    }
+
+    public static String getUserAgent() {
+        return userAgent;
+    }
+
+    public static String getCurrentHostName() {
+        InetAddress localAddr;
+        String hostName = null;
+        try {
+            localAddr = InetAddress.getLocalHost();
+            localAddr =
+                InetAddress.getByName(
+                    InetAddress.getLocalHost().getHostAddress());
+            hostName = localAddr.getHostName();
+        } catch (UnknownHostException e) {
+        }
+
+        // Drop down to localhost (127.0.0.1) if we cannot discover host name
+        if (hostName == null) {
+            hostName = "127.0.0.1";
+        }
+
+        return hostName;
+    }
+
 }

@@ -34,57 +34,57 @@ import java.util.Stack;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: SimpleThreadPool.java,v 1.4 2004/01/04 21:26:46 jasonbrome Exp $
+ * @version $Id: SimpleThreadPool.java,v 1.5 2004/03/27 02:13:22 jasonbrome Exp $
  */
 public class SimpleThreadPool {
 
-//TODO: implement clean shutdown
+    //TODO: implement clean shutdown
 
-	private Stack threadStack = new Stack();
-	private ThreadGroup threadGroup = null;
-	private String threadName;
-//private int threadCount = 0;
-	private int maxThreads;
+    private Stack threadStack = new Stack();
+    private ThreadGroup threadGroup = null;
+    private String threadName;
+    //private int threadCount = 0;
+    private int maxThreads;
 
-	public SimpleThreadPool(String name, String threadName, int maxThreads) {
-		// Thread groups enable easier debugging in certain IDE,
-		// so lets assign our pool threads to a specific group
+    public SimpleThreadPool(String name, String threadName, int maxThreads) {
+        // Thread groups enable easier debugging in certain IDE,
+        // so lets assign our pool threads to a specific group
 
-		if (name != null) {
-			threadGroup = new ThreadGroup(name);
-		} else {
-			threadGroup = new ThreadGroup("anonymous");
-		}
+        if (name != null) {
+            threadGroup = new ThreadGroup(name);
+        } else {
+            threadGroup = new ThreadGroup("anonymous");
+        }
 
-		if (threadName != null) {
-			this.threadName = threadName;
-		} else {
-			this.threadName = "STP-anonymous";
-		}
-		
-		this.maxThreads = maxThreads;
-	}
+        if (threadName != null) {
+            this.threadName = threadName;
+        } else {
+            this.threadName = "STP-anonymous";
+        }
 
-	public synchronized void run(Runnable obj) {
-		WorkerThread worker = null;
-// FIXME - Add pool limits
-		if (threadStack.size() == 0) {
-			worker = new WorkerThread(threadGroup, this, threadName);
-			worker.run(obj);
-			worker.start();
-//threadCount++;
-		} else {
-			worker = (WorkerThread) threadStack.pop();
-			worker.run(obj);
-		}
-	}
+        this.maxThreads = maxThreads;
+    }
 
-	public synchronized void makeThreadAvailable(WorkerThread thread) {
-		if(threadStack.size() > maxThreads) {
-			thread.end();
-		} else {
-			threadStack.push(thread);
-		}
-	}
+    public synchronized void run(Runnable obj) {
+        WorkerThread worker = null;
+        // FIXME - Add pool limits
+        if (threadStack.size() == 0) {
+            worker = new WorkerThread(threadGroup, this, threadName);
+            worker.run(obj);
+            worker.start();
+            //threadCount++;
+        } else {
+            worker = (WorkerThread) threadStack.pop();
+            worker.run(obj);
+        }
+    }
+
+    public synchronized void makeThreadAvailable(WorkerThread thread) {
+        if (threadStack.size() > maxThreads) {
+            thread.end();
+        } else {
+            threadStack.push(thread);
+        }
+    }
 
 }

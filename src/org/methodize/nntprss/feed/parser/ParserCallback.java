@@ -42,145 +42,145 @@ import org.w3c.dom.Text;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ParserCallback.java,v 1.2 2004/01/04 21:21:15 jasonbrome Exp $
+ * @version $Id: ParserCallback.java,v 1.3 2004/03/27 02:11:00 jasonbrome Exp $
  */
 public class ParserCallback extends HTMLEditorKit.ParserCallback {
 
-	private boolean inChannel = false;
-	private boolean inItem = false;
-	private String currentText = null;
-	private Item currentItem = null;
-	private Element currentItemElm = null;
+    private boolean inChannel = false;
+    private boolean inItem = false;
+    private String currentText = null;
+    private Item currentItem = null;
+    private Element currentItemElm = null;
 
-	private Element rootElm = null;
-	private Element channelElm = null;
-	private Document doc = null;
+    private Element rootElm = null;
+    private Element channelElm = null;
+    private Document doc = null;
 
-	private ParserCallback() {
-	}
+    private ParserCallback() {
+    }
 
-	public ParserCallback(Document doc) {
-		this.doc = doc;
-		this.rootElm = doc.getDocumentElement();
-		this.channelElm =
-			(Element) rootElm.getElementsByTagName("channel").item(0);
-	}
+    public ParserCallback(Document doc) {
+        this.doc = doc;
+        this.rootElm = doc.getDocumentElement();
+        this.channelElm =
+            (Element) rootElm.getElementsByTagName("channel").item(0);
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleComment(char[], int)
-	 */
-	public void handleComment(char[] data, int pos) {
-		//		System.out.println("Comment: " 
-		//			+ new String(data));
-	}
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleComment(char[], int)
+     */
+    public void handleComment(char[] data, int pos) {
+        //		System.out.println("Comment: " 
+        //			+ new String(data));
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleEndOfLineString(String)
-	 */
-	public void handleEndOfLineString(String eol) {
-		//		System.out.println("EOL: " + eol.toString());
-	}
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleEndOfLineString(String)
+     */
+    public void handleEndOfLineString(String eol) {
+        //		System.out.println("EOL: " + eol.toString());
+    }
 
-	private void createTextChild(
-		Element parent,
-		String element,
-		String value) {
+    private void createTextChild(
+        Element parent,
+        String element,
+        String value) {
 
-		Element elm = doc.createElement(element);
-		Text elmTextElm = doc.createTextNode(value);
-		elm.appendChild(elmTextElm);
-		parent.appendChild(elm);
-	}
+        Element elm = doc.createElement(element);
+        Text elmTextElm = doc.createTextNode(value);
+        elm.appendChild(elmTextElm);
+        parent.appendChild(elm);
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleEndTag(Tag, int)
-	 */
-	public void handleEndTag(Tag t, int pos) {
-		//		System.out.println("EndTag: " + t.toString());
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleEndTag(Tag, int)
+     */
+    public void handleEndTag(Tag t, int pos) {
+        //		System.out.println("EndTag: " + t.toString());
 
-		String tagName = t.toString();
-		if (tagName.equals("item")) {
-			inItem = false;
-			if (currentItemElm != null) {
-				rootElm.appendChild(currentItemElm);
-				currentItemElm = null;
-			}
-		} else if (tagName.equals("channel")) {
-			inChannel = false;
-		} else {
-			if (inItem) {
-				if (currentItemElm == null) {
-					currentItemElm = doc.createElement("item");
-				}
+        String tagName = t.toString();
+        if (tagName.equals("item")) {
+            inItem = false;
+            if (currentItemElm != null) {
+                rootElm.appendChild(currentItemElm);
+                currentItemElm = null;
+            }
+        } else if (tagName.equals("channel")) {
+            inChannel = false;
+        } else {
+            if (inItem) {
+                if (currentItemElm == null) {
+                    currentItemElm = doc.createElement("item");
+                }
 
-				if (tagName.equals("title")) {
-					createTextChild(currentItemElm, "title", currentText);
-				} else if (tagName.equals("link")) {
-					createTextChild(currentItemElm, "link", currentText);
-				} else if (tagName.equals("description")) {
-					createTextChild(currentItemElm, "description", currentText);
-				} else if (tagName.equals("comments")) {
-					createTextChild(currentItemElm, "comments", currentText);
-				}
+                if (tagName.equals("title")) {
+                    createTextChild(currentItemElm, "title", currentText);
+                } else if (tagName.equals("link")) {
+                    createTextChild(currentItemElm, "link", currentText);
+                } else if (tagName.equals("description")) {
+                    createTextChild(currentItemElm, "description", currentText);
+                } else if (tagName.equals("comments")) {
+                    createTextChild(currentItemElm, "comments", currentText);
+                }
 
-				currentText = null;
-			} else if (inChannel) {
-				if (tagName.equals("title")) {
-					createTextChild(channelElm, "title", currentText);
-				} else if (tagName.equals("link")) {
-					createTextChild(channelElm, "link", currentText);
-				} else if (tagName.equals("description")) {
-					createTextChild(channelElm, "description", currentText);
-				} else if (tagName.equals("managingEditor")) {
-					createTextChild(channelElm, "managingEditor", currentText);
-				}
+                currentText = null;
+            } else if (inChannel) {
+                if (tagName.equals("title")) {
+                    createTextChild(channelElm, "title", currentText);
+                } else if (tagName.equals("link")) {
+                    createTextChild(channelElm, "link", currentText);
+                } else if (tagName.equals("description")) {
+                    createTextChild(channelElm, "description", currentText);
+                } else if (tagName.equals("managingEditor")) {
+                    createTextChild(channelElm, "managingEditor", currentText);
+                }
 
-			}
-		}
+            }
+        }
 
-	}
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleError(String, int)
-	 */
-	public void handleError(String errorMsg, int pos) {
-		//		System.out.println("Error: " + errorMsg.toString());
-	}
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleError(String, int)
+     */
+    public void handleError(String errorMsg, int pos) {
+        //		System.out.println("Error: " + errorMsg.toString());
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleSimpleTag(Tag, MutableAttributeSet, int)
-	 */
-	public void handleSimpleTag(Tag t, MutableAttributeSet a, int pos) {
-		//		System.out.println("SimpleTag: " + t.toString());
-	}
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleSimpleTag(Tag, MutableAttributeSet, int)
+     */
+    public void handleSimpleTag(Tag t, MutableAttributeSet a, int pos) {
+        //		System.out.println("SimpleTag: " + t.toString());
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleStartTag(Tag, MutableAttributeSet, int)
-	 */
-	public void handleStartTag(Tag t, MutableAttributeSet a, int pos) {
-		//		System.out.println("Tag: " + t.toString());
-		//		System.out.println("Atts List: " + a.toString());
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleStartTag(Tag, MutableAttributeSet, int)
+     */
+    public void handleStartTag(Tag t, MutableAttributeSet a, int pos) {
+        //		System.out.println("Tag: " + t.toString());
+        //		System.out.println("Atts List: " + a.toString());
 
-		String tagName = t.toString();
-		if (tagName.equals("item")) {
-			inItem = true;
-		} else if (tagName.equals("channel")) {
-			inChannel = true;
-		} else if (tagName.equals("rss")) {
-			String version = (String) a.getAttribute(HTML.Attribute.VERSION);
-			rootElm.setAttribute("version", version);
-		} else if (tagName.equals("rdf")) {
-			rootElm.setAttribute("version", "RDF");
-		}
-	}
+        String tagName = t.toString();
+        if (tagName.equals("item")) {
+            inItem = true;
+        } else if (tagName.equals("channel")) {
+            inChannel = true;
+        } else if (tagName.equals("rss")) {
+            String version = (String) a.getAttribute(HTML.Attribute.VERSION);
+            rootElm.setAttribute("version", version);
+        } else if (tagName.equals("rdf")) {
+            rootElm.setAttribute("version", "RDF");
+        }
+    }
 
-	/**
-	 * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleText(char[], int)
-	 */
-	public void handleText(char[] data, int pos) {
-		currentText = new String(data);
-		//		System.out.println("Text: " 
-		//			+ currentText);
-	}
+    /**
+     * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleText(char[], int)
+     */
+    public void handleText(char[] data, int pos) {
+        currentText = new String(data);
+        //		System.out.println("Text: " 
+        //			+ currentText);
+    }
 
 }

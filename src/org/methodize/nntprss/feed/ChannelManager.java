@@ -51,387 +51,387 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.5 2004/01/04 21:24:16 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.6 2004/03/27 02:12:48 jasonbrome Exp $
  */
 public class ChannelManager implements Externalizable {
 
-	public static final int EXTERNAL_VERSION = 1;
+    public static final int EXTERNAL_VERSION = 1;
 
-	private long pollingIntervalSeconds = 60 * 60;
+    private long pollingIntervalSeconds = 60 * 60;
 
-	private String proxyServer = null;
-	private int proxyPort = 0;
-	private String proxyUserID = null;
-	private String proxyPassword = null;
-	private boolean useProxy = false;
-	private boolean observeHttp301 = false;
+    private String proxyServer = null;
+    private int proxyPort = 0;
+    private String proxyUserID = null;
+    private String proxyPassword = null;
+    private boolean useProxy = false;
+    private boolean observeHttp301 = false;
 
-	private Map channels;
-	private Map categories;
-	private static ChannelManager channelManager = new ChannelManager();
-	private ChannelDAO channelDAO;
-	private ChannelPoller channelPoller;
+    private Map channels;
+    private Map categories;
+    private static ChannelManager channelManager = new ChannelManager();
+    private ChannelDAO channelDAO;
+    private ChannelPoller channelPoller;
 
-	private HostConfiguration hostConfig = null;
-	//	private HttpState httpState = null;
-	private MultiThreadedHttpConnectionManager httpConMgr;
+    private HostConfiguration hostConfig = null;
+    //	private HttpState httpState = null;
+    private MultiThreadedHttpConnectionManager httpConMgr;
 
-	private ChannelManager() {
-		// Private constructor - singleton class
-		channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
-		hostConfig = new HostConfiguration();
-		httpConMgr = new MultiThreadedHttpConnectionManager();
-	}
+    private ChannelManager() {
+        // Private constructor - singleton class
+        channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
+        hostConfig = new HostConfiguration();
+        httpConMgr = new MultiThreadedHttpConnectionManager();
+    }
 
-	public static ChannelManager getChannelManager() {
-		return channelManager;
-	}
+    public static ChannelManager getChannelManager() {
+        return channelManager;
+    }
 
-	/**
-	 * RSS Manager configuration
-	 * 
-	 * - Monitored RSS feeds
-	 *   feed url, and matching newsgroup name
-	 * 
-	 * Once feeds are loaded, load existing persistent 
-	 * store information about feeds
-	 * 
-	 */
+    /**
+     * RSS Manager configuration
+     * 
+     * - Monitored RSS feeds
+     *   feed url, and matching newsgroup name
+     * 
+     * Once feeds are loaded, load existing persistent 
+     * store information about feeds
+     * 
+     */
 
-	public void configure(Document config) {
+    public void configure(Document config) {
 
-		channelDAO.loadConfiguration(this);
+        channelDAO.loadConfiguration(this);
 
-		updateProxyConfig();
+        updateProxyConfig();
 
-		// Load feeds...
-		categories = channelDAO.loadCategories();
-		channels = channelDAO.loadChannels(this);
+        // Load feeds...
+        categories = channelDAO.loadCategories();
+        channels = channelDAO.loadChannels(this);
 
-		//		// Start feed poller...
-		//		startPoller();
+        //		// Start feed poller...
+        //		startPoller();
 
-	}
+    }
 
-	public void addChannel(Channel channel) {
-		channel.setCreated(new Date());
-		channelDAO.addChannel(channel);
-		channels.put(channel.getName(), channel);
-	}
-	
-	public void addCategory(Category category) {
-		category.setCreated(new Date());
-		channelDAO.addCategory(category);
-		categories.put(category.getName(), category);
-	}
+    public void addChannel(Channel channel) {
+        channel.setCreated(new Date());
+        channelDAO.addChannel(channel);
+        channels.put(channel.getName(), channel);
+    }
 
-	public void deleteChannel(Channel channel) {
-		channels.remove(channel.getName());
+    public void addCategory(Category category) {
+        category.setCreated(new Date());
+        channelDAO.addCategory(category);
+        categories.put(category.getName(), category);
+    }
 
-		if(channel.getCategory() != null) {
-			Category category = channel.getCategory();
-			category.removeChannel(channel);
-		}
-		channelDAO.deleteChannel(channel);
-	}
+    public void deleteChannel(Channel channel) {
+        channels.remove(channel.getName());
 
-	public void deleteCategory(Category category) {
-		categories.remove(category.getName());
-		channelDAO.deleteCategory(category);
-	}
+        if (channel.getCategory() != null) {
+            Category category = channel.getCategory();
+            category.removeChannel(channel);
+        }
+        channelDAO.deleteChannel(channel);
+    }
 
-	public void start() {
-		startPoller();
-	}
+    public void deleteCategory(Category category) {
+        categories.remove(category.getName());
+        channelDAO.deleteCategory(category);
+    }
 
-	public void shutdown() {
-		stopPoller();
-	}
+    public void start() {
+        startPoller();
+    }
 
-	public Iterator channels() {
-		return channels.values().iterator();
-	}
+    public void shutdown() {
+        stopPoller();
+    }
 
-	public Iterator categories() {
-		return categories.values().iterator();
-	}
+    public Iterator channels() {
+        return channels.values().iterator();
+    }
 
-	public Iterator groups() {
-		Set groups = new HashSet();
-		groups.addAll(channels.values());
-		groups.addAll(categories.values());
-		return groups.iterator();
-	}
+    public Iterator categories() {
+        return categories.values().iterator();
+    }
 
-	public Channel channelByName(String name) {
-		return (Channel) channels.get(name);
-	}
+    public Iterator groups() {
+        Set groups = new HashSet();
+        groups.addAll(channels.values());
+        groups.addAll(categories.values());
+        return groups.iterator();
+    }
 
-	public Category categoryByName(String name) {
-		return (Category) categories.get(name);
-	}
+    public Channel channelByName(String name) {
+        return (Channel) channels.get(name);
+    }
 
-	public ItemContainer groupByName(String name) {
-		ItemContainer group = (ItemContainer)channels.get(name);
-		if(group == null) {
-			group = (ItemContainer)categories.get(name);
-		} 
-		return group;
-	}
+    public Category categoryByName(String name) {
+        return (Category) categories.get(name);
+    }
 
-	public Category categoryById(int id) {
-		Category category = null;
-		Iterator categoryIter = categories.values().iterator();
-		while(categoryIter.hasNext()) {
-			Category nextCategory = (Category)categoryIter.next();
-			if(nextCategory.getId() == id) {
-				category = nextCategory;
-				break;
-			}
-		}
-		return category;
-	}
+    public ItemContainer groupByName(String name) {
+        ItemContainer group = (ItemContainer) channels.get(name);
+        if (group == null) {
+            group = (ItemContainer) categories.get(name);
+        }
+        return group;
+    }
 
-	private void startPoller() {
-		channelPoller = new ChannelPoller(channels);
-		channelPoller.start();
-	}
+    public Category categoryById(int id) {
+        Category category = null;
+        Iterator categoryIter = categories.values().iterator();
+        while (categoryIter.hasNext()) {
+            Category nextCategory = (Category) categoryIter.next();
+            if (nextCategory.getId() == id) {
+                category = nextCategory;
+                break;
+            }
+        }
+        return category;
+    }
 
-	private void stopPoller() {
-		channelPoller.shutdown();
-	}
+    private void startPoller() {
+        channelPoller = new ChannelPoller(channels);
+        channelPoller.start();
+    }
 
-	public synchronized void repollAllChannels() {
-		try {
-			Iterator channelIter = channels.values().iterator();
+    private void stopPoller() {
+        channelPoller.shutdown();
+    }
 
-			while (channelIter.hasNext()) {
-				Channel channel = (Channel) channelIter.next();
-				channel.setLastPolled(null);
-				channel.setStatus(Channel.STATUS_OK);
-			}
+    public synchronized void repollAllChannels() {
+        try {
+            Iterator channelIter = channels.values().iterator();
 
-		} catch (ConcurrentModificationException cme) {
-			// Just in case something else is modifying the channel structure...
-		}
-	}
+            while (channelIter.hasNext()) {
+                Channel channel = (Channel) channelIter.next();
+                channel.setLastPolled(null);
+                channel.setStatus(Channel.STATUS_OK);
+            }
 
-	public void configureHttpClient(HttpClient client) {
-		client.setHostConfiguration(hostConfig);
+        } catch (ConcurrentModificationException cme) {
+            // Just in case something else is modifying the channel structure...
+        }
+    }
 
-		if ((proxyUserID != null && proxyUserID.length() > 0)
-			|| (proxyPassword != null && proxyPassword.length() > 0)) {
-			client.getState().setProxyCredentials(
-				null,
-				null,
-				new UsernamePasswordCredentials(
-					proxyUserID,
-					(proxyPassword == null) ? "" : proxyPassword));
-		} else {
-			client.getState().setProxyCredentials(null, null, null);
-		}
-	}
+    public void configureHttpClient(HttpClient client) {
+        client.setHostConfiguration(hostConfig);
 
-	private void updateProxyConfig() {
-		// Set proxy configuration, if necessary.
-		if (useProxy && (proxyServer != null) && (proxyServer.length() > 0)) {
-			//			System.setProperty("http.proxyHost", proxyServer);
-			//			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
-			//			System.setProperty("http.proxySet", "true");
+        if ((proxyUserID != null && proxyUserID.length() > 0)
+            || (proxyPassword != null && proxyPassword.length() > 0)) {
+            client.getState().setProxyCredentials(
+                null,
+                null,
+                new UsernamePasswordCredentials(
+                    proxyUserID,
+                    (proxyPassword == null) ? "" : proxyPassword));
+        } else {
+            client.getState().setProxyCredentials(null, null, null);
+        }
+    }
 
-			// Set HttpClient proxy configuration
-			hostConfig.setProxy(proxyServer, proxyPort);
+    private void updateProxyConfig() {
+        // Set proxy configuration, if necessary.
+        if (useProxy && (proxyServer != null) && (proxyServer.length() > 0)) {
+            //			System.setProperty("http.proxyHost", proxyServer);
+            //			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
+            //			System.setProperty("http.proxySet", "true");
 
-			//            if ((proxyUserID != null && proxyUserID.length() > 0) ||
-			//            	(proxyPassword != null && proxyPassword.length() > 0)) {
-			//                Authenticator.setDefault(new Authenticator() {
-			//                        protected PasswordAuthentication getPasswordAuthentication() {
-			//                            return new PasswordAuthentication(proxyUserID,
-			//                                (proxyPassword == null) ? new char[0]
-			//                                                        : proxyPassword.toCharArray());
-			//                        }
-			//                    });
-			//
-			//				httpClient.getState().setProxyCredentials(null,
-			//					new UsernamePasswordCredentials(proxyUserID,
-			//                                (proxyPassword == null) ? ""
-			//                                                        : proxyPassword));
-			//
-			//            } else {
-			//            	Authenticator.setDefault(null);
-			//            	
-			//            	httpClient.getState().setProxyCredentials(null, null);
-			//            }
-		} else {
-			//            System.setProperty("http.proxyHost", "");
-			//            System.setProperty("http.proxyPort", "");
-			//            System.setProperty("http.proxySet", "false");
-			//            Authenticator.setDefault(null);
+            // Set HttpClient proxy configuration
+            hostConfig.setProxy(proxyServer, proxyPort);
 
-			hostConfig = new HostConfiguration();
-			//           	httpClient.getState().setProxyCredentials(null, null);
+            //            if ((proxyUserID != null && proxyUserID.length() > 0) ||
+            //            	(proxyPassword != null && proxyPassword.length() > 0)) {
+            //                Authenticator.setDefault(new Authenticator() {
+            //                        protected PasswordAuthentication getPasswordAuthentication() {
+            //                            return new PasswordAuthentication(proxyUserID,
+            //                                (proxyPassword == null) ? new char[0]
+            //                                                        : proxyPassword.toCharArray());
+            //                        }
+            //                    });
+            //
+            //				httpClient.getState().setProxyCredentials(null,
+            //					new UsernamePasswordCredentials(proxyUserID,
+            //                                (proxyPassword == null) ? ""
+            //                                                        : proxyPassword));
+            //
+            //            } else {
+            //            	Authenticator.setDefault(null);
+            //            	
+            //            	httpClient.getState().setProxyCredentials(null, null);
+            //            }
+        } else {
+            //            System.setProperty("http.proxyHost", "");
+            //            System.setProperty("http.proxyPort", "");
+            //            System.setProperty("http.proxySet", "false");
+            //            Authenticator.setDefault(null);
 
-		}
-	}
+            hostConfig = new HostConfiguration();
+            //           	httpClient.getState().setProxyCredentials(null, null);
 
-	public void saveConfiguration() {
-		channelDAO.saveConfiguration(this);
+        }
+    }
 
-		// Update proxy configuration, if necessary.
-		updateProxyConfig();
+    public void saveConfiguration() {
+        channelDAO.saveConfiguration(this);
 
-	}
+        // Update proxy configuration, if necessary.
+        updateProxyConfig();
 
-	/**
-	 * Returns the channelDAO.
-	 * @return ChannelManagerDAO
-	 */
-	public ChannelDAO getChannelDAO() {
-		return channelDAO;
-	}
+    }
 
-	/**
-	 * Returns the pollingIntervalSeconds.
-	 * @return long
-	 */
-	public long getPollingIntervalSeconds() {
-		return pollingIntervalSeconds;
-	}
+    /**
+     * Returns the channelDAO.
+     * @return ChannelManagerDAO
+     */
+    public ChannelDAO getChannelDAO() {
+        return channelDAO;
+    }
 
-	/**
-	 * Sets the pollingIntervalSeconds.
-	 * @param pollingIntervalSeconds The pollingIntervalSeconds to set
-	 */
-	public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
-		this.pollingIntervalSeconds = pollingIntervalSeconds;
-	}
+    /**
+     * Returns the pollingIntervalSeconds.
+     * @return long
+     */
+    public long getPollingIntervalSeconds() {
+        return pollingIntervalSeconds;
+    }
 
-	/**
-	 * Returns the proxyPort.
-	 * @return int
-	 */
-	public int getProxyPort() {
-		return proxyPort;
-	}
+    /**
+     * Sets the pollingIntervalSeconds.
+     * @param pollingIntervalSeconds The pollingIntervalSeconds to set
+     */
+    public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
+        this.pollingIntervalSeconds = pollingIntervalSeconds;
+    }
 
-	/**
-	 * Returns the proxyServer.
-	 * @return String
-	 */
-	public String getProxyServer() {
-		return proxyServer;
-	}
+    /**
+     * Returns the proxyPort.
+     * @return int
+     */
+    public int getProxyPort() {
+        return proxyPort;
+    }
 
-	/**
-	 * Sets the proxyPort.
-	 * @param proxyPort The proxyPort to set
-	 */
-	public void setProxyPort(int proxyPort) {
-		this.proxyPort = proxyPort;
-	}
+    /**
+     * Returns the proxyServer.
+     * @return String
+     */
+    public String getProxyServer() {
+        return proxyServer;
+    }
 
-	/**
-	 * Sets the proxyServer.
-	 * @param proxyServer The proxyServer to set
-	 */
-	public void setProxyServer(String proxyServer) {
-		this.proxyServer = proxyServer;
-	}
+    /**
+     * Sets the proxyPort.
+     * @param proxyPort The proxyPort to set
+     */
+    public void setProxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
+    }
 
-	/**
-	 * Returns the proxyPassword.
-	 * @return String
-	 */
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
+    /**
+     * Sets the proxyServer.
+     * @param proxyServer The proxyServer to set
+     */
+    public void setProxyServer(String proxyServer) {
+        this.proxyServer = proxyServer;
+    }
 
-	/**
-	 * Returns the proxyUserID.
-	 * @return String
-	 */
-	public String getProxyUserID() {
-		return proxyUserID;
-	}
+    /**
+     * Returns the proxyPassword.
+     * @return String
+     */
+    public String getProxyPassword() {
+        return proxyPassword;
+    }
 
-	/**
-	 * Sets the proxyPassword.
-	 * @param proxyPassword The proxyPassword to set
-	 */
-	public void setProxyPassword(String proxyPassword) {
-		this.proxyPassword = proxyPassword;
-	}
+    /**
+     * Returns the proxyUserID.
+     * @return String
+     */
+    public String getProxyUserID() {
+        return proxyUserID;
+    }
 
-	/**
-	 * Sets the proxyUserID.
-	 * @param proxyUserID The proxyUserID to set
-	 */
-	public void setProxyUserID(String proxyUserID) {
-		this.proxyUserID = proxyUserID;
-	}
+    /**
+     * Sets the proxyPassword.
+     * @param proxyPassword The proxyPassword to set
+     */
+    public void setProxyPassword(String proxyPassword) {
+        this.proxyPassword = proxyPassword;
+    }
 
-	/**
-	 * @return
-	 */
-	public MultiThreadedHttpConnectionManager getHttpConMgr() {
-		return httpConMgr;
-	}
+    /**
+     * Sets the proxyUserID.
+     * @param proxyUserID The proxyUserID to set
+     */
+    public void setProxyUserID(String proxyUserID) {
+        this.proxyUserID = proxyUserID;
+    }
 
-	/**
-	 * @return
-	 */
-	public boolean isUseProxy() {
-		return useProxy;
-	}
+    /**
+     * @return
+     */
+    public MultiThreadedHttpConnectionManager getHttpConMgr() {
+        return httpConMgr;
+    }
 
-	/**
-	 * @param b
-	 */
-	public void setUseProxy(boolean b) {
-		useProxy = b;
-	}
+    /**
+     * @return
+     */
+    public boolean isUseProxy() {
+        return useProxy;
+    }
 
-	/**
-	 * @return
-	 */
-	public boolean isObserveHttp301() {
-		return observeHttp301;
-	}
+    /**
+     * @param b
+     */
+    public void setUseProxy(boolean b) {
+        useProxy = b;
+    }
 
-	/**
-	 * @param b
-	 */
-	public void setObserveHttp301(boolean b) {
-		observeHttp301 = b;
-	}
+    /**
+     * @return
+     */
+    public boolean isObserveHttp301() {
+        return observeHttp301;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-	 */
-	public void readExternal(ObjectInput in)
-		throws IOException, ClassNotFoundException {
-		in.readInt();
-		pollingIntervalSeconds = in.readLong();
-		proxyServer = in.readUTF();
-		proxyPort = in.readInt();
-		proxyUserID = in.readUTF();
-		proxyPassword = in.readUTF();
-		useProxy = in.readBoolean();
-		observeHttp301 = in.readBoolean();
-	}
+    /**
+     * @param b
+     */
+    public void setObserveHttp301(boolean b) {
+        observeHttp301 = b;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-	 */
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeInt(EXTERNAL_VERSION);
-		out.writeLong(pollingIntervalSeconds);
-		out.writeUTF(proxyServer != null ? proxyServer : "");
-		out.writeInt(proxyPort);
-		out.writeUTF(proxyUserID != null ? proxyUserID : "");
-		out.writeUTF(proxyPassword != null ? proxyPassword : "");
-		out.writeBoolean(useProxy);
-		out.writeBoolean(observeHttp301);
-	}
+    /* (non-Javadoc)
+     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+     */
+    public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException {
+        in.readInt();
+        pollingIntervalSeconds = in.readLong();
+        proxyServer = in.readUTF();
+        proxyPort = in.readInt();
+        proxyUserID = in.readUTF();
+        proxyPassword = in.readUTF();
+        useProxy = in.readBoolean();
+        observeHttp301 = in.readBoolean();
+    }
+
+    /* (non-Javadoc)
+     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+     */
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(EXTERNAL_VERSION);
+        out.writeLong(pollingIntervalSeconds);
+        out.writeUTF(proxyServer != null ? proxyServer : "");
+        out.writeInt(proxyPort);
+        out.writeUTF(proxyUserID != null ? proxyUserID : "");
+        out.writeUTF(proxyPassword != null ? proxyPassword : "");
+        out.writeBoolean(useProxy);
+        out.writeBoolean(observeHttp301);
+    }
 
 }

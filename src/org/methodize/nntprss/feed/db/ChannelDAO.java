@@ -44,131 +44,131 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelDAO.java,v 1.5 2004/01/04 21:14:23 jasonbrome Exp $
+ * @version $Id: ChannelDAO.java,v 1.6 2004/03/27 02:12:48 jasonbrome Exp $
  */
 public abstract class ChannelDAO {
 
-	public static final int LIMIT_NONE = -1;
+    public static final int LIMIT_NONE = -1;
 
-	static final int DBVERSION = 5;
+    static final int DBVERSION = 5;
 
-	Logger log = Logger.getLogger(ChannelDAO.class);
+    Logger log = Logger.getLogger(ChannelDAO.class);
 
-	public abstract void shutdown();
+    public abstract void shutdown();
 
-	protected abstract void upgradeDatabase(int dbVersion);
+    protected abstract void upgradeDatabase(int dbVersion);
 
-	protected abstract void createTables();
-	protected abstract void populateInitialChannels(Document config);
+    protected abstract void createTables();
+    protected abstract void populateInitialChannels(Document config);
 
-	public abstract void initialize(Document config) throws Exception;
+    public abstract void initialize(Document config) throws Exception;
 
-	public abstract void loadConfiguration(ChannelManager channelManager);
+    public abstract void loadConfiguration(ChannelManager channelManager);
 
-	public abstract void loadConfiguration(NNTPServer nntpServer);
+    public abstract void loadConfiguration(NNTPServer nntpServer);
 
-	public abstract Map loadChannels(ChannelManager channelManager);
+    public abstract Map loadChannels(ChannelManager channelManager);
 
-	public abstract Map loadCategories();
+    public abstract Map loadCategories();
 
-	public abstract void addChannel(Channel channel);
-	public abstract void addCategory(Category category);
+    public abstract void addChannel(Channel channel);
+    public abstract void addCategory(Category category);
 
-	public abstract void addChannelToCategory(
-		Channel channel,
-		Category category);
-	public abstract void removeChannelFromCategory(
-		Channel channel,
-		Category category);
+    public abstract void addChannelToCategory(
+        Channel channel,
+        Category category);
+    public abstract void removeChannelFromCategory(
+        Channel channel,
+        Category category);
 
-	public abstract void updateChannel(Channel channel);
+    public abstract void updateChannel(Channel channel);
 
-	public abstract void updateCategory(Category category);
+    public abstract void updateCategory(Category category);
 
-	public abstract void deleteChannel(Channel channel);
+    public abstract void deleteChannel(Channel channel);
 
-	public abstract void deleteCategory(Category category);
+    public abstract void deleteCategory(Category category);
 
-	public abstract Item loadItem(Category category, int articleNumber);
+    public abstract Item loadItem(Category category, int articleNumber);
 
-	public abstract Item loadItem(Channel channel, int articleNumber);
+    public abstract Item loadItem(Channel channel, int articleNumber);
 
-	public abstract Item loadNextItem(
-		Category category,
-		int relativeArticleNumber);
+    public abstract Item loadNextItem(
+        Category category,
+        int relativeArticleNumber);
 
-	public abstract Item loadNextItem(
-		Channel channel,
-		int relativeArticleNumber);
+    public abstract Item loadNextItem(
+        Channel channel,
+        int relativeArticleNumber);
 
-	public abstract Item loadPreviousItem(
-		Category category,
-		int relativeArticleNumber);
+    public abstract Item loadPreviousItem(
+        Category category,
+        int relativeArticleNumber);
 
-	public abstract Item loadPreviousItem(
-		Channel channel,
-		int relativeArticleNumber);
+    public abstract Item loadPreviousItem(
+        Channel channel,
+        int relativeArticleNumber);
 
-	public abstract Item loadItem(Channel channel, String signature);
+    public abstract Item loadItem(Channel channel, String signature);
 
-	/**
-	 * Method loadItems.
-	 * @param channel
-	 * @param articleRange
-	 * @param onlyHeaders
-	 * @param limit Maximum number of items to return
-	 * @return List
-	 * 
-	 * articleRange
-	 * -1 = open ended search (all items from article number,
-	 *    all items to article number)
-	 */
+    /**
+     * Method loadItems.
+     * @param channel
+     * @param articleRange
+     * @param onlyHeaders
+     * @param limit Maximum number of items to return
+     * @return List
+     * 
+     * articleRange
+     * -1 = open ended search (all items from article number,
+     *    all items to article number)
+     */
 
-	public abstract List loadItems(
-		Category category,
-		int[] articleRange,
-		boolean onlyHeaders,
-		int limit);
+    public abstract List loadItems(
+        Category category,
+        int[] articleRange,
+        boolean onlyHeaders,
+        int limit);
 
-	public abstract List loadItems(
-		Channel channel,
-		int[] articleRange,
-		boolean onlyHeaders,
-		int limit);
+    public abstract List loadItems(
+        Channel channel,
+        int[] articleRange,
+        boolean onlyHeaders,
+        int limit);
 
-	public abstract List loadArticleNumbers(Category category);
+    public abstract List loadArticleNumbers(Category category);
 
-	/**
-	 * Method loadArticleNumbers
-	 * @param channel
-	 * @return List
-	 * 
-	 * Supports NNTP listgroup command
-	 */
-	public abstract List loadArticleNumbers(Channel channel);
+    /**
+     * Method loadArticleNumbers
+     * @param channel
+     * @return List
+     * 
+     * Supports NNTP listgroup command
+     */
+    public abstract List loadArticleNumbers(Channel channel);
 
-	public abstract void saveItem(Item item);
+    public abstract void saveItem(Item item);
 
-	public abstract void saveConfiguration(ChannelManager channelManager);
+    public abstract void saveConfiguration(ChannelManager channelManager);
 
-	public abstract void saveConfiguration(NNTPServer nntpServer);
+    public abstract void saveConfiguration(NNTPServer nntpServer);
 
-	public abstract void deleteExpiredItems(
-		Channel channel,
-		Set currentItemSignatures);
+    public abstract void deleteExpiredItems(
+        Channel channel,
+        Set currentItemSignatures);
 
-	/* (non-Javadoc)
-	 * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteItemsNotInSet(org.methodize.nntprss.feed.Channel, java.util.Set)
-	 */
-	public abstract void deleteItemsNotInSet(
-		Channel channel,
-		Set itemSignatures);
+    /* (non-Javadoc)
+     * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteItemsNotInSet(org.methodize.nntprss.feed.Channel, java.util.Set)
+     */
+    public abstract void deleteItemsNotInSet(
+        Channel channel,
+        Set itemSignatures);
 
-	/* (non-Javadoc)
-	 * @see org.methodize.nntprss.feed.db.ChannelDAO#findNewItemSignatures(int, java.util.Set)
-	 */
-	public abstract Set findNewItemSignatures(
-		Channel channel,
-		Set itemSignatures);
+    /* (non-Javadoc)
+     * @see org.methodize.nntprss.feed.db.ChannelDAO#findNewItemSignatures(int, java.util.Set)
+     */
+    public abstract Set findNewItemSignatures(
+        Channel channel,
+        Set itemSignatures);
 
 }

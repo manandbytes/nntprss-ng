@@ -56,228 +56,229 @@ import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.7 2004/01/04 21:25:17 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.8 2004/03/27 02:13:10 jasonbrome Exp $
  */
 
 public class NNTPServer implements Externalizable {
 
-	public static final int EXTERNAL_VERSION = 1;  
+    public static final int EXTERNAL_VERSION = 1;
 
-	private Logger log = Logger.getLogger(NNTPServer.class);
+    private Logger log = Logger.getLogger(NNTPServer.class);
 
-	private NNTPServerListener listener = null;
-	private SimpleThreadPool simpleThreadPool;
-	private int listenerPort;
-	private InetAddress address = null;
+    private NNTPServerListener listener = null;
+    private SimpleThreadPool simpleThreadPool;
+    private int listenerPort;
+    private InetAddress address = null;
 
-	private static final int MAX_NNTP_CLIENT_THREADS = 5;
+    private static final int MAX_NNTP_CLIENT_THREADS = 5;
 
-// 30 minute default timeout on NNTP client connections
-	private static final int DEFAULT_CONNECTION_TIMEOUT = 
-		30 * 60 * 1000;
+    // 30 minute default timeout on NNTP client connections
+    private static final int DEFAULT_CONNECTION_TIMEOUT = 30 * 60 * 1000;
 
-	private int contentType = AppConstants.CONTENT_TYPE_MIXED;
-	private boolean secure = false;
-	private boolean footnoteUrls = true;
-	private String hostName = null;
+    private int contentType = AppConstants.CONTENT_TYPE_MIXED;
+    private boolean secure = false;
+    private boolean footnoteUrls = true;
+    private String hostName = null;
 
-	private ChannelDAO channelDAO;
+    private ChannelDAO channelDAO;
 
-	private Map users = new HashMap();
+    private Map users = new HashMap();
 
-	public NNTPServer() {
-		channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
-	}
+    public NNTPServer() {
+        channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
+    }
 
-	public void configure(Document config) {
-		// TODO configure Maximum concurrent threads etc
-		Element rootElm = config.getDocumentElement();
-		Element adminConfig =
-			(Element) rootElm.getElementsByTagName("nntp").item(0);
-		listenerPort = Integer.parseInt(adminConfig.getAttribute("port"));
+    public void configure(Document config) {
+        // TODO configure Maximum concurrent threads etc
+        Element rootElm = config.getDocumentElement();
+        Element adminConfig =
+            (Element) rootElm.getElementsByTagName("nntp").item(0);
+        listenerPort = Integer.parseInt(adminConfig.getAttribute("port"));
 
-		Node addressNode = adminConfig.getAttributeNode("address");
-		if(addressNode != null) {
-			try {
-				address = InetAddress.getByName(addressNode.getNodeValue());
-			} catch(UnknownHostException uhe) {
-				if(log.isEnabledFor(Priority.ERROR)) {
-					log.error("nntp listener bind address unknown - binding listener against all interfaces",
-						uhe);
-				}
-			}
-		}
+        Node addressNode = adminConfig.getAttributeNode("address");
+        if (addressNode != null) {
+            try {
+                address = InetAddress.getByName(addressNode.getNodeValue());
+            } catch (UnknownHostException uhe) {
+                if (log.isEnabledFor(Priority.ERROR)) {
+                    log.error(
+                        "nntp listener bind address unknown - binding listener against all interfaces",
+                        uhe);
+                }
+            }
+        }
 
-		// Load DB persisted configuration
-		channelDAO.loadConfiguration(this);
+        // Load DB persisted configuration
+        channelDAO.loadConfiguration(this);
 
-		if (log.isInfoEnabled()) {
-			if(address == null) {
-				log.info("NNTP server listener port = " + listenerPort);
-			} else {
-				log.info("NNTP server listener port = " + listenerPort
-					+ ", address = " + address.toString());
-			}
-		}
+        if (log.isInfoEnabled()) {
+            if (address == null) {
+                log.info("NNTP server listener port = " + listenerPort);
+            } else {
+                log.info(
+                    "NNTP server listener port = "
+                        + listenerPort
+                        + ", address = "
+                        + address.toString());
+            }
+        }
 
-		InputStream userConfig =
-			this.getClass().getResourceAsStream(
-				"/" + AppConstants.USERS_CONFIG);
-		if (userConfig != null) {
-			// Load users...
-			try {
-				Properties props = new Properties();
-				props.load(userConfig);
-				Enumeration enum = props.propertyNames();
-				while (enum.hasMoreElements()) {
-					String user = (String) enum.nextElement();
-					users.put(user, props.getProperty(user));
-				}
+        InputStream userConfig =
+            this.getClass().getResourceAsStream(
+                "/" + AppConstants.USERS_CONFIG);
+        if (userConfig != null) {
+            // Load users...
+            try {
+                Properties props = new Properties();
+                props.load(userConfig);
+                Enumeration enum = props.propertyNames();
+                while (enum.hasMoreElements()) {
+                    String user = (String) enum.nextElement();
+                    users.put(user, props.getProperty(user));
+                }
 
-				if (log.isInfoEnabled()) {
-					log.info("Loaded NNTP user configuration");
-				}
+                if (log.isInfoEnabled()) {
+                    log.info("Loaded NNTP user configuration");
+                }
 
-			} catch (IOException ie) {
-				log.error("Error loading users", ie);
-			}
-		}
+            } catch (IOException ie) {
+                log.error("Error loading users", ie);
+            }
+        }
 
-	}
+    }
 
-	public void start() throws Exception {
-		simpleThreadPool =
-			new SimpleThreadPool(
-				"NNTP Client Handlers",
-				"NNTP Client Thread",
-				20);
+    public void start() throws Exception {
+        simpleThreadPool =
+            new SimpleThreadPool(
+                "NNTP Client Handlers",
+                "NNTP Client Thread",
+                20);
 
-		if (listener == null) {
-			if(address == null) {
-				listener = new NNTPServerListener(this, listenerPort);
-			} else {
-				listener = new NNTPServerListener(this, listenerPort,
-					address);
-			}
-		}
-		listener.start();
-	}
+        if (listener == null) {
+            if (address == null) {
+                listener = new NNTPServerListener(this, listenerPort);
+            } else {
+                listener = new NNTPServerListener(this, listenerPort, address);
+            }
+        }
+        listener.start();
+    }
 
-	public void shutdown() {
-		listener.shutdown();
-	}
+    public void shutdown() {
+        listener.shutdown();
+    }
 
-	void handleConnection(Socket clientConnection) {
-		try {
-			clientConnection.setSoTimeout(DEFAULT_CONNECTION_TIMEOUT);
-			simpleThreadPool.run(new ClientHandler(this, clientConnection));
-		} catch(SocketException e) {
-			if(log.isEnabledFor(Priority.ERROR)) {
-				log.error("SocketException invoking setSoTimeout",
-					e);
-			}
-		}
-	}
+    void handleConnection(Socket clientConnection) {
+        try {
+            clientConnection.setSoTimeout(DEFAULT_CONNECTION_TIMEOUT);
+            simpleThreadPool.run(new ClientHandler(this, clientConnection));
+        } catch (SocketException e) {
+            if (log.isEnabledFor(Priority.ERROR)) {
+                log.error("SocketException invoking setSoTimeout", e);
+            }
+        }
+    }
 
-	public int getContentType() {
-		return contentType;
-	}
+    public int getContentType() {
+        return contentType;
+    }
 
-	public void setContentType(int contentType) {
-		this.contentType = contentType;
-	}
+    public void setContentType(int contentType) {
+        this.contentType = contentType;
+    }
 
-	public void saveConfiguration() {
-		channelDAO.saveConfiguration(this);
-	}
+    public void saveConfiguration() {
+        channelDAO.saveConfiguration(this);
+    }
 
-	/**
-	 * Returns secure.
-	 * @return boolean
-	 */
-	public boolean isSecure() {
-		return secure;
-	}
+    /**
+     * Returns secure.
+     * @return boolean
+     */
+    public boolean isSecure() {
+        return secure;
+    }
 
-	/**
-	 * Sets secure.
-	 * @param secure The secure to set
-	 */
-	public void setSecure(boolean secure) {
-		this.secure = secure;
-	}
+    /**
+     * Sets secure.
+     * @param secure The secure to set
+     */
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
 
-	public boolean isValidUser(String user, String password) {
-		boolean valid = false;
+    public boolean isValidUser(String user, String password) {
+        boolean valid = false;
 
-		String actualPassword = (String) users.get(user);
-		if (actualPassword != null && actualPassword.equals(password)) {
-			valid = true;
-		}
+        String actualPassword = (String) users.get(user);
+        if (actualPassword != null && actualPassword.equals(password)) {
+            valid = true;
+        }
 
-		return valid;
-	}
+        return valid;
+    }
 
-	/**
-	 * Returns the listenerPort.
-	 * @return int
-	 */
-	public int getListenerPort() {
-		return listenerPort;
-	}
+    /**
+     * Returns the listenerPort.
+     * @return int
+     */
+    public int getListenerPort() {
+        return listenerPort;
+    }
 
-	/**
-	 * Returns the footnoteUrls.
-	 * @return boolean
-	 */
-	public boolean isFootnoteUrls() {
-		return footnoteUrls;
-	}
+    /**
+     * Returns the footnoteUrls.
+     * @return boolean
+     */
+    public boolean isFootnoteUrls() {
+        return footnoteUrls;
+    }
 
-	/**
-	 * Sets the footnoteUrls.
-	 * @param footnoteUrls The footnoteUrls to set
-	 */
-	public void setFootnoteUrls(boolean footnoteUrls) {
-		this.footnoteUrls = footnoteUrls;
-	}
+    /**
+     * Sets the footnoteUrls.
+     * @param footnoteUrls The footnoteUrls to set
+     */
+    public void setFootnoteUrls(boolean footnoteUrls) {
+        this.footnoteUrls = footnoteUrls;
+    }
 
-	/**
-	 * @return
-	 */
-	public String getHostName() {
-		return hostName;
-	}
+    /**
+     * @return
+     */
+    public String getHostName() {
+        return hostName;
+    }
 
-	/**
-	 * @param string
-	 */
-	public void setHostName(String string) {
-		hostName = string;
-	}
+    /**
+     * @param string
+     */
+    public void setHostName(String string) {
+        hostName = string;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-	 */
-	public void readExternal(ObjectInput in)
-		throws IOException, ClassNotFoundException {
+    /* (non-Javadoc)
+     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+     */
+    public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException {
 
-		in.readInt();
-		contentType = in.readInt();
-		secure = in.readBoolean();
-		footnoteUrls = in.readBoolean();
-		hostName = in.readUTF();
-	}
+        in.readInt();
+        contentType = in.readInt();
+        secure = in.readBoolean();
+        footnoteUrls = in.readBoolean();
+        hostName = in.readUTF();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-	 */
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeInt(EXTERNAL_VERSION);
-		out.writeInt(contentType);
-		out.writeBoolean(secure);
-		out.writeBoolean(footnoteUrls);
-		out.writeUTF(hostName != null ? hostName : "");
-	}
+    /* (non-Javadoc)
+     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+     */
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(EXTERNAL_VERSION);
+        out.writeInt(contentType);
+        out.writeBoolean(secure);
+        out.writeBoolean(footnoteUrls);
+        out.writeUTF(hostName != null ? hostName : "");
+    }
 
 }

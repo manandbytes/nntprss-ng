@@ -36,87 +36,86 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Startup.java,v 1.6 2004/01/04 21:06:32 jasonbrome Exp $
+ * @version $Id: Startup.java,v 1.7 2004/03/27 02:11:00 jasonbrome Exp $
  */
 public class Startup {
 
-	private static String[] resources = new String[]{
-			"./nntprss.jar",
-			"./ext/lib/log4j-1.2.7.jar",
-			"./ext/lib/commons-collections.jar",
-			"./ext/lib/commons-dbcp.jar",
-			"./ext/lib/commons-httpclient.jar",
-			"./ext/lib/commons-logging.jar",
-			"./ext/lib/commons-pool.jar",
-			"./ext/lib/javax.servlet.jar",
-			"./ext/lib/org.mortbay.jetty-jdk1.2.jar",
-			"./ext/lib/crimson.jar",
-			"./ext/lib/xmlrpc-1.1.jar",
-			"./ext/lib/mailapi.jar",
-			"./ext/lib/activation.jar",
-			"./ext/lib/systray4j.jar",
-// hsqldb Support
-			"./ext/lib/hsqldb.jar",
-// MySQL Support
-			"./ext/lib/mysql.jar",
-// JDBM Support
-			"./ext/lib/jdbm-0.20.jar",
-			"."
-			};
+    private static String[] resources =
+        new String[] {
+            "./nntprss.jar",
+            "./ext/lib/log4j-1.2.7.jar",
+            "./ext/lib/commons-collections.jar",
+            "./ext/lib/commons-dbcp.jar",
+            "./ext/lib/commons-httpclient.jar",
+            "./ext/lib/commons-logging.jar",
+            "./ext/lib/commons-pool.jar",
+            "./ext/lib/javax.servlet.jar",
+            "./ext/lib/org.mortbay.jetty-jdk1.2.jar",
+            "./ext/lib/crimson.jar",
+            "./ext/lib/xmlrpc-1.1.jar",
+            "./ext/lib/mailapi.jar",
+            "./ext/lib/activation.jar",
+            "./ext/lib/systray4j.jar",
+        // hsqldb Support
+        "./ext/lib/hsqldb.jar",
+        // MySQL Support
+        "./ext/lib/mysql.jar",
+        // JDBM Support
+        "./ext/lib/jdbm-0.20.jar", "." };
 
-	public static void main(String[] args) {
-		if(args.length == 0 || !args[0].equals("stop")) {
-			try {
-				new Startup().run(args);
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		} else {
-			System.exit(0);
-		}
-	}	
-	
-	public void run(String[] args) throws Exception {
-		URL resourceURLs[] = new URL[resources.length];
+    public static void main(String[] args) {
+        if (args.length == 0 || !args[0].equals("stop")) {
+            try {
+                new Startup().run(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.exit(0);
+        }
+    }
 
-		for(int resCount = 0; resCount < resources.length; resCount++) {
-			try {
-				File file = new File(resources[resCount]);
-				if(file.exists()) {
-					resourceURLs[resCount] = file.getCanonicalFile().toURL();
-				} else {
-					throw new RuntimeException("Missing file: " + file.toString());
-				}
-			} catch(IOException ie) {
-				ie.printStackTrace();
-			}
-		}
+    public void run(String[] args) throws Exception {
+        URL resourceURLs[] = new URL[resources.length];
 
-		ClassLoader existingClassLoader =
-			Thread.currentThread().getContextClassLoader();
-		URLClassLoader urlClassLoader = 
-			URLClassLoader.newInstance(resourceURLs, existingClassLoader);
-		Thread.currentThread().setContextClassLoader(urlClassLoader);
+        for (int resCount = 0; resCount < resources.length; resCount++) {
+            try {
+                File file = new File(resources[resCount]);
+                if (file.exists()) {
+                    resourceURLs[resCount] = file.getCanonicalFile().toURL();
+                } else {
+                    throw new RuntimeException(
+                        "Missing file: " + file.toString());
+                }
+            } catch (IOException ie) {
+                ie.printStackTrace();
+            }
+        }
 
-		Class clazz = urlClassLoader.loadClass("org.methodize.nntprss.Main");
-		Method methods[] = clazz.getMethods();
-		Method mainMethod = null;
-		for(int i = 0; i < methods.length; i++) {
-			if(methods[i].getName().equals("main")) {
-				mainMethod = methods[i];
-				break;
-			}
-		}
-			
-		mainMethod.invoke(null, new Object[] { args });
-	}
-	
-	// Shutdown hook for Windows Java Service Wrappers
-	// e.g. JNT
-	public static void stopApplication() {
-		System.exit(0);
-	}	
+        ClassLoader existingClassLoader =
+            Thread.currentThread().getContextClassLoader();
+        URLClassLoader urlClassLoader =
+            URLClassLoader.newInstance(resourceURLs, existingClassLoader);
+        Thread.currentThread().setContextClassLoader(urlClassLoader);
+
+        Class clazz = urlClassLoader.loadClass("org.methodize.nntprss.Main");
+        Method methods[] = clazz.getMethods();
+        Method mainMethod = null;
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getName().equals("main")) {
+                mainMethod = methods[i];
+                break;
+            }
+        }
+
+        mainMethod.invoke(null, new Object[] { args });
+    }
+
+    // Shutdown hook for Windows Java Service Wrappers
+    // e.g. JNT
+    public static void stopApplication() {
+        System.exit(0);
+    }
 }

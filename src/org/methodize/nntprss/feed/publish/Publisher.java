@@ -36,18 +36,18 @@ import org.methodize.nntprss.feed.Item;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Publisher.java,v 1.2 2004/01/04 21:21:58 jasonbrome Exp $
+ * @version $Id: Publisher.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 public interface Publisher {
 
-	public static final String PROP_PUBLISHER_URL = "publisher.url";
-	public static final String PROP_BLOG_ID = "publisher.blogid";
-	public static final String PROP_USERNAME = "publisher.username";
-	public static final String PROP_PASSWORD = "publisher.password";
-	public static final String PROP_PUBLISH = "publisher.publish";
+    public static final String PROP_PUBLISHER_URL = "publisher.url";
+    public static final String PROP_BLOG_ID = "publisher.blogid";
+    public static final String PROP_USERNAME = "publisher.username";
+    public static final String PROP_PASSWORD = "publisher.password";
+    public static final String PROP_PUBLISH = "publisher.publish";
 
-	public void publish(Map profile, Item content) throws PublisherException;
+    public void publish(Map profile, Item content) throws PublisherException;
 
-	public void validate(Map profile) throws PublisherException;
+    public void validate(Map profile) throws PublisherException;
 
 }

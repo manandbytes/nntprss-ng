@@ -35,22 +35,26 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DBManager.java,v 1.6 2004/01/04 21:12:54 jasonbrome Exp $
+ * @version $Id: DBManager.java,v 1.7 2004/03/27 02:12:31 jasonbrome Exp $
  */
 public class DBManager {
 
-	public DBManager() {
-	}
+    public DBManager() {
+    }
 
-	public void startup() {
-	}
+    public void startup() {
+    }
 
-	public void shutdown() {
-		ChannelManagerDAO.getChannelManagerDAO().getChannelDAO().shutdown();
-	}
+    public void shutdown() {
+        ChannelManagerDAO.getChannelManagerDAO().getChannelDAO().shutdown();
+    }
 
-	public void configure(Document config) throws Exception {
-		ChannelManagerDAO.getChannelManagerDAO(config).getChannelDAO().initialize(config);
-	}
+    public void configure(Document config) throws Exception {
+        ChannelManagerDAO
+            .getChannelManagerDAO(config)
+            .getChannelDAO()
+            .initialize(
+            config);
+    }
 
 }

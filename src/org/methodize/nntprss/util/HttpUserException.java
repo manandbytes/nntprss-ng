@@ -32,17 +32,17 @@ package org.methodize.nntprss.util;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: HttpUserException.java,v 1.2 2004/01/04 21:26:46 jasonbrome Exp $
+ * @version $Id: HttpUserException.java,v 1.3 2004/03/27 02:13:22 jasonbrome Exp $
  */
 
 public class HttpUserException extends Exception {
 
-	private int status;
-	public HttpUserException(int status) {
-		this.status = status;
-	}
-	
-	public int getStatus() {
-		return status;
-	}
+    private int status;
+    public HttpUserException(int status) {
+        this.status = status;
+    }
+
+    public int getStatus() {
+        return status;
+    }
 }

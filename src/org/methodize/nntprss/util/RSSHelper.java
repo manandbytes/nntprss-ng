@@ -32,37 +32,40 @@ package org.methodize.nntprss.util;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSHelper.java,v 1.4 2004/01/04 21:26:46 jasonbrome Exp $
+ * @version $Id: RSSHelper.java,v 1.5 2004/03/27 02:13:22 jasonbrome Exp $
  */
 
 public class RSSHelper {
 
-// Namespace URL prefixes
-	public static final String XMLNS_DC = "http://purl.org/dc/elements/1.1/";
-	public static final String XMLNS_SY = "http://purl.org/rss/1.0/modules/syndication/";
-	public static final String XMLNS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	public static final String XMLNS_CONTENT = "http://purl.org/rss/1.0/modules/content/";
-	public static final String XMLNS_XHTML = "http://www.w3.org/1999/xhtml";
+    // Namespace URL prefixes
+    public static final String XMLNS_DC = "http://purl.org/dc/elements/1.1/";
+    public static final String XMLNS_SY =
+        "http://purl.org/rss/1.0/modules/syndication/";
+    public static final String XMLNS_RDF =
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    public static final String XMLNS_CONTENT =
+        "http://purl.org/rss/1.0/modules/content/";
+    public static final String XMLNS_XHTML = "http://www.w3.org/1999/xhtml";
 
-	/**
-	 * Parses RSS email string to return email
-	 * 
-	 * Typically:
-	 * 
-	 * someone@someone.com (My name) 
-	 */
-	public static String parseEmail(String email) {
-		String parsedEmail = null;
-		
-		int spacePos = email.indexOf(' ');
-		
-		if(spacePos == -1) {
-			parsedEmail = email;
-		} else {
-			parsedEmail = email.substring(0, spacePos);
-		}
-		
-		return parsedEmail;
-		
-	}
+    /**
+     * Parses RSS email string to return email
+     * 
+     * Typically:
+     * 
+     * someone@someone.com (My name) 
+     */
+    public static String parseEmail(String email) {
+        String parsedEmail = null;
+
+        int spacePos = email.indexOf(' ');
+
+        if (spacePos == -1) {
+            parsedEmail = email;
+        } else {
+            parsedEmail = email.substring(0, spacePos);
+        }
+
+        return parsedEmail;
+
+    }
 }

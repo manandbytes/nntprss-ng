@@ -34,95 +34,95 @@ import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ItemContainer.java,v 1.2 2004/01/04 21:24:52 jasonbrome Exp $
+ * @version $Id: ItemContainer.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 
 public class ItemContainer {
 
-	protected String name;
+    protected String name;
 
-	/**
-		 * @return
-		 */
-	public String getName() {
-		return name;
-	}
+    /**
+    	 * @return
+    	 */
+    public String getName() {
+        return name;
+    }
 
-	/**
-		 * @param string
-		 */
-	public void setName(String string) {
-		name = string;
-	}
+    /**
+    	 * @param string
+    	 */
+    public void setName(String string) {
+        name = string;
+    }
 
-	protected int firstArticleNumber = 1;
+    protected int firstArticleNumber = 1;
 
-	protected int lastArticleNumber = 0;
+    protected int lastArticleNumber = 0;
 
-	protected int totalArticles = 0;
+    protected int totalArticles = 0;
 
-	/**
-		 * Returns the firstArticleNumber.
-		 * @return long
-		 */
-	public int getFirstArticleNumber() {
-		return firstArticleNumber;
-	}
+    /**
+    	 * Returns the firstArticleNumber.
+    	 * @return long
+    	 */
+    public int getFirstArticleNumber() {
+        return firstArticleNumber;
+    }
 
-	/**
-		 * Returns the lastArticleNumber.
-		 * @return long
-		 */
-	public int getLastArticleNumber() {
-		return lastArticleNumber;
-	}
+    /**
+    	 * Returns the lastArticleNumber.
+    	 * @return long
+    	 */
+    public int getLastArticleNumber() {
+        return lastArticleNumber;
+    }
 
-	/**
-		 * Sets the firstArticleNumber.
-		 * @param firstArticleNumber The firstArticleNumber to set
-		 */
-	public void setFirstArticleNumber(int firstArticleNumber) {
-		this.firstArticleNumber = firstArticleNumber;
-	}
+    /**
+    	 * Sets the firstArticleNumber.
+    	 * @param firstArticleNumber The firstArticleNumber to set
+    	 */
+    public void setFirstArticleNumber(int firstArticleNumber) {
+        this.firstArticleNumber = firstArticleNumber;
+    }
 
-	/**
-		 * Sets the lastArticleNumber.
-		 * @param lastArticleNumber The lastArticleNumber to set
-		 */
-	public void setLastArticleNumber(int lastArticleNumber) {
-		this.lastArticleNumber = lastArticleNumber;
-	}
+    /**
+    	 * Sets the lastArticleNumber.
+    	 * @param lastArticleNumber The lastArticleNumber to set
+    	 */
+    public void setLastArticleNumber(int lastArticleNumber) {
+        this.lastArticleNumber = lastArticleNumber;
+    }
 
-	/**
-		 * Returns the totalArticles.
-		 * @return int
-		 */
-	public int getTotalArticles() {
-		return totalArticles;
-	}
+    /**
+    	 * Returns the totalArticles.
+    	 * @return int
+    	 */
+    public int getTotalArticles() {
+        return totalArticles;
+    }
 
-	/**
-		 * Sets the totalArticles.
-		 * @param totalArticles The totalArticles to set
-		 */
-	public void setTotalArticles(int totalArticles) {
-		this.totalArticles = totalArticles;
-	}
+    /**
+    	 * Sets the totalArticles.
+    	 * @param totalArticles The totalArticles to set
+    	 */
+    public void setTotalArticles(int totalArticles) {
+        this.totalArticles = totalArticles;
+    }
 
-	protected Date created;
+    protected Date created;
 
-	/**
-		 * @return
-		 */
-	public Date getCreated() {
-		return created;
-	}
+    /**
+    	 * @return
+    	 */
+    public Date getCreated() {
+        return created;
+    }
 
-	/**
-		 * @param date
-		 */
-	public void setCreated(Date date) {
-		created = date;
-	}
+    /**
+    	 * @param date
+    	 */
+    public void setCreated(Date date) {
+        created = date;
+    }
 
 }

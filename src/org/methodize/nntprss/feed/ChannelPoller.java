@@ -40,87 +40,92 @@ import org.methodize.nntprss.util.FixedThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.2 2004/01/04 21:24:29 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.3 2004/03/27 02:12:48 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
-	private Logger log = Logger.getLogger(ChannelPoller.class);
+    private Logger log = Logger.getLogger(ChannelPoller.class);
 
-	private Map channels;
-	private boolean active = true;
-//	private SimpleThreadPool simpleThreadPool;
-	private FixedThreadPool fixedThreadPool;
+    private Map channels;
+    private boolean active = true;
+    //	private SimpleThreadPool simpleThreadPool;
+    private FixedThreadPool fixedThreadPool;
 
-//	private static final int MAX_POLL_THREADS = 20;
-	private static final int MAX_POLL_THREADS = 4;
-	
-	// Check pending polls every 30 seconds
-	private static final int POLL_INTERVAL = 30 * 1000;
+    //	private static final int MAX_POLL_THREADS = 20;
+    private static final int MAX_POLL_THREADS = 4;
 
-	public ChannelPoller(Map channels) {
-		super("Channel Poller");
-		this.channels = channels;
-//		simpleThreadPool = new SimpleThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
-		fixedThreadPool = new FixedThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
-	}
+    // Check pending polls every 30 seconds
+    private static final int POLL_INTERVAL = 30 * 1000;
 
-	public synchronized void shutdown() {
-		active = false;
-		fixedThreadPool.shutdown();
-		this.notify();
-	}
+    public ChannelPoller(Map channels) {
+        super("Channel Poller");
+        this.channels = channels;
+        //		simpleThreadPool = new SimpleThreadPool("Channel Poll Workers", "Channel Poll Worker", MAX_POLL_THREADS);
+        fixedThreadPool =
+            new FixedThreadPool(
+                "Channel Poll Workers",
+                "Channel Poll Worker",
+                MAX_POLL_THREADS);
+    }
 
-	/**
-	 * @see java.lang.Runnable#run()
-	 */
-	public void run() {
-		while (active) {
-			if (log.isDebugEnabled()) {
-				log.debug("Checking feeds for poll action");
-			}
+    public synchronized void shutdown() {
+        active = false;
+        fixedThreadPool.shutdown();
+        this.notify();
+    }
 
-			try {
-// Moved channel iterator retrieval within loop...
-				Iterator channelIter = channels.values().iterator();
+    /**
+     * @see java.lang.Runnable#run()
+     */
+    public void run() {
+        while (active) {
+            if (log.isDebugEnabled()) {
+                log.debug("Checking feeds for poll action");
+            }
 
-				while (channelIter.hasNext() && active) {
-					Channel channel = (Channel) channelIter.next();
-					if (channel.isEnabled()) {
-//						if(channel.isPolling()) {
-//							channel.checkConnection();
-//						}
+            try {
+                // Moved channel iterator retrieval within loop...
+                Iterator channelIter = channels.values().iterator();
 
-						if(channel.isAwaitingPoll()) {
-							fixedThreadPool.run(channel);
-						}
-					}
-				}
-			} catch(ConcurrentModificationException cme) {
-// Some channel management activity coincided with channel poll
-// FIXME implement thread-safe approach				
-				if (log.isDebugEnabled()) {
-					log.debug("ConcurrentModificationException in Channel Poller");
-				}
-			} catch(Exception e) {
-				if (log.isEnabledFor(Priority.WARN)) {
-					log.warn("Exception thrown in Channel Poller", e);
-				}
-			}
+                while (channelIter.hasNext() && active) {
+                    Channel channel = (Channel) channelIter.next();
+                    if (channel.isEnabled()) {
+                        //						if(channel.isPolling()) {
+                        //							channel.checkConnection();
+                        //						}
 
-			if (log.isDebugEnabled()) {
-				log.debug("Finished checking feeds for poll action");
-			}
+                        if (channel.isAwaitingPoll()) {
+                            fixedThreadPool.run(channel);
+                        }
+                    }
+                }
+            } catch (ConcurrentModificationException cme) {
+                // Some channel management activity coincided with channel poll
+                // FIXME implement thread-safe approach				
+                if (log.isDebugEnabled()) {
+                    log.debug(
+                        "ConcurrentModificationException in Channel Poller");
+                }
+            } catch (Exception e) {
+                if (log.isEnabledFor(Priority.WARN)) {
+                    log.warn("Exception thrown in Channel Poller", e);
+                }
+            }
 
-			synchronized (this) {
-				if (active) {
-					try {
-						// Check pending polls every 30 seconds
-						wait(POLL_INTERVAL);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-		}
-	}
+            if (log.isDebugEnabled()) {
+                log.debug("Finished checking feeds for poll action");
+            }
+
+            synchronized (this) {
+                if (active) {
+                    try {
+                        // Check pending polls every 30 seconds
+                        wait(POLL_INTERVAL);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        }
+    }
 
 }
