@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.4 2004/03/25 02:09:58 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.5 2004/03/26 11:39:24 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -368,6 +368,10 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 		Element rootElm = config.getDocumentElement();
 		Element dbConfig = (Element) rootElm.getElementsByTagName("db").item(0);
 		String connectString = dbConfig.getAttribute("connect");
+
+		if(log.isInfoEnabled()) {
+			log.info("Initializing JDBC, connection string = " + connectString);
+		}
 
 		ObjectPool connectionPool = new GenericObjectPool(null);
 
