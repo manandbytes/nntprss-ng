@@ -42,7 +42,7 @@ public class AppConstants {
 
 	public static final String NNTPRSS_CONFIGURATION_FILE =
 		"nntprss-config.xml";
-	public static final String VERSION = "0.1-prealpha";
+	public static final String VERSION = "0.1-rc0";
 
 	private static DocumentBuilderFactory docBuilderFactory =
 		DocumentBuilderFactory.newInstance();

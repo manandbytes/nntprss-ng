@@ -97,8 +97,8 @@ public class Channel implements Runnable {
 		this.name = name;
 		this.url = new URL(urlString);
 
-		channelManager = ChannelManager.getRSSManager();
-		channelManagerDAO = channelManager.getRssManagerDAO();
+		channelManager = ChannelManager.getChannelManager();
+		channelManagerDAO = channelManager.getChannelManagerDAO();
 	}
 
 	/**

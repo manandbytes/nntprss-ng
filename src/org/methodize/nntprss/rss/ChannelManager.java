@@ -59,7 +59,7 @@ public class ChannelManager {
 		channelManagerDAO = ChannelManagerDAO.getRSSManagerDAO();
 	}
 
-	public static ChannelManager getRSSManager() {
+	public static ChannelManager getChannelManager() {
 		return channelManager;
 	}
 
@@ -146,7 +146,7 @@ public class ChannelManager {
 	 * Returns the channelManagerDAO.
 	 * @return ChannelManagerDAO
 	 */
-	public ChannelManagerDAO getRssManagerDAO() {
+	public ChannelManagerDAO getChannelManagerDAO() {
 		return channelManagerDAO;
 	}
 

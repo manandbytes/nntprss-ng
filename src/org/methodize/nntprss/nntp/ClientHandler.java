@@ -64,7 +64,7 @@ public class ClientHandler implements Runnable {
 	private Logger log = Logger.getLogger(ClientHandler.class);
 
 	private Socket client = null;
-	private ChannelManager channelManager = ChannelManager.getRSSManager();
+	private ChannelManager channelManager = ChannelManager.getChannelManager();
 	private DateFormat df;
 	private DateFormat nntpDateFormat;
 
@@ -181,6 +181,14 @@ public class ClientHandler implements Runnable {
 	/**
 	 * Main client request processing loop
 	 * 
+	 * Note - for those reviewing this code - this is 
+	 * not meant to be a full NNTP-server implementation.
+	 * It has been implemented to support the bare-minimum
+	 * required to support interaction from the popular
+	 * NNTP clients.  Functionality is restricted to group
+	 * listing, and direct article retrieval (by article number
+	 * or message id)
+	 * 
 	 */
 
 	private void processRequestLoop(BufferedReader br, PrintWriter pw)
@@ -201,18 +209,36 @@ public class ClientHandler implements Runnable {
 				if (command.equalsIgnoreCase("ARTICLE")) {
 					//					pw.println("430 no such article found");
 					String artNumOrMsgId = parameters[1];
-					Channel channel =
-						channelManager.channelByName(currentGroupName);
 					Item item = null;
+					Channel channel = null;
+					
 					if (artNumOrMsgId.indexOf('<') == -1) {
 						// Article number
 						//						item = channel.getItemByArticleNumber(Long.parseLong(artNumOrMsgId));
+						channel =
+							channelManager.channelByName(currentGroupName);
+
 						item =
-							channelManager.getRssManagerDAO().loadItem(
+							channelManager.getChannelManagerDAO().loadItem(
 								channel,
 								Integer.parseInt(artNumOrMsgId));
 					} else {
-						// TODO Message Id
+// Message IDs are in the form
+// <itemsignature@channelname>
+						int sepPos = artNumOrMsgId.indexOf('@');
+						if(sepPos > -1) {
+							String itemSignature = artNumOrMsgId.substring(1, sepPos);
+							String artChannelName = artNumOrMsgId.substring(sepPos + 1, artNumOrMsgId.length()-1);
+
+							channel =
+								channelManager.channelByName(artChannelName);
+							if(channel != null) {
+								item =
+									channelManager.getChannelManagerDAO().loadItem(
+										channel, itemSignature);
+							}
+
+						} 
 					}
 					if (item == null) {
 						pw.println("430 no such article found");
@@ -344,14 +370,13 @@ public class ClientHandler implements Runnable {
 						channelManager.channelByName(currentGroupName);
 					int[] range = getIntRange(parameters[1]);
 					List items =
-						channelManager.getRssManagerDAO().loadItems(
+						channelManager.getChannelManagerDAO().loadItems(
 							channel,
 							range,
 							false);
-					//					Iterator itemIter = channel.getItemsByArticleNumber().values().iterator();
+
 					Iterator itemIter = items.iterator();
 					while (itemIter.hasNext()) {
-						//					pw.println("1\ttest subject\tdaniel\tTue, 29 Jan 2002 16:08:17 -700\t1\t\t400\t10");
 						Item item = (Item) itemIter.next();
 						try {
 							pw
@@ -370,8 +395,10 @@ public class ClientHandler implements Runnable {
 									+ channel.getName()
 									+ ">"
 									+ "\t" // no references
-							+"\t" + item.getDescription().length() + "\t10"
 // FIXME calculate content size and line count
+// This is currently a 'hack' - return an arbitrary line length
+// of 10 lines.
+							+"\t" + item.getDescription().length() + "\t10"
 							);
 						} catch(Exception e) {
 							e.printStackTrace();

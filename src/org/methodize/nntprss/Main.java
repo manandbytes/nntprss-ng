@@ -101,7 +101,7 @@ public class Main {
 			nntpServer = new NNTPServer();
 			nntpServer.configure(config);
 
-			channelManager = ChannelManager.getRSSManager();
+			channelManager = ChannelManager.getChannelManager();
 			channelManager.configure(config);
 
 			adminServer = new AdminServer(channelManager);

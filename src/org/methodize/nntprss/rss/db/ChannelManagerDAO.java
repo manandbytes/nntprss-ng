@@ -590,6 +590,58 @@ public class ChannelManagerDAO {
 		return item;
 	}
 
+	public Item loadItem(Channel channel, String signature) {
+		Item item = null;
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = DriverManager.getConnection(DBManager.POOL_CONNECT_STRING);
+			ps =
+				conn.prepareStatement(
+					"SELECT * FROM items WHERE signature = ? AND channel = ?");
+			int paramCount = 1;
+			ps.setString(paramCount++, signature);
+			ps.setInt(paramCount++, channel.getId());
+			rs = ps.executeQuery();
+
+			if (rs != null) {
+				if (rs.next()) {
+					item =
+						new Item(
+							rs.getInt("articleNumber"),
+							rs.getString("signature"));
+					item.setChannel(channel);
+					item.setDate(rs.getTimestamp("dtStamp"));
+					item.setTitle(rs.getString("title"));
+					item.setDescription(rs.getString("description"));
+					item.setLink(rs.getString("link"));
+				}
+			}
+		} catch (SQLException se) {
+			throw new RuntimeException(se);
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+			} catch (SQLException se) {
+			}
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException se) {
+			}
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+			}
+		}
+
+		return item;
+	}
+
+
 	public List loadItems(
 		Channel channel,
 		int[] articleRange,
