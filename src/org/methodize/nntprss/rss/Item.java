@@ -34,7 +34,7 @@ import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Item.java,v 1.2 2003/01/22 05:09:01 jasonbrome Exp $
+ * @version $Id: Item.java,v 1.3 2003/01/27 22:41:42 jasonbrome Exp $
  */
 public class Item {
 
@@ -44,6 +44,7 @@ public class Item {
 	private String description;
 	private String link;
 	private Date date;
+	private String comments;
 	private Channel channel;
 
 	public Item(int articleNumber, String signature) {
@@ -160,6 +161,22 @@ public class Item {
 	 */
 	public void setChannel(Channel channel) {
 		this.channel = channel;
+	}
+
+	/**
+	 * Returns the comments.
+	 * @return String
+	 */
+	public String getComments() {
+		return comments;
+	}
+
+	/**
+	 * Sets the comments.
+	 * @param comments The comments to set
+	 */
+	public void setComments(String comments) {
+		this.comments = comments;
 	}
 
 }
