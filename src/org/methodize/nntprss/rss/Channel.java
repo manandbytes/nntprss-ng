@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
@@ -60,7 +61,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.5 2003/01/28 03:07:12 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.6 2003/01/28 05:39:39 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -69,6 +70,7 @@ public class Channel implements Runnable {
 	public static final int STATUS_INVALID_CONTENT = 2;
 	public static final int STATUS_CONNECTION_TIMEOUT = 3;
 	public static final int STATUS_UNKNOWN_HOST = 4;
+	public static final int STATUS_NO_ROUTE_TO_HOST = 5;
 
 	private Logger log = Logger.getLogger(Channel.class);
 
@@ -183,6 +185,12 @@ public class Channel implements Runnable {
 						"Channel=" + name + " - Unknown Host Exception, skipping");
 				}
 				status = STATUS_UNKNOWN_HOST;
+			} catch(NoRouteToHostException re) {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Channel=" + name + " - No Route To Host Exception, skipping");
+				}
+				status = STATUS_NO_ROUTE_TO_HOST;
 			}
 
 			// Only process if ok - if not ok (e.g. not modified), don't do anything
