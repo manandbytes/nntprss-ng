@@ -36,13 +36,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.4 2003/01/22 05:10:38 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.5 2003/01/27 22:42:02 jasonbrome Exp $
  */
 public class AppConstants {
 
 	public static final String NNTPRSS_CONFIGURATION_FILE =
 		"nntprss-config.xml";
-	public static final String VERSION = "0.2-alpha";
+	public static final String VERSION = "0.2";
 	
 	public static final int OPEN_ENDED_RANGE = -1;
 
