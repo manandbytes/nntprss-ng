@@ -1,51 +1,5 @@
 package org.methodize.nntprss.feed.db;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
-import jdbm.btree.BTree;
-import jdbm.helper.FastIterator;
-import jdbm.helper.IntegerComparator;
-import jdbm.helper.Serializer;
-import jdbm.helper.Tuple;
-import jdbm.helper.TupleBrowser;
-import jdbm.htree.HTree;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
-import org.methodize.nntprss.feed.Category;
-import org.methodize.nntprss.feed.Channel;
-import org.methodize.nntprss.feed.ChannelManager;
-import org.methodize.nntprss.feed.Item;
-import org.methodize.nntprss.nntp.NNTPServer;
-import org.methodize.nntprss.util.AppConstants;
-import org.methodize.nntprss.util.XMLHelper;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
  * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
@@ -76,9 +30,34 @@ import org.w3c.dom.NodeList;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.io.*;
+import java.net.URL;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
+
+import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
+import jdbm.btree.BTree;
+import jdbm.helper.*;
+import jdbm.htree.HTree;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
+import org.methodize.nntprss.feed.Category;
+import org.methodize.nntprss.feed.Channel;
+import org.methodize.nntprss.feed.ChannelManager;
+import org.methodize.nntprss.feed.Item;
+import org.methodize.nntprss.nntp.NNTPServer;
+import org.methodize.nntprss.util.AppConstants;
+import org.methodize.nntprss.util.XMLHelper;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.5 2004/01/04 21:19:04 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.6 2004/03/23 01:49:23 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
@@ -353,11 +332,18 @@ public class JdbmChannelDAO extends ChannelDAO {
 
 		try {
 			HTree tree = (HTree) htItemsBySigMap.get(channel);
-			FastIterator browser = tree.keys();
-			String sig = null;
-			while ((sig = (String) browser.next()) != null) {
-				if (newSignatures.contains(sig))
-					newSignatures.remove(sig);
+			//			FastIterator browser = tree.keys();
+			//			String sig = null;
+			//			while ((sig = (String) browser.next()) != null) {
+			//				if (newSignatures.contains(sig))
+			//					newSignatures.remove(sig);
+			//			}
+			Iterator sigIter = newSignatures.iterator();
+			while (sigIter.hasNext()) {
+				String sig = (String) sigIter.next();
+				if (tree.get(sig) != null) {
+					sigIter.remove();
+				}
 			}
 		} catch (IOException ie) {
 			throw new RuntimeException(ie);
@@ -1253,15 +1239,16 @@ public class JdbmChannelDAO extends ChannelDAO {
 	public Item loadItem(Category category, int articleNumber) {
 		Item item = null;
 		try {
-			Long channelItemLong = (Long) ((BTree) btCategoryItemsByIdMap.get(category))
-			.find(new Integer(articleNumber)); 
+			Long channelItemLong =
+				(Long) ((BTree) btCategoryItemsByIdMap.get(category)).find(
+					new Integer(articleNumber));
 
-			if(channelItemLong != null) {
+			if (channelItemLong != null) {
 				long channelItemId = channelItemLong.longValue();
-	
+
 				int channelId = (int) (channelItemId >> 32);
 				int origArticleNumber = (int) (channelItemId & 0xFFFFFFFF);
-	
+
 				item =
 					loadItem(
 						(Channel) category.getChannels().get(
@@ -1269,8 +1256,8 @@ public class JdbmChannelDAO extends ChannelDAO {
 						origArticleNumber);
 				// Override channel article number with category article number
 				try {
-					item = (Item)item.clone();
-				} catch(CloneNotSupportedException cnse) {
+					item = (Item) item.clone();
+				} catch (CloneNotSupportedException cnse) {
 				}
 				item.setArticleNumber(articleNumber);
 			}
@@ -1324,8 +1311,8 @@ public class JdbmChannelDAO extends ChannelDAO {
 							articleNumber);
 					//						Override channel article number with category article number
 					try {
-						item = (Item)item.clone();
-					} catch(CloneNotSupportedException cnse) {
+						item = (Item) item.clone();
+					} catch (CloneNotSupportedException cnse) {
 					}
 					item.setArticleNumber(id);
 					items.add(item);
@@ -1363,8 +1350,8 @@ public class JdbmChannelDAO extends ChannelDAO {
 								new Integer(channelId)),
 							articleNumber);
 					try {
-						item = (Item)item.clone();
-					} catch(CloneNotSupportedException cnse) {
+						item = (Item) item.clone();
+					} catch (CloneNotSupportedException cnse) {
 					}
 					item.setArticleNumber(articleNumber);
 				}
@@ -1397,8 +1384,8 @@ public class JdbmChannelDAO extends ChannelDAO {
 							new Integer(channelId)),
 						articleNumber);
 				try {
-					item = (Item)item.clone();
-				} catch(CloneNotSupportedException cnse) {
+					item = (Item) item.clone();
+				} catch (CloneNotSupportedException cnse) {
 				}
 				item.setArticleNumber(articleNumber);
 			}
@@ -1490,8 +1477,8 @@ public class JdbmChannelDAO extends ChannelDAO {
 			FastIterator iter = treeSig.keys();
 			String sig = null;
 
-			Date expirationDate = new Date(System.currentTimeMillis()
-				- channel.getExpiration());
+			Date expirationDate =
+				new Date(System.currentTimeMillis() - channel.getExpiration());
 
 			while ((sig = (String) iter.next()) != null) {
 				if (currentItemSignatures.contains(sig)) {
@@ -1507,19 +1494,20 @@ public class JdbmChannelDAO extends ChannelDAO {
 
 					articlesToKeep.add(new Integer(item.getArticleNumber()));
 				} else {
-// Check item age...
+					// Check item age...
 					// Delete record...
 					long recId = ((Long) treeSig.get(sig)).longValue();
 					Item item =
 						(Item) recMan.fetch(
 							recId,
 							GenericJdbmSerializer.getSerializer(Item.class));
-					if(!item.getDate().before(expirationDate)) {
+					if (!item.getDate().before(expirationDate)) {
 						if (item.getArticleNumber() < firstArticle) {
 							firstArticle = item.getArticleNumber();
 						}
 
-						articlesToKeep.add(new Integer(item.getArticleNumber()));
+						articlesToKeep.add(
+							new Integer(item.getArticleNumber()));
 					} else {
 						articlesToRemove.add(sig);
 						recMan.delete(recId);
