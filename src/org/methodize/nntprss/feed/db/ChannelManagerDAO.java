@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.2 2003/09/28 20:10:56 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.3 2003/10/24 02:31:35 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
 
@@ -91,8 +91,8 @@ public class ChannelManagerDAO {
 					+ e);
 			}
 		} else {
-// Default to HSQLDB
-			channelDAO = new HSqlDbChannelDAO();
+// Default to JDBM
+			channelDAO = new JdbmChannelDAO();
 		}
 		initialized = true;
 	}
