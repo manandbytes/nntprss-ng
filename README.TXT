@@ -1,7 +1,7 @@
-nntp//rss - version 0.1
+nntp//rss - version 0.2
 -----------------------
 
-December 30, 2002
+January 27, 2003
 
 Bridging the worlds of NNTP clients and RSS feeds, nntp//rss is an 
 application that will enable you to use your existing NNTP 
@@ -22,15 +22,66 @@ Requirements
   http://java.sun.com/j2se/downloads.html
   
 - NNTP-based news reader
-  (nntp//rss has been tested with Outlook Express 6,
-  Netscape v4.7 and Free Agent 1.92)
+  nntp//rss has been tested with the following newsreaders:
+    - Outlook Express 6
+    - Netscape v4.7
+    - Mozilla v1.2.1
+    - Free Agent v1.92
+    - MT-NewsWatcher v3.1 (Mac OS 9)
+    - Tin 1.5.8 (RedHat 7.2) (ensure content type is set
+        to text/plain in nntp//rss's System Configuration)
+    - MacSoup 2.4.6 (Mac OS 9) (ensure content type is set
+        to text/plain in nntp//rss's System Configuration)
+
+
+Upgrading from version 0.1
+==========================
+
+If you are upgrading from v0.1, follow these steps to ensure
+that your existing channel configuration is maintained:
+
+1. Backup your channel configuration.  Go into nntp//rss's web
+   administration interface, select 'System Configuration', then
+   click on 'Export Channel List'.  Save the nntprss-channels.xml
+   file to a safe location.
+
+2. Stop nntp//rss v0.1
+
+3. Backup your current nntp//rss directory.
+
+4. Unpack nntp//rss v0.2 to a *different* directory.
+
+5. Copy nntprss.jar, nntprss-start.jar and nntprss-config.xml
+   from the 0.2 directory to your original nntp//rss directory.
+   
+6. Restart nntp//rss in your original directory
+   (java -jar nntprss-start.jar)
+
+Your existing configuration will be kept.  nntp//rss will automatically
+upgrade its database to take advantage of 0.2 features.
 
 
 Installation
 ============
 
 To install nntp//rss, simply unpack the distribution into a directory
-of your choice.  No further configuration is necessary at this stage.
+of your choice.
+
+
+Configuration
+=============
+
+Configuration is only necessary at this stage if you want to
+change the port on which the NNTP server listens (default 119),
+or the port for the web admin interface (default 7810).
+
+Both parameters are stored in the nntprss-config.xml file, found
+in the directory where you unpacked nntp//rss.
+
+Simply change the 'port' attribute of either the nntp or admin
+elements to your desired port(s).  If you change either of the 
+ports after nntp//rss has been started, you will need to stop 
+and restart nntp//rss.
 
 
 Running nntp//rss
@@ -54,7 +105,7 @@ nntp//rss runs will need to have the appropriate rights to open that port.
 If the user does not have those rights, you will see the following exception 
 during startup:
 
-19:38:44,527 [main] INFO  Main - Starting nntp//rss v0.1
+19:38:44,527 [main] INFO  Main - Starting nntp//rss v0.2
 java.net.BindException: Permission denied
         at java.net.PlainSocketImpl.socketBind(Native Method)
         at java.net.PlainSocketImpl.bind(PlainSocketImpl.java:331)
@@ -95,10 +146,18 @@ A list of the currently configured channels will be displayed.  From
 here you will be able add, delete, and check the status of existing
 channels.  
 
-System Configuration - Here you can alter the platform-wide polling 
-interval.  This defines how often nntp//rss will go out and check
-RSS feeds for updates.  In addition, you can export your current
-channel configuration, or import a previous configuration.
+System Configuration
+
+Here you can alter the platform-wide polling interval.  
+This defines how often nntp//rss will go out and check
+RSS feeds for updates.  
+
+In addition, you can export your current channel configuration,
+or import a previous configuration.
+
+The final option in System Configuration defines how content
+is served to newsreaders.  You can either select multipart/alternative
+(plain text and html), text/plain or text/html.
 
 
 Shutting down nntp//rss
@@ -113,14 +172,47 @@ is running as a background process, send a SIGTERM to the java
 process that is running nntp//rss.
 
 
+Securing access to the web interface
+====================================
+
+Access to the web admin interface can be password protected 
+by creating a file named users.properties in the root directory of 
+your nntp//rss installation.
+
+This file takes the form:
+
+username:password
+
+e.g. sample user.properties
+
+jason:mypassword
+
+Multiple users can be configured by adding additional lines of
+usernames and passwords in the above format.
+
+You will need to stop and restart nntp//rss for these changes
+to take effect.  The next time you access the web interface, you
+will be prompted to enter your user name and password.
+
+To disable secure access, just delete or rename the users.properties
+file, and stop and restart nntp//rss.
+
+
 Running nntp//rss as a Windows Service
 ======================================
 
-Check out http://www.eworksmart.com/JNT/ for a Windows Service 
-wrapper for Java applications.  This has yet to be tested with
-nntp//rss, however has proven reliable with other applications.
-In a future release a separate HOW-TO will be published detailing 
-how to configure JNT to run nntp//rss as a service.
+See the separate WINDOWS-SERVICE.TXT documentation for  
+information on how to configure nntp//rss to run as a 
+Windows service.
+
+
+nntp//rss News Feed
+===================
+
+nntp//rss has a news feed containing the latest information 
+about the project:
+
+http://rss.methodize.org/nntprss.xml
 
 
 Support
