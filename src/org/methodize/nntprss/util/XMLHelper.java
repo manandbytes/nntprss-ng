@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -30,6 +30,8 @@ package org.methodize.nntprss.util;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.w3c.dom.Element;
@@ -37,7 +39,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: XMLHelper.java,v 1.2 2003/01/22 05:12:56 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -92,6 +94,102 @@ public class XMLHelper {
 		return strippedString.toString();
 
 	}
+
+	private static String preprocessMarkup(String value) {
+		StringBuffer trimmedString = new StringBuffer();
+		boolean lastCharSpace = false;
+		for(int c = 0; c < value.length(); c++) {
+			char currentChar = value.charAt(c);
+			if(currentChar == '\n') {
+				trimmedString.append(currentChar);
+			} else if(currentChar < 32) {
+				continue;
+			} else if(currentChar == ' ') {
+				if(!lastCharSpace) {
+					trimmedString.append(currentChar);
+					lastCharSpace = true;
+				} 
+			} else {
+				trimmedString.append(currentChar);
+				lastCharSpace = false;
+			}
+		}
+		return trimmedString.toString();
+	}
+
+	public static String stripHtmlTags(String value) {
+// Trim white space... Use html markup (p, br) as line breaks
+		value = preprocessMarkup(value);
+
+		StringTokenizer strTok = new StringTokenizer(value, "<>\n", true);
+		StringBuffer strippedString = new StringBuffer();
+		boolean inTag = false;
+		boolean startOfLine = true;
+		String lastURL = null;
+		while (strTok.hasMoreTokens()) {
+			String token = strTok.nextToken();
+			if (token.equals("<")) {
+				inTag = true;
+				if(strTok.hasMoreTokens()) {
+					token = strTok.nextToken();
+					if(token.equals(">")) {
+						inTag = false;
+					} else {
+						String upperToken = token.toUpperCase();
+						if(upperToken.startsWith("A ")) {
+							int hrefPos = upperToken.indexOf("HREF=");
+							if(hrefPos > -1) {
+								char quote = token.charAt(hrefPos+5);
+								int endPos = token.indexOf(quote, hrefPos+6);
+								if(endPos != -1) {
+									lastURL = token.substring(hrefPos+6, endPos);
+									if(upperToken.endsWith("/")) {
+										strippedString.append(" (");
+										strippedString.append(lastURL);
+										strippedString.append(')');
+										lastURL = null;
+										startOfLine = false;
+									} 
+								}
+							}		
+						} else if(upperToken.startsWith("/A")) {
+							if(lastURL != null) {
+									strippedString.append(" (");
+									strippedString.append(lastURL);
+									strippedString.append(')');
+									lastURL = null;
+									startOfLine = false;
+							}
+						} else if(upperToken.equals("P") ||
+							upperToken.equals("P/") ||
+							upperToken.equals("P /") ||
+							upperToken.equals("UL") ||
+							upperToken.equals("/UL")) {
+							strippedString.append("\r\n\r\n");
+							startOfLine = true;
+						} else if(upperToken.equals("BR") ||
+							upperToken.equals("BR/") ||
+							upperToken.equals("BR /") ||
+							upperToken.equals("LI")) {
+							strippedString.append("\r\n");
+							startOfLine = true;
+						}
+					}
+				}
+			} else if (token.equals(">")) {
+				inTag = false;
+			} else if (token.equals("\n")) {
+				if(!inTag && !startOfLine) {
+					strippedString.append(' ');
+				}
+			} else if (!inTag) {
+				strippedString.append(token);
+				startOfLine = false;
+			}
+		}
+		return strippedString.toString();
+
+	}
 	
 	public static String escapeString(String value) {
 		StringBuffer escapedString = new StringBuffer();
@@ -119,4 +217,5 @@ public class XMLHelper {
 		}
 		return escapedString.toString();
 	}
+	
 }
