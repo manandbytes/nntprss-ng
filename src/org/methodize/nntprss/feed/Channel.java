@@ -38,30 +38,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
 
-import javax.mail.internet.MailDateFormat;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
@@ -71,25 +63,26 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpRecoverableException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.methodize.nntprss.feed.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.parser.AtomParser;
+import org.methodize.nntprss.feed.parser.GenericParser;
 import org.methodize.nntprss.feed.parser.LooseParser;
+import org.methodize.nntprss.feed.parser.RSSParser;
 import org.methodize.nntprss.util.AppConstants;
-import org.methodize.nntprss.util.Base64;
-import org.methodize.nntprss.util.RSSHelper;
-import org.methodize.nntprss.util.XMLHelper;
+import org.methodize.nntprss.util.HttpUserException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.1 2003/07/18 23:57:36 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.2 2003/07/20 02:46:53 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -100,6 +93,8 @@ public class Channel implements Runnable {
 	public static final int STATUS_UNKNOWN_HOST = 4;
 	public static final int STATUS_NO_ROUTE_TO_HOST = 5;
 	public static final int STATUS_SOCKET_EXCEPTION = 6;
+	public static final int STATUS_PROXY_AUTHENTICATION_REQUIRED = 7;
+	public static final int STATUS_USER_AUTHENTICATION_REQUIRED = 8;
 
 	private static final int PUSHBACK_BUFFER_SIZE = 4;
 
@@ -156,14 +151,11 @@ public class Channel implements Runnable {
 	private SimpleDateFormat httpDate =
 		new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
-	private SimpleDateFormat[] dcDates =
-		{
-			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
-			new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
-			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
-			new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'")};
-
-	private MailDateFormat date822Parser = null;
+// Channel Doc Parsers
+	private static GenericParser[] parsers = new GenericParser[] {
+		RSSParser.getParser(),
+		AtomParser.getParser()
+	};
 
 	public Channel(String name, String urlString)
 		throws MalformedURLException {
@@ -188,11 +180,6 @@ public class Channel implements Runnable {
 
 		TimeZone gmt = TimeZone.getTimeZone("GMT");
 		httpDate.setTimeZone(gmt);
-
-		for (int tz = 0; tz < dcDates.length; tz++) {
-			dcDates[tz].setTimeZone(gmt);
-		}
-
 	}
 
 	/**
@@ -209,17 +196,6 @@ public class Channel implements Runnable {
 	 */
 	public String getUrl() {
 		return url.toString();
-	}
-
-	private String stripControlChars(String string) {
-		StringBuffer strippedString = new StringBuffer();
-		for (int charCount = 0; charCount < string.length(); charCount++) {
-			char c = string.charAt(charCount);
-			if (c >= 32) {
-				strippedString.append(c);
-			}
-		}
-		return strippedString.toString();
 	}
 
 	private HttpClient getHttpClient() {
@@ -263,8 +239,8 @@ public class Channel implements Runnable {
 				boolean redirected = false;
 				int count = 0;
 				do {
-					URL url = new URL(urlString);
-					method = new GetMethod(urlString.toString());
+//					URL url = new URL(urlString);
+					method = new GetMethod(urlString);
 					method.setRequestHeader(
 						"User-agent",
 						AppConstants.getUserAgent());
@@ -299,9 +275,21 @@ public class Channel implements Runnable {
 						|| statusCode == HttpStatus.SC_MOVED_TEMPORARILY
 						|| statusCode == HttpStatus.SC_SEE_OTHER
 						|| statusCode == HttpStatus.SC_TEMPORARY_REDIRECT) {
-// @TODO: Handle SC_MOVED_PERMANENTLY (Update URL?)
+
 						redirected = true;
 						urlString = result.getLocation();
+						if(statusCode == HttpStatus.SC_MOVED_PERMANENTLY
+							&& channelManager.isObserveHttp301()) {
+							try {
+								url = new URL(urlString);
+								if(log.isInfoEnabled()) {
+									log.info("Channel = " + this.name
+										+ ", updated URL from HTTP Permanent Redirect");
+								}
+							} catch(MalformedURLException mue) {
+// Ignore URL permanent redirect for now...								
+							}
+						}
 					} else {
 						redirected = false;
 					}
@@ -440,12 +428,24 @@ public class Channel implements Runnable {
 				// end if response code == HTTP_OK
 			} else if (
 				connected
-					&& statusCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+					&& statusCode == HttpStatus.SC_NOT_MODIFIED) {
 				if (log.isDebugEnabled()) {
 					log.debug(
 						"Channel=" + name + " - HTTP_NOT_MODIFIED, skipping");
 				}
 				status = STATUS_OK;
+			} else if (statusCode == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
+				if (log.isEnabledFor(Priority.WARN)) {
+					log.warn(
+						"Channel=" + name + " - Proxy authentication required");
+				}
+				status = STATUS_PROXY_AUTHENTICATION_REQUIRED;
+			} else if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
+				if (log.isEnabledFor(Priority.WARN)) {
+					log.warn(
+						"Channel=" + name + " - Authentication required");
+				}
+				status = STATUS_USER_AUTHENTICATION_REQUIRED;
 			}
 
 			// Update channel in database...
@@ -481,226 +481,21 @@ public class Channel implements Runnable {
 		throws NoSuchAlgorithmException, IOException {
 		Element rootElm = rssDoc.getDocumentElement();
 
-		if (rootElm.getNodeName().equals("rss")) {
-			rssVersion = rootElm.getAttribute("version");
-		} else if (rootElm.getNodeName().equals("rdf:RDF")) {
-			rssVersion = "RDF";
-		}
-
-		Element rssDocElm =
-			(Element) rootElm.getElementsByTagName("channel").item(0);
-
-		// Read header...
-		title = XMLHelper.getChildElementValue(rssDocElm, "title");
-		// XXX Currently assign channelTitle to author
-		author = title;
-
-		link = XMLHelper.getChildElementValue(rssDocElm, "link");
-		description = XMLHelper.getChildElementValue(rssDocElm, "description");
-		managingEditor =
-			XMLHelper.getChildElementValue(rssDocElm, "managingEditor");
-
-		// Check for items within channel element and outside 
-		// channel element
-		NodeList itemList = rssDocElm.getElementsByTagName("item");
-
-		if (itemList.getLength() == 0) {
-			itemList = rootElm.getElementsByTagName("item");
-		}
-
-		Calendar retrievalDate = Calendar.getInstance();
-		retrievalDate.add(Calendar.SECOND, -itemList.getLength());
-
-		Set currentSignatures = null;
-		if (!keepHistory) {
-			currentSignatures = new HashSet();
-		}
-
-		Map newItems = new HashMap();
-		Map newItemKeys = new HashMap();
-// orderedItems maintains original document first-to-last order
-// Assumption: Items in the RSS document go from most recent
-// to earliest.  This is used to assign date/times in a reasonably
-// sensible order to those feeds that do not provide either pubDate
-// or dc:date
-
-		List orderedItems = new ArrayList();
-
-		// Calculate signature
-		MessageDigest md = MessageDigest.getInstance("MD5");
-
-		for (int itemCount = itemList.getLength() - 1;
-			itemCount >= 0;
-			itemCount--) {
-			Element itemElm = (Element) itemList.item(itemCount);
-			String title;
-			String link;
-			String description;
-			ByteArrayOutputStream bos;
-			byte[] signatureSource;
-			byte[] signature;
-			String signatureStr = generateItemSignature(md, itemElm);
-
-			if(!keepHistory) {
-				currentSignatures.add(signatureStr);
+		GenericParser docParser = null;
+		for(int i = 0; i < parsers.length; i++) {
+			if(parsers[i].isParsable(rootElm)) {
+				docParser = parsers[i];
+				break;
 			}
-			newItems.put(signatureStr, itemElm);
-			newItemKeys.put(itemElm, signatureStr);
-			orderedItems.add(itemElm);
 		}
+		
+		if(docParser != null) {
+			rssVersion = docParser.getFormatVersion(rootElm);
+			docParser.extractFeedInfo(rootElm, this);	
+			docParser.processFeedItems(rootElm, this, channelManagerDAO,
+				keepHistory);
+		} // end if docParser != null
 
-		if(newItems.size() > 0) {
-			// Discover new items...
-			Set newItemSignatures = channelManagerDAO.findNewItemSignatures(id,
-				newItems.keySet());
-	
-			if(newItemSignatures.size() > 0) {
-				for(int i = 0; i < orderedItems.size(); i++) {
-					Element itemElm = (Element)orderedItems.get(i);
-					String signatureStr = (String)newItemKeys.get(itemElm);
-		
-		// If signature is not in new items set, skip...
-					if(!newItemSignatures.contains(signatureStr)) 
-						continue;
-						
-					String title = XMLHelper.getChildElementValue(itemElm, "title", "");
-					String link = XMLHelper.getChildElementValue(itemElm, "link", "");
-				
-					String guid = XMLHelper.getChildElementValue(itemElm, "guid");
-					boolean guidIsPermaLink = true;
-					if(guid != null) {
-						String guidIsPermaLinkStr =
-							XMLHelper.getChildElementAttributeValue(itemElm, "guid", "guidIsPermaLink");
-						if(guidIsPermaLinkStr != null) {
-							guidIsPermaLink = guidIsPermaLinkStr.equalsIgnoreCase("true");
-						}
-					}
-				
-					// Handle xhtml:body / content:encoded / description
-					String description = processContent(itemElm);
-					
-					String comments =
-						XMLHelper.getChildElementValue(itemElm, "comments", "");
-		
-					Date pubDate = null;
-					String pubDateStr =
-						XMLHelper.getChildElementValue(itemElm, "pubDate");
-					if (pubDateStr != null && pubDateStr.length() > 0) {
-						// Parse Date...
-						log.info("pubDate == " + pubDateStr);
-						if (date822Parser == null) {
-							date822Parser = new MailDateFormat();
-						}
-						try {
-							pubDate = date822Parser.parse(pubDateStr);
-							log.debug("processed pubDate == " + pubDate);
-						} catch (ParseException pe) {
-							log.debug("Invalid pubDate format - " + pubDateStr);
-						}
-					}
-		
-					if (pubDate == null) {
-						// Try for Dublin Core Date
-						String dcDateStr =
-							XMLHelper.getChildElementValueNS(
-								itemElm,
-								RSSHelper.XMLNS_DC,
-								"date");
-						if (dcDateStr != null && dcDateStr.length() > 0) {
-							log.info("dc:date == " + dcDateStr);
-							for (int parseCount = 0;
-								parseCount < dcDates.length;
-								parseCount++) {
-								try {
-									pubDate = dcDates[parseCount].parse(dcDateStr);
-								} catch (ParseException pe) {
-								}
-								if (pubDate != null)
-									break;
-							}
-							if (pubDate != null) {
-								log.debug("processed dc:date == " + pubDate);
-							} else {
-								log.debug("Invalid dc:date format - " + dcDateStr);
-							}
-						}
-					}
-	
-					String dcCreator = 
-						XMLHelper.getChildElementValueNS(
-							itemElm,
-							RSSHelper.XMLNS_DC,
-							"creator");
-		
-					Item item = new Item(++lastArticleNumber, signatureStr);
-					item.setChannel(this);
-		
-					if (title.length() > 0) {
-						item.setTitle(title);
-					} else {
-						// We need to create a initial title from the description, because
-						// we do have a description, don't we???
-						String strippedDesc =
-							stripControlChars(XMLHelper.stripTags(description));
-						int length =
-							strippedDesc.length() > 64 ? 64 : strippedDesc.length();
-						item.setTitle(strippedDesc.substring(0, length));
-					}
-					item.setDescription(description);
-					item.setLink(link);
-					item.setGuid(guid);
-					item.setGuidIsPermaLink(guidIsPermaLink);
-					item.setComments(comments);
-					item.setCreator(dcCreator);
-		
-					if (pubDate == null) {
-						item.setDate(retrievalDate.getTime());
-						// Add 1 second - to introduce some distinction date-wise
-						// between items
-						retrievalDate.add(Calendar.SECOND, 1);
-					} else {
-						item.setDate(pubDate);
-					}
-		
-					// persist to database...
-					channelManagerDAO.saveItem(item);
-					totalArticles++;
-				}
-			}
-
-		}
-
-		if (!keepHistory) {
-			channelManagerDAO.deleteItemsNotInSet(this,
-				currentSignatures);
-			totalArticles = currentSignatures.size();
-		}
-	}
-
-	private String generateItemSignature(MessageDigest md, Element itemElm)
-		throws IOException {
-		String title = XMLHelper.getChildElementValue(itemElm, "title", "");
-		String link = XMLHelper.getChildElementValue(itemElm, "link", "");
-		
-		// Handle xhtml:body / content:encoded / description
-		String description = processContent(itemElm);
-		
-		String signatureStr = null;
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		
-		// Used trimmed forms of content, ignore whitespace changes
-		bos.write(title.trim().getBytes());
-		bos.write(link.trim().getBytes());
-		bos.write(description.trim().getBytes());
-		bos.flush();
-		bos.close();
-		
-		byte[] signatureSource = bos.toByteArray();
-		md.reset();
-		byte[] signature = md.digest(signatureSource);
-		
-		signatureStr = Base64.encodeBytes(signature);
-		return signatureStr;
 	}
 
 	private long parseHttpDate(String dateString) {
@@ -713,36 +508,6 @@ public class Channel implements Runnable {
 		return time;
 	}
 
-	public String processContent(Element itemElm) {
-		// Check for xhtml:body
-		String description = null;
-
-		NodeList bodyList =
-			itemElm.getElementsByTagNameNS(RSSHelper.XMLNS_XHTML, "body");
-		if (bodyList.getLength() > 0) {
-			Node bodyElm = bodyList.item(0);
-			NodeList children = bodyElm.getChildNodes();
-			StringBuffer content = new StringBuffer();
-			for (int childCount = 0;
-				childCount < children.getLength();
-				childCount++) {
-				content.append(children.item(childCount).toString());
-			}
-			description = content.toString();
-		}
-
-		// Fix for content:encoded section of RSS 1.0/2.0
-		if ((description == null) || (description.length() == 0)) {
-			description =
-				XMLHelper.getChildElementValue(itemElm, "content:encoded");
-		}
-
-		if ((description == null) || (description.length() == 0)) {
-			description =
-				XMLHelper.getChildElementValue(itemElm, "description", "");
-		}
-		return description;
-	}
 
 	/**
 	 * Simple channel validation - ensures URL
@@ -750,7 +515,7 @@ public class Channel implements Runnable {
 	 * document has an rss root element with a 
 	 * version, or rdf root element, 
 	 */
-	public static boolean isValid(URL url) {
+	public static boolean isValid(URL url) throws HttpUserException {
 		boolean valid = false;
 		try {
 			//			System.setProperty("networkaddress.cache.ttl", "0");
@@ -812,16 +577,29 @@ public class Channel implements Runnable {
 				DocumentBuilder db = AppConstants.newDocumentBuilder();
 				Document rssDoc = db.parse(bis);
 				Element rootElm = rssDoc.getDocumentElement();
-				String rssVersion = rootElm.getAttribute("version");
-				if ((rootElm.getNodeName().equals("rss") && rssVersion != null)
-					|| rootElm.getNodeName().equals("rdf:RDF")) {
-					valid = true;
+
+				for(int i = 0; i < parsers.length; i++) {
+					if(parsers[i].isParsable(rootElm)) {
+						valid = true;
+						break;
+					}
 				}
+			} else if(statusCode == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
+				throw new HttpUserException(statusCode);
+			} else if(statusCode == HttpStatus.SC_UNAUTHORIZED) {
+				throw new HttpUserException(statusCode);
 			}
 
-		} catch (Exception e) {
+		} catch (URIException e) {
 			e.printStackTrace();
-		}
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 		
+		
 		return valid;
 	}
 
@@ -864,7 +642,7 @@ public class Channel implements Runnable {
 	/**
 	 * Validates the channel
 	 */
-	public boolean isValid() {
+	public boolean isValid() throws HttpUserException {
 		return isValid(url);
 	}
 
