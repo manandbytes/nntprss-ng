@@ -44,7 +44,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.1 2003/07/18 23:57:36 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.2 2003/07/20 02:39:44 jasonbrome Exp $
  */
 public class ChannelManager {
 
@@ -55,6 +55,7 @@ public class ChannelManager {
     private String proxyUserID = null;
     private transient String proxyPassword = null;
 	private boolean useProxy = false;
+	private boolean observeHttp301 = false;
    
 	private Map channels;
 	private static ChannelManager channelManager = new ChannelManager();
@@ -325,6 +326,20 @@ public MultiThreadedHttpConnectionManager getHttpConMgr() {
 	 */
 	public void setUseProxy(boolean b) {
 		useProxy = b;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isObserveHttp301() {
+		return observeHttp301;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setObserveHttp301(boolean b) {
+		observeHttp301 = b;
 	}
 
 }
