@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.7 2004/03/27 02:12:48 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.8 2004/03/28 22:27:54 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -86,8 +86,8 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
                     + "name varchar(255) not null, "
                     + "author varchar(255), "
                     + "title varchar(255), "
-                    + "link blob, "
-                    + "description blob, "
+                    + "link text, "
+                    + "description text, "
                     + "lastArticle int not null, "
                     + "lastPolled timestamp, "
                     + "created timestamp, "
@@ -98,7 +98,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
                     + "postingEnabled bit, "
                     + "parseAtAllCost bit, "
                     + "publishAPI varchar(128), "
-                    + "publishConfig blob, "
+                    + "publishConfig text, "
                     + "managingEditor varchar(128), "
                     + "pollingInterval bigint not null, "
                     + "status int, "
@@ -112,9 +112,9 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
                     + "articleNumber int not null, "
                     + "channel int not null, "
                     + "title varchar(255), "
-                    + "link blob, "
-                    + "description blob, "
-                    + "comments blob, "
+                    + "link text, "
+                    + "description mediumtext, "
+                    + "comments text, "
                     + "dtStamp timestamp, "
                     + "signature varchar(32), "
                     + "creator varchar(255), "
@@ -630,7 +630,6 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
      */
     public void shutdown() {
         // TODO Auto-generated method stub
-
     }
 
 }
