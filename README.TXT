@@ -1,7 +1,7 @@
-nntp//rss - version 0.3
+nntp//rss - version 0.4
 -----------------------
 
-March 23, 2003
+February 8, 2003
 
 Bridging the worlds of NNTP clients and RSS feeds, nntp//rss is an 
 application that will enable you to use your existing NNTP 
@@ -36,30 +36,37 @@ Requirements
     - MicroPlanet Gravity v2.50
 
 
-Upgrading from version 0.2
+Upgrading from version 0.3
 ==========================
 
-If you are upgrading from v0.2, follow these steps to ensure
-that your existing channel configuration is maintained:
+nntp//rss v0.4 uses a new database persistence engine.  This 
+provides greater performance, and reduces memory usage.  Follow the
+steps below if you wish to migrate your existing articles from 
+nntp//rss v0.3.  Note that if you have a large database of articles,
+this process may take a some time.
+
+If you do not want to migrate your existing articles, just follow the
+steps to export your channel configuration.  You can import this
+configuration directly into nntp//rss v0.4.
 
 1. Backup your channel configuration.  Go into nntp//rss's web
    administration interface, select 'System Configuration', then
    click on 'Export Channel List'.  Save the nntprss-channels.xml
    file to a safe location.
 
-2. Stop nntp//rss v0.2
+2. Stop nntp//rss v0.3
 
 3. Backup your current nntp//rss directory.
 
-4. As 0.3 contains a number of additional libraries and files,
-   the easiest way to upgrade is to unpack nntp//rss 0.3 to a 
-   separate directory, then copy over your nntp//rss 0.2 database
+4. As v0.4 contains a number of additional libraries and files,
+   the easiest way to upgrade is to unpack nntp//rss 0.4 to a 
+   separate directory, then copy over your nntp//rss 0.3 database
    files.  These files contain configuration and channel data.
 
-   i. Unpack v0.3 to a new directory
+   i. Unpack v0.4 to a new directory
    ii. Copy the following files from the root (nntprss) directory of 
-   your nntp//rss 0.2 installation, to the root (nntprss) directory
-   of your 0.3 installation:
+   your nntp//rss v0.3 installation, to the root (nntprss) directory
+   of your v0.4 installation:
    
    nntprssdb.properties
    nntprssdb.data
@@ -74,11 +81,10 @@ that your existing channel configuration is maintained:
    web interface security, you should copy this over from your
    previous installation.
 
-6. Start nntp//rss 0.3
+6. Start nntp//rss v0.3
    (See below for startup information)
 
-Your existing configuration will be kept.  nntp//rss will automatically
-upgrade its database to take advantage of 0.3 features.
+Your existing configuration will be kept.
 
 
 Installation
