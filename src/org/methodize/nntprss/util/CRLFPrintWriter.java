@@ -42,7 +42,7 @@ import java.io.Writer;
  * line termination will be used - e.g. \r\n *or* \n
  * 
  * @author Jason Brome <jason@methodize.org>
- * @version 
+ * @version $Id: CRLFPrintWriter.java,v 1.3 2003/01/22 05:11:23 jasonbrome Exp $
  */
 public class CRLFPrintWriter extends PrintWriter {
 	
