@@ -1,69 +1,54 @@
 Running nntp//rss as a Windows Service
 ======================================
 
-To run nntp//rss as a service, we recommend that you use JNT.
-JNT, a Windows Service wrapper for Java applications, can be 
+To run nntp//rss as a service, we recommend that you use the
+enhance JavaService from Multiplan Consultants.
+
+JavaService, a Windows Service wrapper for Java applications, can be 
 downloaded from the following URL:
 
-http://www.eworksmart.com/JNT/
-
-
-NOTE TO JDK 1.4 USERS 
----------------------
-
-Due to a difference in the organization of the 1.4 JRE's directory
-structure, you will need to copy a files to ensure compatibility
-with the current release of JNT.
-
-Assuming a JRE bin path of:
-
-c:\Program Files\Java\j2re1.4.1_01\bin
-
-Create a subdirectory named classic, i.e.
-
-c:\Program Files\Java\j2re1.4.1_01\bin\classic
-
-Then copy:
-
-c:\Program Files\Java\j2re1.4.1_01\bin\client\jvm.dll
-
-to
-
-c:\Program Files\Java\j2re1.4.1_01\bin\classic\jvm.dll
-
+http://www.multiplanconsultants.com/software/javaservice/downloads.html
 
 
 Installing the nntp//rss service (all supported JVM versions)
 -------------------------------------------------------------
 
-Once you have downloaded JNT, extract the JNT.exe into your root
-nntp//rss directory.
-
+Once you have downloaded JavaService, extract JavaService.exe into your 
+root nntp//rss directory.
 
 To install nntp//rss as a service, open up a command prompt, change
 into the directory where you installed nntp//rss, and issue the following
-command:
+command, substituting %jvm_location% with the full path to your jvm.dll,
+and %nntp_dir% with the directory in which you installed nntp//rss.
+ 
+JavaService.exe -install "nntprss" %jvm_location% 
+	"-Djava.class.path=%nntp_dir%\nntprss-start.jar" 
+	-start org.methodize.nntprss.Startup -current %nntprss_dir% 
 
-JNT /InstallAsService:nntprss "/SDc:\program files\nntprss"
-  -cp "c:\program files\nntprss\nntprss-start.jar" 
-  org.methodize.nntprss.Startup
+Note that this should be entered as one line in your command window. 
 
-This example assumes an installation location of:
+For example, given a jvm.dll location of 
+c:\j2sdk1.4.1_02\jre\bin\client\jvm.dll and an nntp//rss location 
+of c:\program files\nntprss: 
 
-c:\program files\nntprss
-
+JavaService -install "nntprss" c:\j2sdk1.4.1_02\jre\bin\client\jvm.dll 
+	"-Djava.class.path=c:\program files\nntprss\nntprss-start.jar" 
+	-start org.methodize.nntprss.Startup 
+	-current "c:\program files\nntprss"
+	
 If you have installed nntp//rss in a different location, be sure to update
-both the "/SDc:\program files\nntprss" and 
--cp "c:\program files\nntprss\nntprss-start.jar" parameters to point to the 
+both the "-Djava.class.path=c:\program files\nntprss\nntprss-start.jar" and 
+-current "c:\program files\nntprss" parameters to point to the 
 correct directory.
 
-As in the above examplem, if your nntp//rss directory contains a space, e.g.
+As in the above example, if your nntp//rss directory contains a space, e.g.
 
 c:\program files\nntprss
 
-Ensure that both the /SD and -cp value parameters are within quotes.
+Ensure that both the -Djava.class.path and -current value parameters are 
+within quotes.
   
-  
+ 
 Uninstalling the nntp//rss Windows Service
 ------------------------------------------
 
@@ -73,7 +58,7 @@ the Services Applet of the Control Panel / Administrative Tools.
 Close the Service Applet, then run the following command to 
 remove the service configuration:
 
-JNT /RemoveAsService:nntprss
+JavaService -uninstall "nntprss"
 
 
 ---
