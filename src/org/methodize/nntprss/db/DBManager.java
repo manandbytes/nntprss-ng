@@ -2,7 +2,7 @@ package org.methodize.nntprss.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -41,12 +41,13 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDriver;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.methodize.nntprss.rss.db.ChannelManagerDAO;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: DBManager.java,v 1.3 2003/01/22 05:05:27 jasonbrome Exp $
  */
 public class DBManager {
 
@@ -120,6 +121,8 @@ public class DBManager {
 		// ...and register our pool with it.
 		//
 		driver.registerPool("nntprss", connectionPool);
+
+		ChannelManagerDAO.getChannelManagerDAO().initialize(config);
 
 	}
 
