@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.9 2004/09/04 19:44:01 aslom Exp $
+ * @version $Id: Channel.java,v 1.10 2004/09/05 07:48:33 aslom Exp $
  */
 public class Channel
     extends ItemContainer
@@ -258,9 +258,13 @@ public class Channel
 
                     // Last Modified
                     if (lastModified != 0) {
-                        method.setRequestHeader(
-                            "If-Modified-Since",
-                            httpDate.format(new Date(lastModified)));
+                        final String NAME = "If-Modified-Since";
+                        //defend against such fun like net.freeroller.rickard got If-Modified-Since "Thu, 24 Aug 2028 12:29:54 GMT"
+                        if(lastModified < System.currentTimeMillis()) {
+                            final String DATE = httpDate.format(new Date(lastModified));
+                            method.setRequestHeader(NAME, DATE);
+                            log.debug("channel "+this.name+" using "+NAME+" "+DATE); //ALEK
+                        }
                     }
 
                     method.setFollowRedirects(false);
@@ -428,7 +432,8 @@ public class Channel
                         hdrLastModified != null
                             ? parseHttpDate(hdrLastModified.getValue())
                             : 0;
-
+                    log.debug("channel "+this.name+" parsed Last-Modifed "+hdrLastModified+" to "+new Date(lastModified)); //ALEK
+                    
                     status = STATUS_OK;
                 } catch (SAXParseException spe) {
                     if (log.isEnabledFor(Priority.WARN)) {
@@ -1289,7 +1294,7 @@ public class Channel
             + " lastCleaned="
             + lastCleaned
             + " lastModified="
-            + lastModified
+            + lastModified+" ("+new Date(lastModified)+")"
             + " lastETag="
             + lastETag
             + " rssVersion="
