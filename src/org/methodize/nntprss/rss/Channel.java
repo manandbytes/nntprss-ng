@@ -31,26 +31,35 @@ package org.methodize.nntprss.rss;
  * ----------------------------------------------------- */
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.methodize.nntprss.rss.db.ChannelManagerDAO;
+import org.methodize.nntprss.rss.parser.LooseParser;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.Base64;
 import org.methodize.nntprss.util.XMLHelper;
@@ -58,10 +67,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
+import sun.net.www.http.HttpClient;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.7 2003/02/03 05:15:38 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.8 2003/03/22 16:31:05 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -71,6 +81,12 @@ public class Channel implements Runnable {
 	public static final int STATUS_CONNECTION_TIMEOUT = 3;
 	public static final int STATUS_UNKNOWN_HOST = 4;
 	public static final int STATUS_NO_ROUTE_TO_HOST = 5;
+	public static final int STATUS_SOCKET_EXCEPTION = 6;
+
+	private static final int PUSHBACK_BUFFER_SIZE = 4;
+
+	private static final int HTTP_CONNECTION_TIMEOUT = 
+		1000 * 60 * 5;
 
 	private Logger log = Logger.getLogger(Channel.class);
 
@@ -95,12 +111,29 @@ public class Channel implements Runnable {
 	
 	private String rssVersion;
 	
+	private String managingEditor;
+	
 	private boolean historical = true;
+	private boolean enabled = true;
+	private boolean parseAtAllCost = false;
+
+// Publishing related
+	private boolean postingEnabled = false;
+	private String publishAPI = null;
+	private Map publishConfig = null;
 
 	private int status = STATUS_OK;
 
 	private ChannelManager channelManager;
 	private ChannelManagerDAO channelManagerDAO;
+
+	private transient boolean polling = false;
+	public static final long DEFAULT_POLLING_INTERVAL = 0;
+
+	private long pollingIntervalSeconds = DEFAULT_POLLING_INTERVAL;
+
+	
+	private HttpURLConnection httpCon = null;
 
 	public Channel(String name, String urlString)
 		throws MalformedURLException {
@@ -145,17 +178,22 @@ public class Channel implements Runnable {
 	public synchronized void poll() {
 // Use method-level variable
 // Guard against change in history mid-poll
+		polling = true;
+		
 		boolean keepHistory = historical;
 
 		lastPolled = new Date();
 
 		try {
+//			HttpURLConnection httpCon =
 			HttpURLConnection httpCon =
 				(HttpURLConnection) url.openConnection();
 			httpCon.setDoInput(true);
 			httpCon.setDoOutput(false);
 			httpCon.setRequestMethod("GET");
 			httpCon.setRequestProperty("User-Agent", AppConstants.getUserAgent());
+			httpCon.setRequestProperty("Accept-Encoding", "gzip");
+
 
 			// ETag
 			if (lastETag != null) {
@@ -191,15 +229,61 @@ public class Channel implements Runnable {
 						"Channel=" + name + " - No Route To Host Exception, skipping");
 				}
 				status = STATUS_NO_ROUTE_TO_HOST;
+			} catch(SocketException se) {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Channel=" + name + " - Socket Exception, skipping");
+				}
+				status = STATUS_SOCKET_EXCEPTION;
 			}
 
 			// Only process if ok - if not ok (e.g. not modified), don't do anything
 			if (connected && httpCon.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				BufferedInputStream bis = new BufferedInputStream(is);
+				String contentEncoding = httpCon.getContentEncoding();
+				if(contentEncoding != null && contentEncoding.equals("gzip")) {
+					is = new GZIPInputStream(is);
+				}
+
+				PushbackInputStream pbis = new PushbackInputStream(is, 
+					PUSHBACK_BUFFER_SIZE);
+				skipBOM(pbis);
+				BufferedInputStream bis = new BufferedInputStream(pbis);
 				DocumentBuilder db = AppConstants.newDocumentBuilder();
 
 				try {
-					Document rssDoc = db.parse(bis);
+					Document rssDoc = null;
+					if(!parseAtAllCost) {
+						rssDoc = db.parse(bis);
+					} else {
+// Parse-at-all-costs selected
+// Read in document to local array - may need to parse twice
+						ByteArrayOutputStream bos = new ByteArrayOutputStream();
+						byte[] buf = new byte[1024];
+						int bytesRead = bis.read(buf);
+						while(bytesRead > -1) {
+							if(bytesRead > 0) {
+								bos.write(buf, 0, bytesRead);
+							}
+							bytesRead = bis.read(buf);
+						}
+						bos.flush();
+						bos.close();
+						
+						byte[] rssDocBytes = bos.toByteArray();						
+						
+						try {
+// Try the XML document parser first - just in case
+// the doc is well-formed
+							rssDoc = db.parse(new ByteArrayInputStream(rssDocBytes));
+						} catch(SAXParseException spe) {
+							if(log.isDebugEnabled()) {
+								log.debug("XML parse failed, trying tidy");
+							}
+// Fallback to parse-at-all-costs parser
+							rssDoc = LooseParser.parse(new ByteArrayInputStream(rssDocBytes));
+						}
+					}
+					
 					Element rootElm = rssDoc.getDocumentElement();
 
 					if(rootElm.getNodeName().equals("rss")) {
@@ -223,6 +307,9 @@ public class Channel implements Runnable {
 						XMLHelper.getChildElementValue(rssDocElm, "link");
 					description =
 						XMLHelper.getChildElementValue(rssDocElm, "description");
+					managingEditor = 
+						XMLHelper.getChildElementValue(rssDocElm, "managingEditor");
+					
 						
 					// Check for items within channel element and outside 
 					// channel element
@@ -373,9 +460,15 @@ public class Channel implements Runnable {
 			}
 			status = STATUS_NOT_FOUND;
 		} catch (Exception e) {
-			// FIXME better exception handling
-			e.printStackTrace();
+			if(log.isEnabledFor(Priority.WARN)) {
+				log.warn("Channel=" + name + " - Exception while polling channel", e);
+			}
+		} finally {
+			httpCon = null;
+			polling = false;
 		}
+
+
 	}
 
 
@@ -394,12 +487,22 @@ public class Channel implements Runnable {
 			httpCon.setDoOutput(false);
 			httpCon.setRequestMethod("GET");
 			httpCon.setRequestProperty("User-Agent", AppConstants.getUserAgent());
+			httpCon.setRequestProperty("Accept-Encoding", "gzip");
 			httpCon.connect();
 			InputStream is = httpCon.getInputStream();
 
 			// Only process if ok - if not ok (e.g. not modified), don't do anything
 			if (httpCon.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				BufferedInputStream bis = new BufferedInputStream(is);
+				String contentEncoding = httpCon.getContentEncoding();
+				if(contentEncoding != null && contentEncoding.equals("gzip")) {
+					is = new GZIPInputStream(is);
+				}
+
+
+				PushbackInputStream pbis = new PushbackInputStream(is, PUSHBACK_BUFFER_SIZE);
+				skipBOM(pbis);
+
+				BufferedInputStream bis = new BufferedInputStream(pbis);
 				DocumentBuilder db = AppConstants.newDocumentBuilder();
 				Document rssDoc = db.parse(bis);
 				Element rootElm = rssDoc.getDocumentElement();
@@ -413,10 +516,48 @@ public class Channel implements Runnable {
 			httpCon.disconnect();
 
 		} catch (Exception e) {
+//			e.printStackTrace();
 		}
 		return valid;
 	}
 
+
+	private static void skipBOM(PushbackInputStream is) throws IOException {
+		byte[] header = new byte[PUSHBACK_BUFFER_SIZE];
+		int bytesRead = is.read(header);
+		if(header[0] == 0 &&
+			header[1] == 0 &&
+			(header[2]&0xff) == 0xFE &&
+			(header[3]&0xff) == 0xFF) {
+	// UTF-32, big-endian
+		} else if((header[0]&0xff) == 0xFF &&
+			(header[1]&0xff) == 0xFE &&
+			header[2] == 0 &&
+			header[3] == 0) {
+	// UTF-32, little-endian
+		} else if((header[0]&0xff) == 0xFE &&
+			(header[1]&0xff) == 0xFF) {
+			is.unread(header, 2, 2);
+	// UTF-16, big-endian
+		} else if((header[0]&0xff) == 0xFF &&
+			(header[1]&0xff) == 0xFE) {
+			is.unread(header, 2, 2);
+	// UTF-16, little-endian
+		} else if((header[0]&0xff) == 0xEF &&
+			(header[1]&0xff) == 0xBB &&
+			(header[2]&0xff) == 0xBF) {
+	// UTF-8
+			is.unread(header, 3, 1);
+		} else {
+			is.unread(header, 0, PUSHBACK_BUFFER_SIZE);
+		}
+	}
+	
+
+	public void save() {
+		// Update channel in database...
+		channelManagerDAO.updateChannel(this);
+	}	
 
 	/**
 	 * Validates the channel
@@ -509,17 +650,25 @@ public class Channel implements Runnable {
 	public boolean isAwaitingPoll() {
 		// Need intelligent algorithm to handle this...
 		// Currently just poll once an hour
+		boolean awaitingPoll = false;
+
 		if (lastPolled != null) {
 			long currentTimeMillis = System.currentTimeMillis();
-			if ((currentTimeMillis - lastPolled.getTime()) > (channelManager.getPollingIntervalSeconds() * 1000)) {
-				//				> 1000 * 60 * 5) {
-				return true;
-			} else {
-				return false;
+
+			long pollingInterval = this.pollingIntervalSeconds;
+			if(pollingInterval == DEFAULT_POLLING_INTERVAL) {
+				pollingInterval = channelManager.getPollingIntervalSeconds();
 			}
+
+			if ((currentTimeMillis - lastPolled.getTime()) > (pollingInterval * 1000)) {
+				awaitingPoll = true;
+			}
+			
 		} else {
-			return true;
+			awaitingPoll = true;
 		}
+				
+		return awaitingPoll;
 	}
 
 	/**
@@ -713,6 +862,161 @@ public class Channel implements Runnable {
 	 */
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	/**
+	 * Returns the enabled.
+	 * @return boolean
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * Sets the enabled.
+	 * @param enabled The enabled to set
+	 */
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	/**
+	 * Returns the managingEditor.
+	 * @return String
+	 */
+	public String getManagingEditor() {
+		return managingEditor;
+	}
+
+	/**
+	 * Sets the managingEditor.
+	 * @param managingEditor The managingEditor to set
+	 */
+	public void setManagingEditor(String managingEditor) {
+		this.managingEditor = managingEditor;
+	}
+
+	/**
+	 * Returns the postingEnabled.
+	 * @return boolean
+	 */
+	public boolean isPostingEnabled() {
+		return postingEnabled;
+	}
+
+	/**
+	 * Sets the postingEnabled.
+	 * @param postingEnabled The postingEnabled to set
+	 */
+	public void setPostingEnabled(boolean postingEnabled) {
+		this.postingEnabled = postingEnabled;
+	}
+
+	/**
+	 * Returns the parseAtAllCost.
+	 * @return boolean
+	 */
+	public boolean isParseAtAllCost() {
+		return parseAtAllCost;
+	}
+
+	/**
+	 * Sets the parseAtAllCost.
+	 * @param parseAtAllCost The parseAtAllCost to set
+	 */
+	public void setParseAtAllCost(boolean parseAtAllCost) {
+		this.parseAtAllCost = parseAtAllCost;
+	}
+
+	/**
+	 * Returns the publishAPI.
+	 * @return String
+	 */
+	public String getPublishAPI() {
+		return publishAPI;
+	}
+
+	/**
+	 * Sets the publishAPI.
+	 * @param publishAPI The publishAPI to set
+	 */
+	public void setPublishAPI(String publishAPI) {
+		this.publishAPI = publishAPI;
+	}
+
+	/**
+	 * Returns the polling.
+	 * @return boolean
+	 */
+	public boolean isPolling() {
+		return polling;
+	}
+	
+	/**
+	 * Checks any current http connection.
+	 * 
+	 * Called from the Channel Poller's thread - will invoke
+	 * disconnect on the HttpUrlConnection is the poll has
+	 * exceeded 5 minutes.  This'll cause an exception to
+	 * be thrown in the polling thread, within the poll method.
+	 * 
+	 * It'd be preferable to use the timeout setting feature
+	 * within HttpUrlConnection, but this is only a parameter
+	 * in the 1.4 release of the JRE.
+	 */
+	
+	public void checkConnection() {
+		if(polling && httpCon != null && 
+			((lastPolled == null) ||
+			((System.currentTimeMillis() - lastPolled.getTime()) >
+				HTTP_CONNECTION_TIMEOUT)
+			)) {
+			try {
+				if(log.isDebugEnabled()) {
+					log.debug("Timeout exceeded, attempting to disconnect HttpUrlConnection");
+				}
+
+				httpCon.disconnect();
+			} catch(Exception e) {
+				if(log.isDebugEnabled()) {
+					log.debug("Error disconnecting HttpUrlConnection in checkConnection");
+				}
+			} finally {
+				httpCon = null;
+			}
+		}
+	}
+
+	/**
+	 * Returns the publishConfig.
+	 * @return Map
+	 */
+	public Map getPublishConfig() {
+		return publishConfig;
+	}
+
+	/**
+	 * Sets the publishConfig.
+	 * @param publishConfig The publishConfig to set
+	 */
+	public void setPublishConfig(Map publishConfig) {
+		this.publishConfig = publishConfig;
+	}
+
+	/**
+	 * Returns the pollingIntervalSeconds.
+	 * @return long
+	 */
+	public long getPollingIntervalSeconds() {
+		return pollingIntervalSeconds;
+	}
+
+	/**
+	 * Sets the pollingIntervalSeconds.
+	 * @param pollingIntervalSeconds The pollingIntervalSeconds to set
+	 */
+	public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
+		this.pollingIntervalSeconds = pollingIntervalSeconds;
 	}
 
 }
