@@ -45,7 +45,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.8 2003/09/28 20:25:14 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.9 2003/10/27 06:20:25 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -201,6 +201,7 @@ public class XMLHelper {
 		StringTokenizer strTok = new StringTokenizer(value, "<>\n", true);
 		StringBuffer strippedString = new StringBuffer();
 		boolean inTag = false;
+		boolean inPre = false;
 		boolean startOfLine = true;
 		String lastURL = null;
 		List footnotes = null;
@@ -306,13 +307,23 @@ public class XMLHelper {
 						|| upperToken.equals("LI")) {
 					strippedString.append("\r\n");
 					startOfLine = true;
+				} else if (
+					upperToken.equals("PRE")) {
+					inPre = true;
+				} else if (
+					upperToken.equals("/PRE")) {
+					inPre = false;
 				}
 
 			} else if (token.equals(">")) {
 				inTag = false;
 			} else if (token.equals("\n")) {
 				if (!inTag && !startOfLine) {
-					strippedString.append(' ');
+					if(!inPre) {
+						strippedString.append(' ');
+					} else {
+						strippedString.append('\n');
+					}
 				}
 			} else if (!inTag) {
 				strippedString.append(token);
