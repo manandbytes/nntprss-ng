@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.3 2003/10/24 02:31:35 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.4 2004/01/04 21:14:38 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
 
