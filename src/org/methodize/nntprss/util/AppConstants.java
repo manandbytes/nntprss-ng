@@ -36,18 +36,22 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.6 2003/02/03 05:16:51 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.7 2003/03/22 16:35:11 jasonbrome Exp $
  */
 public class AppConstants {
 
-	private static final AppConstants appConstants = new AppConstants();
+	private static DocumentBuilderFactory docBuilderFactory;
+	private static String platform;
+	private static String userAgent;
+
+	public static final AppConstants appConstants = new AppConstants();
 		
 	public static final String NNTPRSS_CONFIGURATION_FILE =
 		"nntprss-config.xml";
-	public static final String VERSION = "0.3-alpha";
+	public static final String USERS_CONFIG = "users.properties";
 
-	private static String platform;
-	private static String userAgent;
+	public static final String VERSION = "0.3";
+
 
 	public static final int OPEN_ENDED_RANGE = -1;
 
@@ -79,12 +83,12 @@ public class AppConstants {
 		userAgent = "nntp//rss v"+ VERSION
 			+ " ("
 			+ platform
-			+ ")";
+			+ "; http://www.methodize.org/nntprss/)";
+			
+		docBuilderFactory = DocumentBuilderFactory.newInstance();
+		docBuilderFactory.setNamespaceAware(true);
 	}
 
-	private static DocumentBuilderFactory docBuilderFactory =
-		DocumentBuilderFactory.newInstance();
-		
 	public static DocumentBuilder newDocumentBuilder()
 		throws ParserConfigurationException {
 		return docBuilderFactory.newDocumentBuilder();

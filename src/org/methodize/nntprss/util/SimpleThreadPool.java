@@ -34,11 +34,11 @@ import java.util.Stack;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: SimpleThreadPool.java,v 1.2 2003/01/22 05:11:59 jasonbrome Exp $
+ * @version $Id: SimpleThreadPool.java,v 1.3 2003/03/22 16:35:23 jasonbrome Exp $
  */
 public class SimpleThreadPool {
 
-// TODO implement clean shutdown
+//TODO: implement clean shutdown
 
 	private Stack threadStack = new Stack();
 	private ThreadGroup threadGroup = null;

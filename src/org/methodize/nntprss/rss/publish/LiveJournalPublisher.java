@@ -44,7 +44,7 @@ import org.methodize.nntprss.util.AppConstants;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: LiveJournalPublisher.java,v 1.1 2003/03/17 04:45:22 jasonbrome Exp $
+ * @version $Id: LiveJournalPublisher.java,v 1.2 2003/03/22 16:34:17 jasonbrome Exp $
  */
 
 public class LiveJournalPublisher implements Publisher {
@@ -154,7 +154,7 @@ public class LiveJournalPublisher implements Publisher {
 
 			Map userInfo = (Map) xmlrpc.execute(METHOD_LOGIN, params);
 
-			// @TODO think about message returned in userInfo
+			//TODO: think about message returned in userInfo
 
 		} catch (Exception e) {
 			throw new PublisherException(e);
