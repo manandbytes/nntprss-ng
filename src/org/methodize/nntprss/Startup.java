@@ -38,7 +38,7 @@ import java.net.URLClassLoader;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Startup.java,v 1.7 2004/03/27 02:11:00 jasonbrome Exp $
+ * @version $Id: Startup.java,v 1.8 2004/10/22 03:33:13 jasonbrome Exp $
  */
 public class Startup {
 
@@ -63,7 +63,11 @@ public class Startup {
         // MySQL Support
         "./ext/lib/mysql.jar",
         // JDBM Support
-        "./ext/lib/jdbm-0.20.jar", "." };
+        "./ext/lib/jdbm-0.20.jar",
+        // Derby Support
+        "./ext/lib/derby.jar",
+		"./ext/lib/derbytools.jar",
+         "." };
 
     public static void main(String[] args) {
         if (args.length == 0 || !args[0].equals("stop")) {
