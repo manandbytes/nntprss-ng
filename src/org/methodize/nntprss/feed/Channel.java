@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.11 2004/09/05 08:02:08 aslom Exp $
+ * @version $Id: Channel.java,v 1.12 2004/09/05 17:12:27 aslom Exp $
  */
 public class Channel
     extends ItemContainer
@@ -433,7 +433,7 @@ public class Channel
                             ? parseHttpDate(hdrLastModified.getValue())
                             : 0;
                     log.debug("channel "+this.name+" parsed Last-Modifed "+hdrLastModified+" to "
-                                  +(lastModified != 0 ? new Date(lastModified) : ""+lastModified)); //ALEK
+                                  +(lastModified != 0 ? ""+(new Date(lastModified)) : ""+lastModified)); //ALEK
                     
                     status = STATUS_OK;
                 } catch (SAXParseException spe) {
@@ -1314,5 +1314,6 @@ public class Channel
                 +"}";
     }
 }
+
 
 
