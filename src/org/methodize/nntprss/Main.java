@@ -48,7 +48,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Main.java,v 1.7 2004/01/04 21:06:20 jasonbrome Exp $
+ * @version $Id: Main.java,v 1.8 2004/03/23 01:43:50 jasonbrome Exp $
  */
 public class Main {
 
@@ -178,7 +178,7 @@ public class Main {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			configDoc = db.parse(configFile);
 		} catch (Exception e) {
-			// FIXME more granular exception?
+			log.error("Error parsing configuration", e);
 			throw new RuntimeException(
 				"Error parsing "
 					+ AppConstants.NNTPRSS_CONFIGURATION_FILE
