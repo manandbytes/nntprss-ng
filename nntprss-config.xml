@@ -5,14 +5,8 @@
 
 <nntprss>
 
-<!-- hsqldb (now deprecated) -->
-<!-- <db connect='jdbc:hsqldb:nntprssdb' driverClass='org.hsqldb.jdbcDriver' daoClass='org.methodize.nntprss.feed.db.HSqlDbChannelDAO'/>  -->
-
 <!-- Derby -->
-<!-- <db connect='jdbc:derby:nntprssdb;create=true' driverClass='org.apache.derby.jdbc.EmbeddedDriver' daoClass='org.methodize.nntprss.feed.db.DerbyChannelDAO'/> -->
-
-<!-- JDBM -->
-  <db daoClass='org.methodize.nntprss.feed.db.JdbmChannelDAO'/>
+  <db connect='jdbc:derby:nntprssdb;create=true' driverClass='org.apache.derby.jdbc.EmbeddedDriver' daoClass='org.methodize.nntprss.feed.db.DerbyChannelDAO'/>
 
 <!-- MySQL -->
 <!-- MySQL
@@ -24,6 +18,9 @@
 
 <!-- Listener port for web admin interface -->
   <admin port='7810'/>
+
+<!-- Poller configuration - number of threads -->
+  <poller threads='5'/>
 
 <!-- Subscription listeners -->
 <!--  <subscribe name='AmphetaDesk' port='8888' path='/index.html' param='add_url' />
