@@ -54,6 +54,7 @@ import org.apache.commons.dbcp.PoolingDriver;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
+import org.methodize.nntprss.feed.Category;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.feed.Item;
@@ -65,7 +66,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelDAO.java,v 1.3 2003/09/28 20:41:41 jasonbrome Exp $
+ * @version $Id: ChannelDAO.java,v 1.4 2003/10/24 02:31:18 jasonbrome Exp $
  */
 public abstract class ChannelDAO {
 
@@ -285,7 +286,7 @@ public abstract class ChannelDAO {
 	}
 
 	
-	public Map loadChannels() {
+	public Map loadChannels(Map categories) {
 		Map channels = new TreeMap();
 		Connection conn = null;
 		Statement stmt = null;
@@ -346,7 +347,6 @@ public abstract class ChannelDAO {
 					channel.setLastModified(rs.getLong("lastModified"));
 					channel.setLastETag(rs.getString("lastETag"));
 					channel.setRssVersion(rs.getString("rssVersion"));
-					channel.setHistorical(rs.getBoolean("historical"));
 					channel.setEnabled(rs.getBoolean("enabled"));
 					channel.setPostingEnabled(rs.getBoolean("postingEnabled"));
 					channel.setPublishAPI(rs.getString("publishAPI"));
@@ -358,6 +358,7 @@ public abstract class ChannelDAO {
 					channel.setPollingIntervalSeconds(rs.getLong("pollingInterval"));
 					
 					channel.setStatus(rs.getInt("status"));
+					channel.setExpiration(rs.getLong("expiration"));
 
 					channels.put(channel.getName(), channel);
 				}
@@ -399,8 +400,127 @@ public abstract class ChannelDAO {
 		return channels;
 	}
 
+
+	public Map loadCategories() {
+		Map categories = new TreeMap();
+//		Connection conn = null;
+//		Statement stmt = null;
+//		PreparedStatement ps = null;
+//		ResultSet rs = null;
+//		ResultSet rs2 = null;
+//
+//		if(log.isInfoEnabled()) {
+//			log.info("Loading channel configuration");
+//		}
+//
+//		try {
+//			conn = DriverManager.getConnection(ChannelDAO.POOL_CONNECT_STRING);
+//			stmt = conn.createStatement();
+//			rs = stmt.executeQuery("SELECT * FROM channels");
+//			if (rs != null) {
+//				ps =
+//					conn.prepareStatement(
+//						"SELECT MIN(articleNumber), COUNT(articleNumber) FROM items WHERE channel = ?");
+//				while (rs.next()) {
+//					String name = rs.getString("name");
+//					String url = rs.getString("url");
+//					Channel channel = null;
+//					try {
+//						channel = new Channel(name, url);
+//					} catch (MalformedURLException me) {
+//						System.out.println(name + " - Bad url: " + url);
+//						// Skip this entry
+//						continue;
+//					}
+//					channel.setId(rs.getInt("id"));
+//					channel.setAuthor(rs.getString("author"));
+//					channel.setLastArticleNumber(rs.getInt("lastArticle"));
+//					channel.setCreated(rs.getTimestamp("created"));
+//					channel.setTitle(rs.getString("title"));
+//					channel.setLink(rs.getString("link"));
+//					channel.setDescription(rs.getString("description"));
+//
+//					ps.setInt(1, channel.getId());
+//					rs2 = ps.executeQuery();
+//					if (rs2 != null) {
+//						if (rs2.next()) {
+//							int firstArticleNumber = 
+//								rs2.getInt(1);
+//							if(firstArticleNumber != 0) {
+//								channel.setFirstArticleNumber(firstArticleNumber);
+//							} else {
+//								channel.setFirstArticleNumber(1);
+//							}
+//							
+//							channel.setTotalArticles(
+//								rs2.getInt(2));
+//						}
+//						rs2.close();
+//					}
+//
+//					channel.setLastPolled(rs.getTimestamp("lastPolled"));
+//					channel.setLastModified(rs.getLong("lastModified"));
+//					channel.setLastETag(rs.getString("lastETag"));
+//					channel.setRssVersion(rs.getString("rssVersion"));
+//					channel.setEnabled(rs.getBoolean("enabled"));
+//					channel.setPostingEnabled(rs.getBoolean("postingEnabled"));
+//					channel.setPublishAPI(rs.getString("publishAPI"));
+//					channel.setPublishConfig(XMLHelper.xmlToStringHashMap(rs.getString("publishConfig")));
+//
+//					channel.setParseAtAllCost(rs.getBoolean("parseAtAllCost"));
+//					channel.setManagingEditor(rs.getString("managingEditor"));
+//
+//					channel.setPollingIntervalSeconds(rs.getLong("pollingInterval"));
+//					
+//					channel.setStatus(rs.getInt("status"));
+//					channel.setExpiration(rs.getLong("expiration"));
+//
+//					channels.put(channel.getName(), channel);
+//				}
+//			}
+//		} catch (SQLException se) {
+//			throw new RuntimeException(se);
+//		} finally {
+//			try {
+//				if (rs != null)
+//					rs.close();
+//			} catch (SQLException se) {
+//			}
+//			try {
+//				if (rs2 != null)
+//					rs2.close();
+//			} catch (SQLException se) {
+//			}
+//			try {
+//				if (stmt != null)
+//					stmt.close();
+//			} catch (SQLException se) {
+//			}
+//			try {
+//				if (ps != null)
+//					ps.close();
+//			} catch (SQLException se) {
+//			}
+//			try {
+//				if (conn != null)
+//					conn.close();
+//			} catch (SQLException se) {
+//			}
+//		}
+//
+//		if(log.isInfoEnabled()) {
+//			log.info("Loaded " + channels.size() + " channels");
+//		}
+//
+		return categories;
+	}
+
 	
 	public abstract void addChannel(Channel channel);
+	public abstract void addCategory(Category category);
+
+	public abstract void addChannelToCategory(Channel channel, Category category);
+	public abstract void removeChannelFromCategory(Channel channel, Category category);
 	
 	public void updateChannel(Channel channel) {
 		Connection conn = null;
@@ -414,7 +534,7 @@ public abstract class ChannelDAO {
 						+ "SET author = ?, name = ?, url = ?, "
 						+ "title = ?, link = ?, description = ?, "
 						+ "lastArticle = ?, "
-						+ "lastPolled = ?, lastModified = ?, lastETag = ?, rssVersion = ?, historical = ?, "
+						+ "lastPolled = ?, lastModified = ?, lastETag = ?, rssVersion = ?, "
 						+ "enabled = ?, "
 						+ "postingEnabled = ?, "
 						+ "publishAPI = ?, "
@@ -422,7 +542,8 @@ public abstract class ChannelDAO {
 						+ "parseAtAllCost = ?, "
 						+ "managingEditor = ?, "
 						+ "pollingInterval = ?, "
-						+ "status = ? "
+						+ "status = ?, "
+						+ "expiration = ? "
 						+ "WHERE id = ?");
 
 			int paramCount = 1;
@@ -447,7 +568,7 @@ public abstract class ChannelDAO {
 			ps.setLong(paramCount++, channel.getLastModified());
 			ps.setString(paramCount++, channel.getLastETag());
 			ps.setString(paramCount++, channel.getRssVersion());
-			ps.setBoolean(paramCount++, channel.isHistorical());
+//			ps.setBoolean(paramCount++, channel.isHistorical());
 			ps.setBoolean(paramCount++, channel.isEnabled());
 			ps.setBoolean(paramCount++, channel.isPostingEnabled());
 			ps.setString(paramCount++, channel.getPublishAPI());
@@ -458,6 +579,7 @@ public abstract class ChannelDAO {
 
 			ps.setLong(paramCount++, channel.getPollingIntervalSeconds());
 			ps.setInt(paramCount++, channel.getStatus());
+			ps.setLong(paramCount++, channel.getExpiration());
 
 			ps.setInt(paramCount++, channel.getId());
 			ps.executeUpdate();
@@ -478,6 +600,8 @@ public abstract class ChannelDAO {
 		}
 
 	}
+
+	public abstract void updateCategory(Category category);
 	
 	public void deleteChannel(Channel channel) {
 		Connection conn = null;
@@ -520,6 +644,8 @@ public abstract class ChannelDAO {
 
 	}
 
+	public abstract void deleteCategory(Category category);
+
 	private Item readItemFromRS(ResultSet rs, Channel channel) throws SQLException {
 		Item item =
 			new Item(
@@ -538,6 +664,8 @@ public abstract class ChannelDAO {
 		return item;
 	}
 	
+	public abstract Item loadItem(Category category, int articleNumber);
+
 	public Item loadItem(Channel channel, int articleNumber) {
 		Item item = null;
 		Connection conn = null;
@@ -581,10 +709,14 @@ public abstract class ChannelDAO {
 		return item;
 	}
 	
+	public abstract Item loadNextItem(Category category, int relativeArticleNumber);
+
 	public Item loadNextItem(Channel channel, int relativeArticleNumber) {
 		return loadRelativeItem(channel, relativeArticleNumber,
 			"SELECT TOP 1 * FROM items WHERE articleNumber > ? AND channel = ? ORDER BY articleNumber");
 	}
+
+	public abstract Item loadPreviousItem(Category category, int relativeArticleNumber);
 	
 	public Item loadPreviousItem(Channel channel, int relativeArticleNumber) {
 		return loadRelativeItem(channel, relativeArticleNumber,
@@ -690,6 +822,9 @@ public abstract class ChannelDAO {
 	 *    all items to article number)
 	 */
 
+	public abstract List loadItems(Category category, int[] articleRange,
+		boolean onlyHeaders, int limit);
+
 	public List loadItems(
 		Channel channel,
 		int[] articleRange,
@@ -783,6 +918,9 @@ public abstract class ChannelDAO {
 	}
 
 		
+
+	public abstract List loadArticleNumbers(Category category);
+
 	/**
 	 * Method loadArticleNumbers
 	 * @param channel
@@ -790,7 +928,6 @@ public abstract class ChannelDAO {
 	 * 
 	 * Supports NNTP listgroup command
 	 */
-
 	public List loadArticleNumbers(
 		Channel channel) {
 
@@ -962,6 +1099,8 @@ public abstract class ChannelDAO {
 
 	}
 
+
+	public abstract void deleteExpiredItems(Channel channel, Set currentItemSignatures); 
 
 	/* (non-Javadoc)
 	 * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteItemsNotInSet(org.methodize.nntprss.feed.Channel, java.util.Set)
