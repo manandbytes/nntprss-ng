@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.13 2004/10/26 01:12:32 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.14 2004/10/29 00:56:01 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer
@@ -242,7 +242,7 @@ public class Channel
                 boolean redirected = false;
                 int count = 0;
                 do {
-                    //					URL url = new URL(urlString);
+                    URL currentUrl = new URL(urlString);
                     method = new GetMethod(urlString);
                     method.setRequestHeader(
                         "User-agent",
@@ -272,9 +272,9 @@ public class Channel
 
                     HostConfiguration hostConfig = new HostConfiguration();
                     hostConfig.setHost(
-                        url.getHost(),
-                        url.getPort(),
-                        url.getProtocol());
+                        currentUrl.getHost(),
+                        currentUrl.getPort(),
+                        currentUrl.getProtocol());
 
                     result = executeHttpRequest(httpClient, hostConfig, method);
                     statusCode = result.getStatusCode();
