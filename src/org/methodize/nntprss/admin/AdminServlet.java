@@ -74,7 +74,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.6 2003/03/22 16:27:31 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.7 2003/03/24 03:11:15 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -103,6 +103,8 @@ public class AdminServlet extends HttpServlet {
 		+ "td.row2	{ background-color: #DEE3E7; } "
 		+ "a.head { color: #FFFFFF; text-decoration: none} "
 		+ "a:hover.head { text-decoration: underline; color : #FFF240; } "
+		+ "a.row { text-decoration: none} "
+		+ "a:hover.row { text-decoration: underline } "
 		+ "th	{ color: #FFF240; font-size: 11px; font-weight : bold; background-color: #408BFF; height: 25px; } "
 		+ "th.subHead	{ background-color: #2D62B3; color: #FFFFFF; height: 18px;} "
 		+ "input,textarea, select {	color : #000000; font: normal 11px Verdana, Arial, Helvetica, sans-serif; border-width: 2px; border-color : #000000; } "
@@ -221,8 +223,8 @@ public class AdminServlet extends HttpServlet {
 		writer.write("</table>");
 		writer.write("</form>");
 		writer.write("<p>");
-		writer.write("<a href='/?action=export'>Export nntp//rss Channel List</a><p>");
-		writer.write("<a href='/?action=importform'>Import nntp//rss or mySubscriptions.opml Channel List</a>");
+		writer.write("<a class='row' href='/?action=export'>Export nntp//rss Channel List</a><p>");
+		writer.write("<a class='row' href='/?action=importform'>Import nntp//rss or mySubscriptions.opml Channel List</a>");
 	}
 	
 	private void cmdShowConfig(
@@ -883,7 +885,7 @@ public class AdminServlet extends HttpServlet {
 		HttpServletResponse response)
 		throws ServletException, IOException {
 
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
+		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
 		Writer writer = response.getWriter();
 		writeHeader(writer);
@@ -892,14 +894,27 @@ public class AdminServlet extends HttpServlet {
 		
 		writer.write("<form name='channels' action='/?action=channelaction' method='POST'>");
 		writer.write("<table class='tableborder' border='0'>");
-		writer.write("<tr><th colspan='4' class='tableHead'>Channels</td></th>");
-		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>RSS URL</th><th class='subHead'>Last Polled</th></tr>");
+		writer.write("<tr><th colspan='5' class='tableHead'>Channels</td></th>");
+//		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>RSS URL</th><th class='subHead'>Last Polled</th></tr>");
+		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>&nbsp;</th><th class='subHead'>RSS URL</th><th class='subHead'>Last Polled</th></tr>");
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
 				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		NNTPServer nntpServer =
+			(NNTPServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_NNTP_SERVER);
 
 		Iterator channelIter = channelManager.channels();
+		String newsPrefix = null;
+		if(nntpServer.getListenerPort() == 119) {
+			newsPrefix = "news://127.0.0.1/";
+		} else {
+			newsPrefix = "news://127.0.0.1:"
+					+ nntpServer.getListenerPort()
+					+ "/";
+		}
+					
 		while (channelIter.hasNext()) {
 			Channel channel = (Channel) channelIter.next();
 			writer.write("<tr><td class='row1'><input type='checkbox' name='chl"
@@ -927,7 +942,10 @@ public class AdminServlet extends HttpServlet {
 				case Channel.STATUS_NO_ROUTE_TO_HOST:
 					writer.write("<td class='chlerror' bgcolor='#FF0000'>"
 						+ parser
-						+ "<a href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'><font color='#FFFFFF'>" + channel.getName() + "</font></a></td>");
+						+ "<a class='row' title='Channel configuration' href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'><font color='#FFFFFF'>" + channel.getName() + "</font></a></td>");
+					writer.write("<td class='chlerror' bgcolor='#FF0000'><a class='row' title='Read this channel in your default newsreader' href='"
+						+ newsPrefix
+						+ HTMLHelper.escapeString(channel.getName()) + "'><font color='#FFFFFF'>[Read]</font></a></td>");
 					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>" + url + "</font></td>");
 					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>" + lastPolled + "</font></td></tr>");				
 					break;
@@ -935,7 +953,10 @@ public class AdminServlet extends HttpServlet {
 				case Channel.STATUS_CONNECTION_TIMEOUT:
 					writer.write("<td class='chlwarning' bgcolor='#FFFF00'>"
 						+ parser
-						+ "<a href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'><font color='#000000'>" + channel.getName() + "</font></a></td>");
+						+ "<a class='row' title='Channel configuration' href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'><font color='#000000'>" + channel.getName() + "</font></a></td>");
+					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><a class='row' title='Read this channel in your default newsreader' href='"
+						+ newsPrefix
+						+ HTMLHelper.escapeString(channel.getName()) + "'>[Read]</a></td>");
 					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><font color='#000000'>" + url + "</font></td>");
 					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><font color='#000000'>" + lastPolled + "</font></td></tr>");				
 					break;
@@ -943,20 +964,27 @@ public class AdminServlet extends HttpServlet {
 					if(channel.isEnabled()) {
 						writer.write("<td class='row1'>"
 							+ parser
-							+ "<a href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'>" + channel.getName() + "</a></td>");
+							+ "<a class='row' title='Channel configuration' href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'>" + channel.getName() + "</a></td>");
+						writer.write("<td class='row1'><a class='row' title='Read this channel in your default newsreader' href='"
+							+ newsPrefix
+							+ HTMLHelper.escapeString(channel.getName()) + "'>[Read]</a></td>");
+
 						writer.write("<td class='row1'>" + url + "</td>");				
 						writer.write("<td class='row1'>" + lastPolled + "</td></tr>");				
 					} else {
 						writer.write("<td class='chldisabled' bgcolor='#CCCCCC'>"
 							+ parser
-							+ "<a href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'>" + channel.getName() + "</a></td>");
+							+ "<a class='row' title='Channel configuration' href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'>" + channel.getName() + "</a></td>");
+						writer.write("<td class='chldisabled'><a class='row' title='Read this channel in your default newsreader' href='"
+							+ newsPrefix
+							+ HTMLHelper.escapeString(channel.getName()) + "'>[Read]</a></td>");
 						writer.write("<td class='chldisabled' bgcolor='#CCCCCC'>" + url + "</td>");				
 						writer.write("<td class='chldisabled' bgcolor='#CCCCCC'>" + lastPolled + "</td></tr>");				
 					}
 			}
 		}
 
-		writer.write("<tr><td class='row2' colspan='4'><input type='submit' onClick='return confirm(\"Are you sure you want to delete these channels?\");' name='delete' value='Delete Selected Channels'></td></tr>");
+		writer.write("<tr><td class='row2' colspan='5'><input type='submit' onClick='return confirm(\"Are you sure you want to delete these channels?\");' name='delete' value='Delete Selected Channels'></td></tr>");
 
 		writer.write("</table><font size='-1'>[* = Channel configured for Parse-At-All-Cost parser]</font><p>");
 		writer.write("</form><p>");
@@ -1703,6 +1731,7 @@ public class AdminServlet extends HttpServlet {
 			+ "<tr><td class='chlerror'><b>Error</b></td><td class='row2'>A significant error occured when polling.  This may either be that the RSS feed no longer exists, or that it is badly formatted.  In the case of the latter, enabling <i>Parse-at-all-cost</i> within the channel's configuration may provide a resolution</td></tr>"
 			+ "</table><p>"
 			+ "Clicking on the name of a channel will display the channel's configuration screen.<p>"
+			+ "Clicking on the [Read] button will open the channel in your default newsreader.<p>"
 			+ "<b>Channel Configuration</b><p>"
 			+ "Within this screen you can:"
 			+ "<ul><li>Modify the URL for the channel,"
