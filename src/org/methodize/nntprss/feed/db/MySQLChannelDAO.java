@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.5 2004/03/23 02:34:10 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.6 2004/03/24 04:27:57 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -192,76 +192,79 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 	protected void populateInitialChannels(Document config) {
 		Connection conn = null;
 		PreparedStatement ps = null;
+		
+		if(!migrateHsql()) {
 
-		if(log.isInfoEnabled()) {
-			log.info("Loading channels");
-		}
-
-		try {
-			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
-			NodeList channelsList =
-				config.getDocumentElement().getElementsByTagName("channels");
-
-			if (channelsList.getLength() > 0) {
-				Element channelsElm = (Element) channelsList.item(0);
-				NodeList channelList = channelsElm.getElementsByTagName("channel");
-				if (channelList.getLength() > 0) {
-
-					ps =
-						conn.prepareStatement(
-							"INSERT INTO " + TABLE_CHANNELS + "(url, name, created, lastPolled, lastArticle, enabled, postingEnabled, parseAtAllCost, pollingInterval, status, expiration) "
-								+ "values(?, ?, ?, 0, ?, "
-								+ MYSQL_TRUE
-								+ ", "
-								+ MYSQL_FALSE
-								+ ", "
-								+ MYSQL_FALSE
-								+ ", 0, " + Channel.STATUS_OK + ", " +								+ Channel.EXPIRATION_KEEP + ")");
-
-					for (int channelCount = 0;
-						channelCount < channelList.getLength();
-						channelCount++) {
-						Element channelElm =
-							(Element) channelList.item(channelCount);
-						String url = channelElm.getAttribute("url");
-						String name = channelElm.getAttribute("name");
-
-						int paramCount = 1;
-						ps.setString(paramCount++, url);
-						ps.setString(paramCount++, name);
-						ps.setTimestamp(
-							paramCount++,
-							new Timestamp(System.currentTimeMillis()));
-// Last Article
-						ps.setInt(paramCount++, 0);
-						ps.executeUpdate();
+			if(log.isInfoEnabled()) {
+				log.info("Loading channels");
+			}
+	
+			try {
+				conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
+				NodeList channelsList =
+					config.getDocumentElement().getElementsByTagName("channels");
+	
+				if (channelsList.getLength() > 0) {
+					Element channelsElm = (Element) channelsList.item(0);
+					NodeList channelList = channelsElm.getElementsByTagName("channel");
+					if (channelList.getLength() > 0) {
+	
+						ps =
+							conn.prepareStatement(
+								"INSERT INTO " + TABLE_CHANNELS + "(url, name, created, lastPolled, lastArticle, enabled, postingEnabled, parseAtAllCost, pollingInterval, status, expiration) "
+									+ "values(?, ?, ?, 0, ?, "
+									+ MYSQL_TRUE
+									+ ", "
+									+ MYSQL_FALSE
+									+ ", "
+									+ MYSQL_FALSE
+									+ ", 0, " + Channel.STATUS_OK + ", " +									+ Channel.EXPIRATION_KEEP + ")");
+	
+						for (int channelCount = 0;
+							channelCount < channelList.getLength();
+							channelCount++) {
+							Element channelElm =
+								(Element) channelList.item(channelCount);
+							String url = channelElm.getAttribute("url");
+							String name = channelElm.getAttribute("name");
+	
+							int paramCount = 1;
+							ps.setString(paramCount++, url);
+							ps.setString(paramCount++, name);
+							ps.setTimestamp(
+								paramCount++,
+								new Timestamp(System.currentTimeMillis()));
+	// Last Article
+							ps.setInt(paramCount++, 0);
+							ps.executeUpdate();
+						}
 					}
 				}
+	
+			} catch (SQLException se) {
+	
+				if(log.isEnabledFor(Priority.ERROR)) {
+					log.error("Error loading initial channels", se);
+				}
+				throw new RuntimeException("Error loading initial channels - "
+					+ se.getMessage());
+	
+			} finally {
+				try {
+					if (ps != null)
+						ps.close();
+				} catch (Exception e) {
+				}
+				try {
+					if (conn != null)
+						conn.close();
+				} catch (Exception e) {
+				}
 			}
-
-		} catch (SQLException se) {
-
-			if(log.isEnabledFor(Priority.ERROR)) {
-				log.error("Error loading initial channels", se);
+	
+			if(log.isInfoEnabled()) {
+				log.info("Finished loading initial channels");
 			}
-			throw new RuntimeException("Error loading initial channels - "
-				+ se.getMessage());
-
-		} finally {
-			try {
-				if (ps != null)
-					ps.close();
-			} catch (Exception e) {
-			}
-			try {
-				if (conn != null)
-					conn.close();
-			} catch (Exception e) {
-			}
-		}
-
-		if(log.isInfoEnabled()) {
-			log.info("Finished loading initial channels");
 		}
 
 	}
