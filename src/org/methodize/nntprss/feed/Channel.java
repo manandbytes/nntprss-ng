@@ -9,24 +9,24 @@ package org.methodize.nntprss.feed;
  *        PO Box 3865
  *        Grand Central Station
  *        New York NY 10163
- *
+ * 
  * This file is part of nntp//rss
- *
- * nntp//rss is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General
- * Public License as published by the Free Software Foundation;
- * either version 2 of the License, or (at your option) any
+ * 
+ * nntp//rss is free software; you can redistribute it 
+ * and/or modify it under the terms of the GNU General 
+ * Public License as published by the Free Software Foundation; 
+ * either version 2 of the License, or (at your option) any 
  * later version.
  *
- * This program is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.  See the GNU General Public License for more
+ * This program is distributed in the hope that it will be 
+ * useful, but WITHOUT ANY WARRANTY; without even the implied 
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE.  See the GNU General Public License for more 
  * details.
  *
- * You should have received a copy of the GNU General Public
- * License along with this program; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * You should have received a copy of the GNU General Public 
+ * License along with this program; if not, write to the 
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.12 2004/09/05 17:12:27 aslom Exp $
+ * @version $Id: Channel.java,v 1.13 2004/10/26 01:12:32 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer
@@ -123,7 +123,7 @@ public class Channel
     private String rssVersion;
     private String managingEditor;
 
-    //  private boolean historical = true;
+    //	private boolean historical = true;
     private boolean enabled = true;
     private boolean parseAtAllCost = false;
 
@@ -149,7 +149,7 @@ public class Channel
     public static final long CLEANING_INTERVAL = 1000 * 60 * 60 * 24;
     private static final int HTTP_CONNECTION_TIMEOUT = 1000 * 60 * 5;
 
-    //  private HttpURLConnection httpCon = null;
+    //	private HttpURLConnection httpCon = null;
 
     private HttpClient httpClient = null;
     private SimpleDateFormat httpDate =
@@ -172,8 +172,8 @@ public class Channel
     private void initialize() {
         channelManager = ChannelManager.getChannelManager();
         channelDAO = channelManager.getChannelDAO();
-        //              httpClient = channelManager.getHttpClient();
-        //              httpClient = new HttpClient();
+        //		httpClient = channelManager.getHttpClient();
+        //		httpClient = new HttpClient();
 
         httpClient = new HttpClient(channelManager.getHttpConMgr());
         httpClient.setConnectionTimeout(HTTP_CONNECTION_TIMEOUT);
@@ -223,7 +223,7 @@ public class Channel
         // Guard against change in history mid-poll
         polling = true;
 
-        //              boolean keepHistory = historical;
+        //		boolean keepHistory = historical;
         long keepExpiration = expiration;
 
         lastPolled = new Date();
@@ -242,7 +242,7 @@ public class Channel
                 boolean redirected = false;
                 int count = 0;
                 do {
-                    //                                  URL url = new URL(urlString);
+                    //					URL url = new URL(urlString);
                     method = new GetMethod(urlString);
                     method.setRequestHeader(
                         "User-agent",
@@ -296,15 +296,15 @@ public class Channel
                                             + ", updated URL from HTTP Permanent Redirect");
                                 }
                             } catch (MalformedURLException mue) {
-                                // Ignore URL permanent redirect for now...
+                                // Ignore URL permanent redirect for now...								
                             }
                         }
                     } else {
                         redirected = false;
                     }
 
-                    //                                  method.getResponseBody();
-                    //                                  method.releaseConnection();
+                    //					method.getResponseBody();
+                    //					method.releaseConnection();
                     count++;
                 } while (count < 5 && redirected);
 
@@ -348,7 +348,7 @@ public class Channel
                 status = STATUS_NO_ROUTE_TO_HOST;
                 statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
             } catch (SocketException se) {
-                // e.g. Network is unreachable
+                // e.g. Network is unreachable				
                 if (log.isDebugEnabled()) {
                     log.debug(
                         "Channel=" + name + " - Socket Exception, skipping");
@@ -420,8 +420,8 @@ public class Channel
                     processChannelDocument(expiration, rssDoc);
 
                     // Update last modified / etag from headers
-                    //                                  lastETag = httpCon.getHeaderField("ETag");
-                    //                                  lastModified = httpCon.getHeaderFieldDate("Last-Modified", 0);
+                    //					lastETag = httpCon.getHeaderField("ETag");
+                    //					lastModified = httpCon.getHeaderFieldDate("Last-Modified", 0);
 
                     Header hdrETag = method.getResponseHeader("ETag");
                     lastETag = hdrETag != null ? hdrETag.getValue() : null;
@@ -536,13 +536,13 @@ public class Channel
     /**
      * Simple channel validation - ensures URL
      * is valid, XML document is returned, and
-     * document has an rss root element with a
-     * version, or rdf root element,
+     * document has an rss root element with a 
+     * version, or rdf root element, 
      */
     public static boolean isValid(URL url) throws HttpUserException {
         boolean valid = false;
         try {
-            //                  System.setProperty("networkaddress.cache.ttl", "0");
+            //			System.setProperty("networkaddress.cache.ttl", "0");
 
             HttpClient client = new HttpClient();
             ChannelManager.getChannelManager().configureHttpClient(client);
@@ -585,8 +585,8 @@ public class Channel
                     redirected = false;
                 }
 
-                //                              method.getResponseBody();
-                //                              method.releaseConnection();
+                //				method.getResponseBody();
+                //				method.releaseConnection();
                 count++;
             } while (count < 5 && redirected);
 
@@ -823,7 +823,7 @@ public class Channel
         if (this.url == null || !this.url.equals(url)) {
             this.url = url;
 
-            // If we change the URL, then reset the
+            // If we change the URL, then reset the 
             // polling characteristics associated with the channel
             this.lastModified = 0;
             this.lastETag = null;
@@ -836,17 +836,17 @@ public class Channel
      * Returns the historical.
      * @return boolean
      */
-    //  public boolean isHistorical() {
-    //          return historical;
-    //  }
+    //	public boolean isHistorical() {
+    //		return historical;
+    //	}
 
     /**
      * Sets the historical.
      * @param historical The historical to set
      */
-    //  public void setHistorical(boolean historical) {
-    //          this.historical = historical;
-    //  }
+    //	public void setHistorical(boolean historical) {
+    //		this.historical = historical;
+    //	}
 
     /**
      * Returns the status.
@@ -1052,22 +1052,22 @@ public class Channel
         try {
             statusCode = client.executeMethod(config, method);
 
-            //          while (statusCode == -1 && attempt < 3) {
-            //                  try {
-            //                          // execute the method.
-            //                          statusCode = client.executeMethod(config, method);
-            //                  } catch (HttpRecoverableException e) {
-            //                          log.(
-            //                                  "A recoverable exception occurred, retrying."
-            //                                          + e.getMessage());
-            //                          method.releaseConnection();
-            //                          method.recycle();
-            //                          try {
-            //                                  Thread.sleep(250);
-            //                          } catch(InterruptedException ie) {
-            //                          }
-            //                  }
-            //          }
+            //		while (statusCode == -1 && attempt < 3) {
+            //			try {
+            //				// execute the method.
+            //				statusCode = client.executeMethod(config, method);
+            //			} catch (HttpRecoverableException e) {
+            //				log.(
+            //					"A recoverable exception occurred, retrying."
+            //						+ e.getMessage());
+            //				method.releaseConnection();
+            //				method.recycle();
+            //				try {
+            //					Thread.sleep(250);
+            //				} catch(InterruptedException ie) {
+            //				}
+            //			} 
+            //		}
 
             result = new HttpResult(statusCode);
             Header locationHeader = method.getResponseHeader("location");
@@ -1105,7 +1105,7 @@ public class Channel
                     while (is.read(buf) != -1);
                     is.close();
                 }
-                //      result.setResponse(method.getResponseBody());
+                //	result.setResponse(method.getResponseBody());		
             }
 
             return result;
@@ -1169,8 +1169,8 @@ public class Channel
         rssVersion = in.readUTF();
         managingEditor = in.readUTF();
 
-        //                      historical = in.readBoolean();
-        //                      in.readBoolean();
+        //			historical = in.readBoolean();
+        //			in.readBoolean();
 
         enabled = in.readBoolean();
         parseAtAllCost = in.readBoolean();
@@ -1220,7 +1220,7 @@ public class Channel
         out.writeUTF(rssVersion != null ? rssVersion : "");
         out.writeUTF(managingEditor != null ? managingEditor : "");
 
-        //              out.writeBoolean(historical);
+        //		out.writeBoolean(historical);
         out.writeBoolean(enabled);
         out.writeBoolean(parseAtAllCost);
 
@@ -1311,9 +1311,6 @@ public class Channel
             + " parseAtAllCost="
             + parseAtAllCost
         //+" publishConfig
-                +"}";
+        	+"}";
     }
 }
-
-
-
