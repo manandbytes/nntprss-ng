@@ -30,19 +30,22 @@ package org.methodize.nntprss.util;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.hsqldb.lib.StringInputStream;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.5 2003/03/22 16:36:11 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.6 2003/07/19 00:08:57 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -71,11 +74,70 @@ public class XMLHelper {
 
 	}
 
+	public static String getChildElementAttributeValue(
+		Element parentElm,
+		String elementName,
+		String attributeName) {
+
+		String attributeValue = null;
+		NodeList elemList = parentElm.getElementsByTagName(elementName);
+		if (elemList != null && elemList.getLength() > 0) {
+			// Use the first matching child element
+			Element elm = (Element) elemList.item(0);
+			Attr attribute = elm.getAttributeNode(attributeName);
+			if(attribute != null) {
+				attributeValue = attribute.getValue();
+			}
+		}
+		return attributeValue;
+	}
+
+
 	public static String getChildElementValue(
 		Element parentElm,
 		String elementName,
 		String defaultValue) {
 		String value = getChildElementValue(parentElm, elementName);
+		if (value == null) {
+			return defaultValue;
+		} else {
+			return value;
+		}
+	}
+
+	public static String getChildElementValueNS(
+		Element parentElm,
+		String elementNamespaceURI,
+		String elementLocalName) {
+
+		String elementValue = null;
+		NodeList elemList = parentElm.getElementsByTagNameNS(elementNamespaceURI, elementLocalName);
+		if (elemList != null && elemList.getLength() > 0) {
+			// Use the first matching child element
+			Element elm = (Element) elemList.item(0);
+			NodeList childNodes = elm.getChildNodes();
+			StringBuffer value = new StringBuffer();
+			for (int elemCount = 0;
+				elemCount < childNodes.getLength();
+				elemCount++) {
+
+				if (childNodes.item(elemCount) instanceof org.w3c.dom.Text) {
+					value.append(childNodes.item(elemCount).getNodeValue());
+				}
+			}
+			elementValue = value.toString();
+		}
+		return elementValue;
+
+	}
+
+	public static String getChildElementValueNS(
+		Element parentElm,
+		String elementNamespaceURI,
+		String elementLocalName,
+		String defaultValue) {
+		String value =
+			getChildElementValueNS(parentElm, elementNamespaceURI, elementLocalName);
 		if (value == null) {
 			return defaultValue;
 		} else {
@@ -123,7 +185,7 @@ public class XMLHelper {
 		return trimmedString.toString();
 	}
 
-	public static String stripHtmlTags(String value) {
+	public static String stripHtmlTags(String value, boolean footnoteLinks) {
 		// Trim white space... Use html markup (p, br) as line breaks
 		value = preprocessMarkup(value);
 
@@ -132,6 +194,11 @@ public class XMLHelper {
 		boolean inTag = false;
 		boolean startOfLine = true;
 		String lastURL = null;
+		List footnotes = null;
+		if (footnoteLinks) {
+			footnotes = new ArrayList();
+		}
+
 		while (strTok.hasMoreTokens()) {
 			String token = strTok.nextToken();
 			if (token.equals("<")) {
@@ -183,9 +250,18 @@ public class XMLHelper {
 						if (endPos != -1) {
 							lastURL = token.substring(quotePos + 1, endPos);
 							if (upperToken.endsWith("/")) {
-								strippedString.append(" (");
-								strippedString.append(lastURL);
-								strippedString.append(')');
+								if (!footnoteLinks) {
+// Changed URL wrap characters from parenthesis to lt / gt to avoid
+// issue with certain newsreaders
+									strippedString.append(" <");
+									strippedString.append(lastURL);
+									strippedString.append('>');
+								} else {
+									footnotes.add(lastURL);
+									strippedString.append('[').append(
+										footnotes.size()).append(
+										']');
+								}
 								lastURL = null;
 								startOfLine = false;
 							}
@@ -193,9 +269,16 @@ public class XMLHelper {
 					}
 				} else if (upperToken.startsWith("/A")) {
 					if (lastURL != null) {
-						strippedString.append(" (");
-						strippedString.append(lastURL);
-						strippedString.append(')');
+						if (!footnoteLinks) {
+							strippedString.append(" <");
+							strippedString.append(lastURL);
+							strippedString.append('>');
+						} else {
+							footnotes.add(lastURL);
+							strippedString.append('[').append(
+								footnotes.size()).append(
+								']');
+						}
 						lastURL = null;
 						startOfLine = false;
 					}
@@ -225,6 +308,15 @@ public class XMLHelper {
 			} else if (!inTag) {
 				strippedString.append(token);
 				startOfLine = false;
+			}
+		}
+
+		if (footnoteLinks && footnotes.size() > 0) {
+			strippedString.append("\r\n\r\n");
+			for (int count = 0; count < footnotes.size(); count++) {
+				strippedString.append(count + 1).append(". ");
+				strippedString.append(footnotes.get(count));
+				strippedString.append("\r\n");
 			}
 		}
 		return strippedString.toString();
