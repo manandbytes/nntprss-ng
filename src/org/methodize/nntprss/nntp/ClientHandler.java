@@ -60,7 +60,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.4 2003/01/27 22:40:25 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.5 2003/02/01 02:45:12 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -618,7 +618,10 @@ public class ClientHandler implements Runnable {
 				} else if (command.equalsIgnoreCase("LIST")) {
 					if(parameters.length > 1 && !parameters[1].equalsIgnoreCase("ACTIVE")) {
 						if(parameters[1].equalsIgnoreCase("ACTIVE.TIMES")) {
-							pw.println("503 program error, function not performed");
+//							pw.println("503 program error, function not performed");
+// Added for nn
+							pw.println("215 information follows");
+							pw.println(".");
 						} else if(parameters[1].equalsIgnoreCase("DISTRIBUTIONS")) {
 							pw.println("503 program error, function not performed");
 						} else if(parameters[1].equalsIgnoreCase("DISTRIB.PATS")) {
@@ -935,6 +938,19 @@ public class ClientHandler implements Runnable {
 							}
 							pw.println(".");
 						}
+					}
+				} else if (command.equalsIgnoreCase("AUTHINFO")) {
+					if(parameters.length > 1) {
+						if(parameters[1].equalsIgnoreCase("USER") ||
+							parameters[1].equalsIgnoreCase("PASS")) {
+							pw.println("281 Authentication accepted");
+						} else if(parameters[1].equalsIgnoreCase("GENERIC")) {
+							pw.println("281 Authentication accepted");
+						} else {
+							pw.println("500 command not recognized");
+						}
+					} else {
+						pw.println("500 command not recognized");
 					}
 				} else if (command.length() > 0) {
 					// Unknown command
