@@ -49,7 +49,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.2 2003/09/28 20:15:01 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.3 2003/10/24 02:32:41 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends ChannelDAO {
@@ -90,7 +90,6 @@ public class MySQLChannelDAO extends ChannelDAO {
 					+ "lastModified bigint, "
 					+ "lastETag varchar(255), "
 					+ "rssVersion varchar(8), "
-					+ "historical bit, "
 					+ "enabled bit, "
 					+ "postingEnabled bit, "
 					+ "parseAtAllCost bit, "
@@ -98,7 +97,8 @@ public class MySQLChannelDAO extends ChannelDAO {
 					+ "publishConfig blob, "
 					+ "managingEditor varchar(128), "
 					+ "pollingInterval bigint not null, "
-					+ "status int)");
+					+ "status int, "
+					+ "expiration bigint)");
 
 			stmt.executeUpdate(
 				"CREATE TABLE items ("
@@ -194,14 +194,14 @@ public class MySQLChannelDAO extends ChannelDAO {
 
 					ps =
 						conn.prepareStatement(
-							"INSERT INTO channels(url, name, created, lastPolled, lastArticle, historical, enabled, postingEnabled, parseAtAllCost, pollingInterval, status) "
-								+ "values(?, ?, ?, 0, ?, ?, "
+							"INSERT INTO channels(url, name, created, lastPolled, lastArticle, enabled, postingEnabled, parseAtAllCost, pollingInterval, status, expiration) "
+								+ "values(?, ?, ?, 0, ?, "
 								+ MYSQL_TRUE
 								+ ", "
 								+ MYSQL_FALSE
 								+ ", "
 								+ MYSQL_FALSE
-								+ ", 0, " + Channel.STATUS_OK + ")");
+								+ ", 0, " + Channel.STATUS_OK + ", " +								+ Channel.EXPIRATION_KEEP + ")");
 
 					for (int channelCount = 0;
 						channelCount < channelList.getLength();
@@ -211,11 +211,6 @@ public class MySQLChannelDAO extends ChannelDAO {
 						String url = channelElm.getAttribute("url");
 						String name = channelElm.getAttribute("name");
 
-						String historicalStr = channelElm.getAttribute("historical");
-						boolean historical = true;
-						if(historicalStr != null) {
-							historical = historicalStr.equalsIgnoreCase("true");
-						}
 						int paramCount = 1;
 						ps.setString(paramCount++, url);
 						ps.setString(paramCount++, name);
@@ -224,7 +219,6 @@ public class MySQLChannelDAO extends ChannelDAO {
 							new Timestamp(System.currentTimeMillis()));
 // Last Article
 						ps.setInt(paramCount++, 0);
-						ps.setBoolean(paramCount++, historical);
 						ps.executeUpdate();
 					}
 				}
@@ -376,7 +370,7 @@ public class MySQLChannelDAO extends ChannelDAO {
 			conn = DriverManager.getConnection(ChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"INSERT INTO channels(url, name, lastArticle, created, historical, enabled, postingEnabled, publishAPI, publishConfig, parseAtAllCost, pollingInterval, status) "
+					"INSERT INTO channels(url, name, lastArticle, created, enabled, postingEnabled, publishAPI, publishConfig, parseAtAllCost, pollingInterval, status, expiration) "
 						+ "values(?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 			int paramCount = 1;
@@ -385,7 +379,6 @@ public class MySQLChannelDAO extends ChannelDAO {
 			ps.setTimestamp(
 				paramCount++,
 				new Timestamp(channel.getCreated().getTime()));
-			ps.setBoolean(paramCount++, channel.isHistorical());
 			ps.setBoolean(paramCount++, channel.isEnabled());
 			ps.setBoolean(paramCount++, channel.isPostingEnabled());
 			ps.setString(paramCount++, channel.getPublishAPI());
@@ -393,6 +386,7 @@ public class MySQLChannelDAO extends ChannelDAO {
 			ps.setBoolean(paramCount++, channel.isParseAtAllCost());
 			ps.setLong(paramCount++, channel.getPollingIntervalSeconds());
 			ps.setInt(paramCount++, channel.getStatus());
+			ps.setLong(paramCount++, channel.getExpiration());
 			ps.executeUpdate();
 
 			ps.close();
