@@ -31,10 +31,9 @@ package org.methodize.nntprss.admin;
  * ----------------------------------------------------- */
 
 import java.io.InputStream;
-import java.util.Properties;
 
 import org.methodize.nntprss.nntp.NNTPServer;
-import org.methodize.nntprss.rss.ChannelManager;
+import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.util.AppConstants;
 import org.mortbay.http.BasicAuthenticator;
 import org.mortbay.http.HashUserRealm;
@@ -47,10 +46,11 @@ import org.mortbay.http.handler.SecurityHandler;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServer.java,v 1.4 2003/03/24 03:10:12 jasonbrome Exp $
+ * @version $Id: AdminServer.java,v 1.5 2003/07/19 00:02:26 jasonbrome Exp $
  */
 public class AdminServer {
 
@@ -78,6 +78,12 @@ public class AdminServer {
 		Element adminConfig =
 			(Element) rootElm.getElementsByTagName("admin").item(0);
 		port = Integer.parseInt(adminConfig.getAttribute("port"));
+
+		Node addressNode = adminConfig.getAttributeNode("address");
+		String address = null;
+		if(addressNode != null) {
+			address = addressNode.getNodeValue();
+		}
 
 		httpServer = new HttpServer();
 
@@ -116,6 +122,10 @@ public class AdminServer {
 
 		HttpListener httpListener = new SocketListener();
 		httpListener.setPort(port);
+		if(address != null) {
+			httpListener.setHost(address);
+		}
+
 		httpServer.addListener(httpListener);
 
 	}
