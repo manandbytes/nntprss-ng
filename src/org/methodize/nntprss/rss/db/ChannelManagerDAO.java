@@ -55,17 +55,18 @@ import org.methodize.nntprss.rss.Channel;
 import org.methodize.nntprss.rss.ChannelManager;
 import org.methodize.nntprss.rss.Item;
 import org.methodize.nntprss.util.AppConstants;
+import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.5 2003/01/27 23:16:16 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.6 2003/03/22 16:31:35 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
 
-	private static final int DBVERSION = 2;
+	private static final int DBVERSION = 4;
 
 	private Logger log = Logger.getLogger(ChannelManagerDAO.class);
 
@@ -107,7 +108,15 @@ public class ChannelManagerDAO {
 					+ "lastModified bigint, "
 					+ "lastETag varchar(256), "
 					+ "rssVersion varchar(8), "
-					+ "historical bit )");
+					+ "historical bit, "
+					+ "enabled bit, "
+					+ "postingEnabled bit, "
+					+ "parseAtAllCost bit, "
+					+ "publishAPI varchar(128), "
+					+ "publishConfig varchar(2048), "
+					+ "managingEditor varchar(128), "
+					+ "pollingInterval bigint not null)");
+
 			stmt.executeUpdate(
 				"CREATE CACHED TABLE items ("
 					+ "articleNumber int not null, "
@@ -123,13 +132,17 @@ public class ChannelManagerDAO {
 					+ "pollingInterval bigint not null, "
 					+ "proxyServer varchar(256), "
 					+ "proxyPort int, "
+                	+ "proxyUserID varchar(256), " 
+                	+ "proxyPassword varchar(256), "
 					+ "contentType int, "
-					+ "dbVersion int)");
+					+ "dbVersion int, "
+					+ "nntpSecure bit)");
 			stmt.executeUpdate(
-				"INSERT INTO config(pollingInterval, contentType, dbVersion) VALUES(60*60, "
+				"INSERT INTO config(pollingInterval, contentType, dbVersion, nntpSecure) VALUES(60*60, "
 					+ AppConstants.CONTENT_TYPE_MIXED 
 					+ ", "
 					+ DBVERSION
+					+ ", false"
 					+ ")");
 
 			NodeList channelsList =
@@ -142,8 +155,8 @@ public class ChannelManagerDAO {
 
 					ps =
 						conn.prepareStatement(
-							"INSERT INTO channels(url, name, created, lastArticle, historical) "
-								+ "values(?, ?, ?, ?, ?)");
+							"INSERT INTO channels(url, name, created, lastArticle, historical, enabled, postingEnabled, parseAtAllCost, pollingInterval) "
+								+ "values(?, ?, ?, ?, ?, true, false, false, 0)");
 
 					for (int channelCount = 0;
 						channelCount < channelList.getLength();
@@ -220,17 +233,15 @@ public class ChannelManagerDAO {
 
 		try {
 			conn = DriverManager.getConnection(DBManager.POOL_CONNECT_STRING);
+			stmt = conn.createStatement();
 
 			switch(dbVersion) {
 // v0.1 updates
 				case 0:
-					stmt = conn.createStatement();
 					stmt.executeUpdate("ALTER TABLE config ADD COLUMN contentType int");
 					stmt.executeUpdate("UPDATE config SET contentType = " 
 						+ AppConstants.CONTENT_TYPE_MIXED);
 					stmt.executeUpdate("ALTER TABLE config ADD COLUMN dbVersion int");
-					stmt.executeUpdate("UPDATE config SET dbVersion = " 
-						+ DBVERSION);
 		
 // Channel
 					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN title varchar(256)");
@@ -239,8 +250,32 @@ public class ChannelManagerDAO {
 		
 // Items
 					stmt.executeUpdate("ALTER TABLE items ADD COLUMN comments varchar(500)");					
+
+				case 2:
+					stmt.executeUpdate("ALTER TABLE config ADD COLUMN nntpSecure bit");
+					stmt.executeUpdate("UPDATE config SET nntpSecure = false");
+
+	                stmt.executeUpdate("ALTER TABLE config ADD COLUMN proxyUserID varchar(256)");
+                	stmt.executeUpdate("ALTER TABLE config ADD COLUMN proxyPassword varchar(256)");
+
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN enabled bit");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN postingEnabled bit");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN parseAtAllCost bit");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN publishAPI varchar(128)");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN publishConfig varchar(2048)");
+
+					stmt.executeUpdate("UPDATE channels SET enabled = true, postingEnabled = false, parseAtAllCost = false");
+
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN managingEditor varchar(128)");
+
+				case 3:
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN pollingInterval bigint");
+					stmt.executeUpdate("UPDATE channels SET pollingInterval = 0");
+				
 				default:
 // Force re-poll of all channels after DB upgrade...
+					stmt.executeUpdate("UPDATE config SET dbVersion = " 
+						+ DBVERSION);
 					stmt.executeUpdate("UPDATE channels SET lastPolled = null, lastModified = null, lastETag = null");
 			}
 
@@ -338,6 +373,8 @@ public class ChannelManagerDAO {
 					channelManager.setPollingIntervalSeconds(rs.getLong("pollingInterval"));
 					channelManager.setProxyServer(rs.getString("proxyServer"));
 					channelManager.setProxyPort(rs.getInt("proxyPort"));
+                    channelManager.setProxyUserID(rs.getString("proxyUserID"));
+                    channelManager.setProxyPassword(rs.getString("proxyPassword"));
 				}
 			}
 		} catch (SQLException se) {
@@ -369,10 +406,11 @@ public class ChannelManagerDAO {
 		try {
 			conn = DriverManager.getConnection(DBManager.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM CONFIG");
+			rs = stmt.executeQuery("SELECT contentType, nntpSecure FROM CONFIG");
 			if(rs != null) {
 				if(rs.next()) {
 					nntpServer.setContentType(rs.getInt("contentType"));
+					nntpServer.setSecure(rs.getBoolean("nntpSecure"));
 				}
 			}
 		} catch (SQLException se) {
@@ -460,6 +498,15 @@ public class ChannelManagerDAO {
 					channel.setLastETag(rs.getString("lastETag"));
 					channel.setRssVersion(rs.getString("rssVersion"));
 					channel.setHistorical(rs.getBoolean("historical"));
+					channel.setEnabled(rs.getBoolean("enabled"));
+					channel.setPostingEnabled(rs.getBoolean("postingEnabled"));
+					channel.setPublishAPI(rs.getString("publishAPI"));
+					channel.setPublishConfig(XMLHelper.xmlToStringHashMap(rs.getString("publishConfig")));
+
+					channel.setParseAtAllCost(rs.getBoolean("parseAtAllCost"));
+					channel.setManagingEditor(rs.getString("managingEditor"));
+
+					channel.setPollingIntervalSeconds(rs.getLong("pollingInterval"));
 
 					channels.put(channel.getName(), channel);
 				}
@@ -510,8 +557,8 @@ public class ChannelManagerDAO {
 			conn = DriverManager.getConnection(DBManager.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"INSERT INTO channels(url, name, lastArticle, created, historical) "
-						+ "values(?, ?, 0, ?, ?); CALL IDENTITY()");
+					"INSERT INTO channels(url, name, lastArticle, created, historical, enabled, postingEnabled, publishAPI, publishConfig, parseAtAllCost, pollingInterval) "
+						+ "values(?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?); CALL IDENTITY()");
 
 
 			int paramCount = 1;
@@ -521,6 +568,12 @@ public class ChannelManagerDAO {
 				paramCount++,
 				new Timestamp(channel.getCreated().getTime()));
 			ps.setBoolean(paramCount++, channel.isHistorical());
+			ps.setBoolean(paramCount++, channel.isEnabled());
+			ps.setBoolean(paramCount++, channel.isPostingEnabled());
+			ps.setString(paramCount++, channel.getPublishAPI());
+			ps.setString(paramCount++, XMLHelper.stringMapToXML(channel.getPublishConfig()));
+			ps.setBoolean(paramCount++, channel.isParseAtAllCost());
+			ps.setLong(paramCount++, channel.getPollingIntervalSeconds());
 			rs = ps.executeQuery();
 			
 			if(rs != null) {
@@ -557,7 +610,14 @@ public class ChannelManagerDAO {
 						+ "SET author = ?, name = ?, url = ?, "
 						+ "title = ?, link = ?, description = ?, "
 						+ "lastArticle = ?, "
-						+ "lastPolled = ?, lastModified = ?, lastETag = ?, rssVersion = ?, historical = ? "
+						+ "lastPolled = ?, lastModified = ?, lastETag = ?, rssVersion = ?, historical = ?, "
+						+ "enabled = ?, "
+						+ "postingEnabled = ?, "
+						+ "publishAPI = ?, "
+						+ "publishConfig = ?, "
+						+ "parseAtAllCost = ?, "
+						+ "managingEditor = ?, "
+						+ "pollingInterval = ? "
 						+ "WHERE id = ?");
 
 			int paramCount = 1;
@@ -568,13 +628,30 @@ public class ChannelManagerDAO {
 			ps.setString(paramCount++, channel.getLink());
 			ps.setString(paramCount++, channel.getDescription());
 			ps.setInt(paramCount++, channel.getLastArticleNumber());
-			ps.setTimestamp(
-				paramCount++,
-				new Timestamp(channel.getLastPolled().getTime()));
+
+			if(channel.getLastPolled() != null) {
+				ps.setTimestamp(
+					paramCount++,
+					new Timestamp(channel.getLastPolled().getTime()));
+			} else {
+				ps.setNull(
+					paramCount++,
+					java.sql.Types.TIMESTAMP);
+			}
+			
 			ps.setLong(paramCount++, channel.getLastModified());
 			ps.setString(paramCount++, channel.getLastETag());
 			ps.setString(paramCount++, channel.getRssVersion());
 			ps.setBoolean(paramCount++, channel.isHistorical());
+			ps.setBoolean(paramCount++, channel.isEnabled());
+			ps.setBoolean(paramCount++, channel.isPostingEnabled());
+			ps.setString(paramCount++, channel.getPublishAPI());
+			ps.setString(paramCount++, XMLHelper.stringMapToXML(channel.getPublishConfig()));
+			ps.setBoolean(paramCount++, channel.isParseAtAllCost());
+
+			ps.setString(paramCount++, channel.getManagingEditor());
+
+			ps.setLong(paramCount++, channel.getPollingIntervalSeconds());
 
 			ps.setInt(paramCount++, channel.getId());
 			ps.executeUpdate();
@@ -884,11 +961,13 @@ public class ChannelManagerDAO {
 				ps =
 					conn.prepareStatement(
 						"SELECT * FROM items WHERE articleNumber >= ? and articleNumber <= ? AND channel = ? ORDER BY articleNumber");
-			} else if(articleRange[0] == AppConstants.OPEN_ENDED_RANGE) {
+			} else if(articleRange[0] == AppConstants.OPEN_ENDED_RANGE &&
+				articleRange[1] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
 						"SELECT * FROM items WHERE articleNumber <= ? AND channel = ? ORDER BY articleNumber");
-			} else if(articleRange[1] == AppConstants.OPEN_ENDED_RANGE) {
+			} else if(articleRange[1] == AppConstants.OPEN_ENDED_RANGE &&
+				articleRange[0] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
 						"SELECT * FROM items WHERE articleNumber >= ? AND channel = ? ORDER BY articleNumber");
@@ -951,6 +1030,62 @@ public class ChannelManagerDAO {
 
 		return items;
 	}
+
+
+	/**
+	 * Method loadArticleNumbers
+	 * @param channel
+	 * @return List
+	 * 
+	 * Supports NNTP listgroup command
+	 */
+
+	public List loadArticleNumbers(
+		Channel channel) {
+
+		List articleNumbers = new ArrayList();
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = DriverManager.getConnection(DBManager.POOL_CONNECT_STRING);
+			ps =
+				conn.prepareStatement(
+					"SELECT articleNumber FROM items WHERE channel = ? ORDER BY articleNumber");
+
+			int paramCount = 1;
+			ps.setInt(paramCount++, channel.getId());
+
+			rs = ps.executeQuery();
+
+			if (rs != null) {
+				while (rs.next()) {
+					articleNumbers.add(new Integer(rs.getInt("articleNumber")));
+				}
+			}
+		} catch (SQLException se) {
+			throw new RuntimeException(se);
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+			} catch (SQLException se) {
+			}
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException se) {
+			}
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+			}
+		}
+
+		return articleNumbers;
+	}
+
 
 	public void saveItem(Item item) {
 		Connection conn = null;
@@ -1050,12 +1185,16 @@ public class ChannelManagerDAO {
 					"UPDATE config "
 						+ "SET pollingInterval = ?, "
 						+ "proxyServer = ?, "
-						+ "proxyPort = ?");
+						+ "proxyPort = ?, "
+						+ "proxyUserID = ?, "
+						+ "proxyPassword = ?");
 
 			int paramCount = 1;
 			ps.setLong(paramCount++, rssManager.getPollingIntervalSeconds());
 			ps.setString(paramCount++, rssManager.getProxyServer());
 			ps.setInt(paramCount++, rssManager.getProxyPort());
+            ps.setString(paramCount++, rssManager.getProxyUserID());
+            ps.setString(paramCount++, rssManager.getProxyPassword());
 			ps.executeUpdate();
 
 		} catch (SQLException se) {
@@ -1085,10 +1224,11 @@ public class ChannelManagerDAO {
 			ps =
 				conn.prepareStatement(
 					"UPDATE config "
-						+ "SET contentType = ?");
+						+ "SET contentType = ?, nntpSecure = ?");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, nntpServer.getContentType());
+			ps.setBoolean(paramCount++, nntpServer.isSecure());
 			ps.executeUpdate();
 
 		} catch (SQLException se) {
