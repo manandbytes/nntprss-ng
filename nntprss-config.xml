@@ -7,22 +7,28 @@
 <!--  <db connect='jdbc:hsqldb:hsql://localhost'/> -->
   <db connect='jdbc:hsqldb:nntprssdb'/>
 
+<!-- Listener port for NNTP server -->
+  <nntp port='119'/>
+
 <!-- Listener port for web admin interface -->
   <admin port='7810'/>
 
 <!-- Initial channel list -->
+<!-- These are the channels defined during a fresh installation of nntp//rss -->
+
   <channels>
 
     <channel name='com.benhammersley' url='http://www.benhammersley.com/index.xml' historical='true'/>
     <channel name='com.danielsjourney' url='http://www.danielsjourney.com/rss.php' historical='true'/>
     <channel name='com.dynamicobjects.abort.retry.fail' url='http://www.dynamicobjects.com/~diego/weblogs/arf/index.xml' historical='true'/>
-    <channel name='com.hyperorg.joho' url='http://www.hyperorg.com/blogger/blogger_rss.xml' historical='true'/>
+    <channel name='com.hyperorg.joho' url='http://www.hyperorg.com/blogger/index.rdf' historical='true'/>
     <channel name='com.phrasewise.archipelago' url='http://archipelago.phrasewise.com/xml/rss.xml' historical='true'/>
     <channel name='com.phrasewise.mpt' url='http://mpt.phrasewise.com/xml/rss.xml' historical='true'/>
     <channel name='com.russellbeattie' url='http://www.russellbeattie.com/notebook/rss.jsp' historical='true'/>
     <channel name='com.sixapart' url='http://www.sixapart.com/log/index.rdf' historical='true'/>
     <channel name='com.scripting.news' url='http://www.scripting.com/rss.xml' historical='true'/>
     <channel name='com.siliconvalley.weblog.dangillmor' url='http://weblog.siliconvalley.com/column/dangillmor/index.xml' historical='true'/>
+    <channel name='nntprss.news' url='http://rss.methodize.org/nntprss.xml' historical='true'/>
     <channel name='org.diveintomark' url='http://diveintomark.org/xml/rss2.xml' historical='true'/>
     <channel name='org.slashdot' url='http://slashdot.org/slashdot.rdf' historical='true'/>
 
