@@ -39,7 +39,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.2 2003/01/22 05:12:56 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.3 2003/01/28 05:40:18 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -130,52 +130,83 @@ public class XMLHelper {
 			String token = strTok.nextToken();
 			if (token.equals("<")) {
 				inTag = true;
-				if(strTok.hasMoreTokens()) {
+
+// Read entire tag... Tag contents might be split over multiple lines
+				StringBuffer concatToken = new StringBuffer();
+				while(strTok.hasMoreTokens()) {
 					token = strTok.nextToken();
 					if(token.equals(">")) {
 						inTag = false;
+						break;
 					} else {
-						String upperToken = token.toUpperCase();
-						if(upperToken.startsWith("A ")) {
-							int hrefPos = upperToken.indexOf("HREF=");
-							if(hrefPos > -1) {
-								char quote = token.charAt(hrefPos+5);
-								int endPos = token.indexOf(quote, hrefPos+6);
-								if(endPos != -1) {
-									lastURL = token.substring(hrefPos+6, endPos);
-									if(upperToken.endsWith("/")) {
-										strippedString.append(" (");
-										strippedString.append(lastURL);
-										strippedString.append(')');
-										lastURL = null;
-										startOfLine = false;
-									} 
-								}
-							}		
-						} else if(upperToken.startsWith("/A")) {
-							if(lastURL != null) {
-									strippedString.append(" (");
-									strippedString.append(lastURL);
-									strippedString.append(')');
-									lastURL = null;
-									startOfLine = false;
-							}
-						} else if(upperToken.equals("P") ||
-							upperToken.equals("P/") ||
-							upperToken.equals("P /") ||
-							upperToken.equals("UL") ||
-							upperToken.equals("/UL")) {
-							strippedString.append("\r\n\r\n");
-							startOfLine = true;
-						} else if(upperToken.equals("BR") ||
-							upperToken.equals("BR/") ||
-							upperToken.equals("BR /") ||
-							upperToken.equals("LI")) {
-							strippedString.append("\r\n");
-							startOfLine = true;
+						if(!token.equals("\n")) {
+							concatToken.append(token);
 						}
 					}
 				}
+
+				token = concatToken.toString();
+
+				String upperToken = token.toUpperCase();
+				if(upperToken.startsWith("A ")) {
+					int hrefPos = upperToken.indexOf("HREF=");
+					if(hrefPos > -1) {
+						int quotePos = hrefPos + 5;
+														
+						while(quotePos < token.length() &&
+						    Character.isWhitespace(token.charAt(quotePos))) {
+							quotePos ++;
+						}
+
+						char quote = upperToken.charAt(quotePos);
+						
+						int endPos;
+						if(quote == '"' || quote == '\'') {
+// URL wrapped in quotes / apostrophes
+							endPos = token.indexOf(quote, quotePos+1);
+						} else {
+// URL not enclosed								
+							endPos = quotePos + 1;
+							while(endPos < token.length() &&
+							    !Character.isWhitespace(token.charAt(endPos))) {
+								endPos++;
+							}
+						}
+						
+						if(endPos != -1) {
+							lastURL = token.substring(quotePos + 1, endPos);
+							if(upperToken.endsWith("/")) {
+								strippedString.append(" (");
+								strippedString.append(lastURL);
+								strippedString.append(')');
+								lastURL = null;
+								startOfLine = false;
+							} 
+						}
+					}		
+				} else if(upperToken.startsWith("/A")) {
+					if(lastURL != null) {
+							strippedString.append(" (");
+							strippedString.append(lastURL);
+							strippedString.append(')');
+							lastURL = null;
+							startOfLine = false;
+					}
+				} else if(upperToken.equals("P") ||
+					upperToken.equals("P/") ||
+					upperToken.equals("P /") ||
+					upperToken.equals("UL") ||
+					upperToken.equals("/UL")) {
+					strippedString.append("\r\n\r\n");
+					startOfLine = true;
+				} else if(upperToken.equals("BR") ||
+					upperToken.equals("BR/") ||
+					upperToken.equals("BR /") ||
+					upperToken.equals("LI")) {
+					strippedString.append("\r\n");
+					startOfLine = true;
+				}
+
 			} else if (token.equals(">")) {
 				inTag = false;
 			} else if (token.equals("\n")) {
