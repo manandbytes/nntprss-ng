@@ -33,9 +33,12 @@ package org.methodize.nntprss.util;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
+
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: FixedThreadPool.java,v 1.3 2003/01/27 22:42:22 jasonbrome Exp $
+ * @version $Id: FixedThreadPool.java,v 1.4 2003/03/08 19:48:53 jasonbrome Exp $
  */
 
 
@@ -45,6 +48,8 @@ public class FixedThreadPool {
 	private List pool = new ArrayList();
 	private boolean shutdown = false;
 	private String threadName;
+
+	private Logger log = Logger.getLogger(FixedThreadPool.class);
 
 	private class WorkerThread extends Thread {
 		private boolean shutdown = false;
@@ -86,6 +91,10 @@ public class FixedThreadPool {
 				try {
 					task.run();
 				} catch (Exception e) {
+					if(log.isEnabledFor(Priority.WARN)) {
+						log.warn("Exception thrown in FixedThreadPool.Worker during task execution",
+							e);
+					}
 				}
 
 				task = null;
@@ -120,7 +129,8 @@ public class FixedThreadPool {
 		}
 
 		for (int i = 0; i < maxThreads; i++) {
-			WorkerThread worker = new WorkerThread(threadGroup, threadName);
+			WorkerThread worker = new WorkerThread(threadGroup, threadName
+				+ " #" + i);
 			pool.add(worker);
 			worker.start();
 		}
