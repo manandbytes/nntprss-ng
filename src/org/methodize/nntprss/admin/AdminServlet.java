@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.2 2003/01/22 05:04:45 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.3 2003/01/27 22:39:32 jasonbrome Exp $
  */
 public class AdminServlet extends HttpServlet {
 
@@ -210,6 +210,9 @@ public class AdminServlet extends HttpServlet {
 					break;
 				case Channel.STATUS_INVALID_CONTENT:
 					writer.write("<td bgcolor='#FF0000'><font color='#FFFFFF'>Last RSS document retrieved could not be parsed, check URL.</font>");
+					break;
+				case Channel.STATUS_CONNECTION_TIMEOUT:
+					writer.write("<td bgcolor='#FFFF00'><font color='#000000'>Currently unable to contact RSS web server (Connection timeout).</font>");
 					break;
 				default:
 					writer.write("<td>OK");
@@ -416,6 +419,11 @@ public class AdminServlet extends HttpServlet {
 					writer.write("<td bgcolor='#FF0000'><a href='/?action=show&name=" + channel.getName() + "'><font color='#FFFFFF'>" + channel.getName() + "</font></a></td>");
 					writer.write("<td bgcolor='#FF0000'><font color='#FFFFFF'>" + url + "</font></td>");
 					writer.write("<td bgcolor='#FF0000'><font color='#FFFFFF'>" + lastPolled + "</font></td></tr>");				
+					break;
+				case Channel.STATUS_CONNECTION_TIMEOUT:
+					writer.write("<td bgcolor='#FFFF00'><a href='/?action=show&name=" + channel.getName() + "'><font color='#000000'>" + channel.getName() + "</font></a></td>");
+					writer.write("<td bgcolor='#FFFF00'><font color='#000000'>" + url + "</font></td>");
+					writer.write("<td bgcolor='#FFFF00'><font color='#000000'>" + lastPolled + "</font></td></tr>");				
 					break;
 				default:
 					writer.write("<td><a href='/?action=show&name=" + channel.getName() + "'>" + channel.getName() + "</a></td>");
