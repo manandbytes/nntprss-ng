@@ -9,24 +9,24 @@ package org.methodize.nntprss.feed.db;
  *        PO Box 3865
  *        Grand Central Station
  *        New York NY 10163
- * 
+ *
  * This file is part of nntp//rss
- * 
- * nntp//rss is free software; you can redistribute it 
- * and/or modify it under the terms of the GNU General 
- * Public License as published by the Free Software Foundation; 
- * either version 2 of the License, or (at your option) any 
+ *
+ * nntp//rss is free software; you can redistribute it
+ * and/or modify it under the terms of the GNU General
+ * Public License as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your option) any
  * later version.
  *
- * This program is distributed in the hope that it will be 
- * useful, but WITHOUT ANY WARRANTY; without even the implied 
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
- * PURPOSE.  See the GNU General Public License for more 
+ * This program is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE.  See the GNU General Public License for more
  * details.
  *
- * You should have received a copy of the GNU General Public 
- * License along with this program; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
+ * You should have received a copy of the GNU General Public
+ * License along with this program; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.7 2004/03/28 22:26:36 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.8 2004/09/04 19:43:15 aslom Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -171,7 +171,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             if (rs != null) {
                 ps =
                     conn.prepareStatement(
-                        "SELECT MIN(articleNumber), COUNT(articleNumber) FROM "
+                        "SELECT MIN(articleNumber), COUNT(articleNumber), MAX(articleNumber) FROM "
                             + TABLE_ITEMS
                             + " WHERE channel = ?");
                 while (rs.next()) {
@@ -206,6 +206,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                             }
 
                             channel.setTotalArticles(rs2.getInt(2));
+                            channel.setLastArticleNumber(rs2.getInt(3));
                         }
                         rs2.close();
                     }
@@ -660,7 +661,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             ps.setLong(paramCount++, channel.getLastModified());
             ps.setString(paramCount++, channel.getLastETag());
             ps.setString(paramCount++, channel.getRssVersion());
-            //			ps.setBoolean(paramCount++, channel.isHistorical());
+            //                  ps.setBoolean(paramCount++, channel.isHistorical());
             ps.setBoolean(paramCount++, channel.isEnabled());
             ps.setBoolean(paramCount++, channel.isPostingEnabled());
             ps.setString(paramCount++, channel.getPublishAPI());
@@ -1255,7 +1256,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     expiredIds.add(new Integer(rs.getInt(1)));
                 }
 
-                // Delete category items				
+                // Delete category items
                 StringBuffer stBuf =
                     new StringBuffer(
                         "DELETE FROM "
@@ -1284,7 +1285,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
                 ps.executeUpdate();
 
-                // Delete items				
+                // Delete items
                 stBuf =
                     new StringBuffer(
                         "DELETE FROM "
@@ -1343,7 +1344,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 if (rs.next()) {
                     int firstArticle = rs.getInt("firstArticleNumber");
                     if (firstArticle == 0) {
-                        // Have yet to sync any articles, so first article number 
+                        // Have yet to sync any articles, so first article number
                         // will be 1
                         if (channel.getLastArticleNumber() == 0) {
                             channel.setFirstArticleNumber(1);
@@ -1431,7 +1432,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 if (rs.next()) {
                     int firstArticle = rs.getInt("firstArticleNumber");
                     if (firstArticle == 0) {
-                        // Have yet to sync any articles, so first article number 
+                        // Have yet to sync any articles, so first article number
                         // will be 1
                         if (channel.getLastArticleNumber() == 0) {
                             channel.setFirstArticleNumber(1);
