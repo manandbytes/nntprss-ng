@@ -1,7 +1,7 @@
-nntp//rss - version 0.2
+nntp//rss - version 0.3
 -----------------------
 
-January 27, 2003
+March 23, 2003
 
 Bridging the worlds of NNTP clients and RSS feeds, nntp//rss is an 
 application that will enable you to use your existing NNTP 
@@ -17,7 +17,7 @@ Requirements
 
 - Java Runtime Environment 
   (nntp//rss has been tested against JDK 1.3.1 and JDK 1.4.1 on
-  Win32, and JDK 1.4.1 on Solaris and Red Hat Linux 7.2)
+  Win32, and JDK 1.4.1 on Solaris, Red Hat Linux 7.2 and Mac OS X)
   Sun's Java Runtime Environment may be downloaded from:
   http://java.sun.com/j2se/downloads.html
   
@@ -27,17 +27,19 @@ Requirements
     - Netscape v4.7
     - Mozilla v1.2.1
     - Free Agent v1.92
-    - MT-NewsWatcher v3.1 (Mac OS 9)
+    - MT-NewsWatcher v3.1 (Mac OS 9), v3.2 (Max OS X)
     - Tin 1.5.8 (RedHat 7.2) (ensure content type is set
         to text/plain in nntp//rss's System Configuration)
     - MacSoup 2.4.6 (Mac OS 9) (ensure content type is set
         to text/plain in nntp//rss's System Configuration)
+    - Entourage (Office X - Mac OS X)
+    - MicroPlanet Gravity v2.50
 
 
-Upgrading from version 0.1
+Upgrading from version 0.2
 ==========================
 
-If you are upgrading from v0.1, follow these steps to ensure
+If you are upgrading from v0.2, follow these steps to ensure
 that your existing channel configuration is maintained:
 
 1. Backup your channel configuration.  Go into nntp//rss's web
@@ -45,20 +47,38 @@ that your existing channel configuration is maintained:
    click on 'Export Channel List'.  Save the nntprss-channels.xml
    file to a safe location.
 
-2. Stop nntp//rss v0.1
+2. Stop nntp//rss v0.2
 
 3. Backup your current nntp//rss directory.
 
-4. Unpack nntp//rss v0.2 to a *different* directory.
+4. As 0.3 contains a number of additional libraries and files,
+   the easiest way to upgrade is to unpack nntp//rss 0.3 to a 
+   separate directory, then copy over your nntp//rss 0.2 database
+   files.  These files contain configuration and channel data.
 
-5. Copy nntprss.jar, nntprss-start.jar and nntprss-config.xml
-   from the 0.2 directory to your original nntp//rss directory.
+   i. Unpack v0.3 to a new directory
+   ii. Copy the following files from the root (nntprss) directory of 
+   your nntp//rss 0.2 installation, to the root (nntprss) directory
+   of your 0.3 installation:
    
-6. Restart nntp//rss in your original directory
-   (java -jar nntprss-start.jar)
+   nntprssdb.properties
+   nntprssdb.data
+   nntprssdb.script
+   nntprssdb.backup
+
+5. If you had changed the NNTP or administrative web interface
+   listener ports, you should copy over the nntprss-config.xml
+   from your previous version.
+   
+   Also, if you had configured a users.properties file, for
+   web interface security, you should copy this over from your
+   previous installation.
+
+6. Start nntp//rss 0.3
+   (See below for startup information)
 
 Your existing configuration will be kept.  nntp//rss will automatically
-upgrade its database to take advantage of 0.2 features.
+upgrade its database to take advantage of 0.3 features.
 
 
 Installation
@@ -90,6 +110,12 @@ Running nntp//rss
 In the directory where you unpacked the nntp//rss distribution, execute
 the following command:
 
+Windows:
+
+javaw -jar nntprss-start.jar
+
+Other Platforms:
+
 java -jar nntprss-start.jar
 
 This will start the nntp//rss server.  The first time the server is
@@ -97,7 +123,7 @@ run, it will create and prepopulate a database with some sample feeds.
 These feeds can be changed through the web-based administration
 interface.
 
-Note to Unix/Linux users:
+Note to Unix, Linux and Mac OS X users:
 
 As nntp//rss starts an NNTP client listener on TCP port 119, 
 if you are running on a Unix-based environment, the user under which
@@ -159,12 +185,18 @@ The final option in System Configuration defines how content
 is served to newsreaders.  You can either select multipart/alternative
 (plain text and html), text/plain or text/html.
 
+Click on help within the web interface for more information.
+
 
 Shutting down nntp//rss
 =======================
 
-Windows - Issue a CTRL+C in the Window where nntp//rss is running.
-The application will terminate all activity and cleanly shutdown
+Windows - Right click on the nntp//rss System Tray icon, and 
+select Exit.  Confirm the shutdown by click on the OK button.
+The application will terminate all activity and cleanly shutdown.
+If nntp//rss has been configured to run as a Windows Service,
+use the stop button within Windows' Service Manager to shutdown
+nntp//rss.
 
 Unix/Linux - If nntp//rss is running as a foreground process in a
 shell, issue a CTRL+C to cleanly shutdown the application.  If it
