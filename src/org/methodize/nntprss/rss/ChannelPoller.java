@@ -41,7 +41,7 @@ import org.methodize.nntprss.util.SimpleThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.3 2003/01/28 06:12:03 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.4 2003/02/20 23:34:02 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
@@ -79,9 +79,11 @@ public class ChannelPoller extends Thread {
 			if (log.isDebugEnabled()) {
 				log.debug("Checking feeds for poll action");
 			}
-			Iterator channelIter = channels.values().iterator();
 
 			try {
+// Moved channel iterator retrieval within loop...
+				Iterator channelIter = channels.values().iterator();
+
 				while (channelIter.hasNext() && active) {
 					Channel channel = (Channel) channelIter.next();
 					if (channel.isAwaitingPoll()) {
