@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.PushbackInputStream;
+import java.net.*;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -86,7 +87,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.14 2004/10/29 00:56:01 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.15 2005/02/13 21:56:24 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer
@@ -184,7 +185,7 @@ public class Channel
             httpClient.getState().setCredentials(
                 null,
                 null,
-                new UsernamePasswordCredentials(url.getUserInfo()));
+                new UsernamePasswordCredentials(URLDecoder.decode(url.getUserInfo())));
         }
 
         TimeZone gmt = TimeZone.getTimeZone("GMT");
@@ -209,7 +210,7 @@ public class Channel
             httpClient.getState().setCredentials(
                 null,
                 null,
-                new UsernamePasswordCredentials(url.getUserInfo()));
+                new UsernamePasswordCredentials(URLDecoder.decode(url.getUserInfo())));
         }
         return httpClient;
 
@@ -550,7 +551,7 @@ public class Channel
                 client.getState().setCredentials(
                     null,
                     null,
-                    new UsernamePasswordCredentials(url.getUserInfo()));
+                    new UsernamePasswordCredentials(URLDecoder.decode(url.getUserInfo())));
             }
 
             String urlString = url.toString();
