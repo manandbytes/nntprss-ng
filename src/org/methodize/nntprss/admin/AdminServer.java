@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -30,28 +30,43 @@ package org.methodize.nntprss.admin;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.io.InputStream;
+import java.util.Properties;
+
+import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.rss.ChannelManager;
+import org.mortbay.http.BasicAuthenticator;
+import org.mortbay.http.HashUserRealm;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpListener;
 import org.mortbay.http.HttpServer;
+import org.mortbay.http.SecurityConstraint;
 import org.mortbay.http.SocketListener;
+import org.mortbay.http.handler.SecurityHandler;
 import org.mortbay.jetty.servlet.WebApplicationHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: AdminServer.java,v 1.2 2003/01/22 05:03:38 jasonbrome Exp $
  */
 public class AdminServer {
 
 	private HttpServer httpServer;
 	private ChannelManager channelManager;
+	private NNTPServer nntpServer;
 	private int port;
 	public static final String SERVLET_CTX_RSS_MANAGER = "rss.manager";
+	public static final String SERVLET_CTX_NNTP_SERVER = "nntp.server";
 
-	public AdminServer(ChannelManager channelManager) {
+	public static final String REALM_NAME = "nntprss-realm";
+	public static final String REALM_USERS_CONFIG = "users.properties";
+
+
+	public AdminServer(ChannelManager channelManager, NNTPServer nntpServer) {
 		this.channelManager = channelManager;
+		this.nntpServer = nntpServer;
 	}
 
 	public void configure(Document config) throws Exception {
@@ -61,11 +76,38 @@ public class AdminServer {
 		port = Integer.parseInt(adminConfig.getAttribute("port"));
 
 		httpServer = new HttpServer();
+
+// Check for user realm properties file
+// If it exists, use security.
+		InputStream userRealmConfig = this.getClass().getResourceAsStream("/" + REALM_USERS_CONFIG);
+		boolean useSecurity = false;
+		if(userRealmConfig != null) {
+			useSecurity = true;
+			HashUserRealm userRealm = new HashUserRealm(REALM_NAME);
+			userRealm.load(REALM_USERS_CONFIG);
+			httpServer.addRealm(userRealm);
+		}
+
+		
 		HttpContext context = httpServer.getContext("/");
 		WebApplicationHandler handler = new WebApplicationHandler();
+
+		if(useSecurity) {
+			context.setRealmName(REALM_NAME);
+			context.setAuthenticator(
+				new BasicAuthenticator());
+			context.addHandler(new SecurityHandler());
+			context.addSecurityConstraint("/",
+				new SecurityConstraint("Admin",
+					"*"));
+		}
+		
+		context.setAttribute(SERVLET_CTX_RSS_MANAGER, channelManager);
+		context.setAttribute(SERVLET_CTX_NNTP_SERVER, nntpServer);
+
 		handler.addServlet("/", AdminServlet.class.getName());
 		context.addHandler(handler);
-		context.setAttribute(SERVLET_CTX_RSS_MANAGER, channelManager);
+
 
 		httpServer.addContext(context);
 
