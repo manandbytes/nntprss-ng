@@ -45,7 +45,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Main.java,v 1.3 2003/01/22 05:02:16 jasonbrome Exp $
+ * @version $Id: Main.java,v 1.4 2003/03/22 16:26:18 jasonbrome Exp $
  */
 public class Main {
 
@@ -55,6 +55,7 @@ public class Main {
 	private NNTPServer nntpServer = null;
 	private ChannelManager channelManager = null;
 	private AdminServer adminServer = null;
+	private WindowsSysTray windowsSysTray = null;
 
 	private class ShutdownHook extends Thread {
 
@@ -65,6 +66,10 @@ public class Main {
 		public void run() {
 			if(log.isInfoEnabled()) {
 				log.info("Shutting down nntp//rss...");
+			}
+			
+			if(windowsSysTray != null) {
+				windowsSysTray.shutdown();
 			}
 
 			adminServer.shutdown();
@@ -89,6 +94,10 @@ public class Main {
 		}
 
 		try {
+			if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+				windowsSysTray = new WindowsSysTray();
+			}
+
 			// Load configuration
 			Document config = loadConfiguration();
 
@@ -112,6 +121,10 @@ public class Main {
 			adminServer.start();
 			nntpServer.start();
 			channelManager.start();
+			
+			if(windowsSysTray != null) {
+				windowsSysTray.showStarted();
+			}
 
 		} catch (Exception e) {
 			log.error("Exception thrown during startup",
