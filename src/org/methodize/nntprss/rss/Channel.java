@@ -71,7 +71,7 @@ import sun.net.www.http.HttpClient;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.8 2003/03/22 16:31:05 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.9 2003/03/22 17:21:27 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -117,6 +117,7 @@ public class Channel implements Runnable {
 	private boolean enabled = true;
 	private boolean parseAtAllCost = false;
 
+
 // Publishing related
 	private boolean postingEnabled = false;
 	private String publishAPI = null;
@@ -128,6 +129,8 @@ public class Channel implements Runnable {
 	private ChannelManagerDAO channelManagerDAO;
 
 	private transient boolean polling = false;
+	private transient boolean connected = false;
+
 	public static final long DEFAULT_POLLING_INTERVAL = 0;
 
 	private long pollingIntervalSeconds = DEFAULT_POLLING_INTERVAL;
@@ -186,7 +189,7 @@ public class Channel implements Runnable {
 
 		try {
 //			HttpURLConnection httpCon =
-			HttpURLConnection httpCon =
+			httpCon =
 				(HttpURLConnection) url.openConnection();
 			httpCon.setDoInput(true);
 			httpCon.setDoOutput(false);
@@ -206,11 +209,10 @@ public class Channel implements Runnable {
 			}
 
 			InputStream is = null;
-			boolean connected = false;
 			try {
 				httpCon.connect();
-				is = httpCon.getInputStream();
 				connected = true;
+				is = httpCon.getInputStream();
 			} catch(ConnectException ce) {
 				if (log.isDebugEnabled()) {
 					log.debug(
@@ -464,6 +466,7 @@ public class Channel implements Runnable {
 				log.warn("Channel=" + name + " - Exception while polling channel", e);
 			}
 		} finally {
+			connected = false;
 			httpCon = null;
 			polling = false;
 		}
@@ -966,7 +969,7 @@ public class Channel implements Runnable {
 	 */
 	
 	public void checkConnection() {
-		if(polling && httpCon != null && 
+		if(polling && httpCon != null && connected &&
 			((lastPolled == null) ||
 			((System.currentTimeMillis() - lastPolled.getTime()) >
 				HTTP_CONNECTION_TIMEOUT)
@@ -977,12 +980,13 @@ public class Channel implements Runnable {
 				}
 
 				httpCon.disconnect();
+				connected = false;
 			} catch(Exception e) {
 				if(log.isDebugEnabled()) {
 					log.debug("Error disconnecting HttpUrlConnection in checkConnection");
 				}
 			} finally {
-				httpCon = null;
+//				httpCon = null;
 			}
 		}
 	}
