@@ -49,7 +49,7 @@ import java.util.TimeZone;
 import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.Item;
-import org.methodize.nntprss.feed.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.util.Base64;
 import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Element;
@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.2 2003/07/20 02:46:25 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.3 2003/09/28 20:15:39 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
@@ -161,7 +161,7 @@ public class AtomParser extends GenericParser {
 	public void processFeedItems(
 		Element rootElm,
 		Channel channel,
-		ChannelManagerDAO channelManagerDAO,
+		ChannelDAO channelDAO,
 		boolean keepHistory)
 		throws NoSuchAlgorithmException, IOException {
 
@@ -210,8 +210,8 @@ public class AtomParser extends GenericParser {
 		if (newItems.size() > 0) {
 			// Discover new items...
 			Set newItemSignatures =
-				channelManagerDAO.findNewItemSignatures(
-					channel.getId(),
+				channelDAO.findNewItemSignatures(
+					channel,
 					newItems.keySet());
 
 			if (newItemSignatures.size() > 0) {
@@ -326,7 +326,7 @@ public class AtomParser extends GenericParser {
 					}
 
 					// persist to database...
-					channelManagerDAO.saveItem(item);
+					channelDAO.saveItem(item);
 					channel.setTotalArticles(channel.getTotalArticles() + 1);
 				}
 			}
@@ -334,7 +334,7 @@ public class AtomParser extends GenericParser {
 		}
 
 		if (!keepHistory) {
-			channelManagerDAO.deleteItemsNotInSet(channel, currentSignatures);
+			channelDAO.deleteItemsNotInSet(channel, currentSignatures);
 			channel.setTotalArticles(currentSignatures.size());
 		}
 	}
