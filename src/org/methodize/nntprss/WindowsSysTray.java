@@ -42,6 +42,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.util.AppConstants;
@@ -53,7 +54,7 @@ import snoozesoft.systray4j.SysTrayMenuListener;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: WindowsSysTray.java,v 1.2 2003/07/19 00:01:27 jasonbrome Exp $
+ * @version $Id: WindowsSysTray.java,v 1.3 2003/10/19 15:47:22 jasonbrome Exp $
  */
 
 public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
@@ -114,6 +115,11 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 				nntpIcon,
 				"nntp//rss v" + AppConstants.VERSION + " starting...",
 				items);
+				
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch(Exception e) {
+		}
 	}
 
 	public void showStarted() {
@@ -207,11 +213,11 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 				MENU_ABOUT_TEXT,
 				JOptionPane.INFORMATION_MESSAGE);
 		} else if (e.getActionCommand().equals(MENU_EXIT_CMD)) {
-			Object[] options = { "QUIT", "CANCEL" };
+			Object[] options = { "Shutdown", "Cancel" };
 			int option =
 				JOptionPane.showOptionDialog(
 					this,
-					"Are you sure you want to quit?",
+					"Are you sure you want to shutdown nntp//rss?",
 					"nntp//rss - Warning",
 					JOptionPane.DEFAULT_OPTION,
 					JOptionPane.WARNING_MESSAGE,
