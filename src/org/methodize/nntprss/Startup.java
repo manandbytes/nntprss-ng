@@ -2,7 +2,7 @@ package org.methodize.nntprss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -39,7 +39,7 @@ import java.net.URLClassLoader;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 
+ * @version $Id: Startup.java,v 1.2 2003/01/22 05:02:57 jasonbrome Exp $
  */
 public class Startup {
 
@@ -99,4 +99,10 @@ public class Startup {
 			
 		mainMethod.invoke(null, new Object[] { args });
 	}
+	
+	// Shutdown hook for Windows Java Service Wrappers
+	// e.g. JNT
+	public static void stopApplication() {
+		System.exit(0);
+	}	
 }
