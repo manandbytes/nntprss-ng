@@ -60,7 +60,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.3 2003/01/22 05:06:28 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.4 2003/01/27 22:40:25 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -271,13 +271,16 @@ public class ClientHandler implements Runnable {
 			pw.println(XMLHelper.stripHtmlTags(item.getDescription()));
 			pw.println();
 	
+			if(item.getComments() != null && item.getComments().length() > 0) {
+				pw.print("Comments: ");
+				pw.println(item.getLink());
+			}
+
 			if(item.getLink() != null && item.getLink().length() > 0) {
 				pw.print("Link: ");
 				pw.println(item.getLink());
-				pw.println();
 			}
 
-			pw.println();
 			pw.println();
 
 			if(channel.getTitle() != null ||
@@ -332,17 +335,36 @@ public class ClientHandler implements Runnable {
 			pw.println("<body>");
 
 			pw.println(item.getDescription());
+
+			pw.println("<p>");
+
+			boolean hasLinks = false;
+			if (item.getComments() != null && item.getComments().length() > 0) {
+				pw.print("<a href=\"");
+				pw.print(item.getComments());
+				pw.print("\">Comments</a>&nbsp;&nbsp;");
+				hasLinks = true;
+			}
+
 	
 			// Output link
 			if (item.getLink() != null && item.getLink().length() > 0) {
-				pw.print("<p>Link: <a href=\"");
+				if(hasLinks) {
+					pw.println("|&nbsp;&nbsp;");
+				}
+				pw.print("Link: <a href=\"");
 				pw.print(item.getLink());
 				pw.print("\">");
 				pw.print(item.getLink());
 				pw.println("</a>");
+				hasLinks = true;
 			}
 
-			pw.println("<p>&nbsp;<p><hr>");
+			if(hasLinks) {
+				pw.println("<br>");
+			}
+			
+			pw.println("<hr>");
 		
 			if(channel.getTitle() != null ||
 				channel.getDescription() != null ||
@@ -428,9 +450,17 @@ public class ClientHandler implements Runnable {
 			String requestString = br.readLine();
 			
 			String command = null;
-			String[] parameters = parseParameters(requestString);
-			if (parameters.length > 0) {
-				command = parameters[0];
+
+			String[] parameters	= null;
+			if(requestString != null) {
+				parameters = parseParameters(requestString);
+				if (parameters.length > 0) {
+					command = parameters[0];
+				}
+			} else {
+// If requestString == null - end of stream, indicate that client
+// wants to quit/has quit (result of OE testing)
+				command = "QUIT";
 			}
 
 			if (command != null) {
@@ -614,7 +644,10 @@ public class ClientHandler implements Runnable {
 //							pw.println("Xref:full");							
 							pw.println(".");
 						} else if(parameters[1].equalsIgnoreCase("SUBSCRIPTIONS")) {
-							pw.println("503 program error, function not performed");
+// Empty default subscription list
+							pw.println("215 information follows");
+							pw.println(".");
+//							pw.println("503 program error, function not performed");
 						} else {
 							pw.println("503 program error, function not performed");
 						}
@@ -624,16 +657,19 @@ public class ClientHandler implements Runnable {
 						Iterator channelIter = channelManager.channels();
 						while (channelIter.hasNext()) {
 							Channel channel = (Channel) channelIter.next();
+// group list first p
 							pw.println(
 								channel.getName()
 									+ " "
-									+ channel.getFirstArticleNumber()
-									+ " "
 									+ (channel.getLastArticleNumber() - 1)
+									+ " "
+									+ channel.getFirstArticleNumber()
 									+ " n");
 						}
 						pw.println(".");
 					}
+				} else if (command.equalsIgnoreCase("MODE")) {
+					pw.println("201 Hello, you can't post");
 				} else if (command.equalsIgnoreCase("NEWGROUPS")) {
 					if (parameters.length < 3) {
 						pw.println("500 command not recognized");
@@ -938,7 +974,18 @@ public class ClientHandler implements Runnable {
 			pw.close();
 			client.close();
 
-		} catch (IOException ie) {
+		} catch (Exception e) {
+			if(!(e instanceof IOException)) {
+				if(log.isEnabledFor(Priority.WARN)) {
+					log.warn("Unexpected exception thrown",
+						e);	
+				}
+			}
+		} finally {
+			if(log.isInfoEnabled()) {
+				log.info(
+					"NNTP Client connection closed");	
+			}
 		}
 	}
 
