@@ -2,7 +2,7 @@ package org.methodize.nntprss.nntp;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -41,6 +41,7 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -49,15 +50,17 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.methodize.nntprss.rss.Channel;
 import org.methodize.nntprss.rss.ChannelManager;
 import org.methodize.nntprss.rss.Item;
+import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.CRLFPrintWriter;
 import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: ClientHandler.java,v 1.3 2003/01/22 05:06:28 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -67,12 +70,87 @@ public class ClientHandler implements Runnable {
 	private ChannelManager channelManager = ChannelManager.getChannelManager();
 	private DateFormat df;
 	private DateFormat nntpDateFormat;
+	private NNTPServer nntpServer;
 
-	public ClientHandler(Socket client) {
-		df = new SimpleDateFormat("EEE, dd MMM yy HH:mm:ss 'GMT'", Locale.US);
+// Required
+	private static final int NNTP_HEADER_UNKNOWN = -1;
+	private static final int NNTP_HEADER_FROM = 1;
+	private static final int NNTP_HEADER_DATE = 2;
+	private static final int NNTP_HEADER_NEWSGROUP = 3;
+	private static final int NNTP_HEADER_SUBJECT = 4;
+	private static final int NNTP_HEADER_MESSAGE_ID = 5;
+	private static final int NNTP_HEADER_PATH = 6;
+
+// Optional	
+	private static final int NNTP_HEADER_FOLLOWUP_TO = 7;
+	private static final int NNTP_HEADER_EXPIRES = 8;
+	private static final int NNTP_HEADER_REPLY_TO = 9;
+	private static final int NNTP_HEADER_SENDER = 10;
+	private static final int NNTP_HEADER_REFERENCES = 11;
+	private static final int NNTP_HEADER_CONTROL = 12;
+	private static final int NNTP_HEADER_DISTRIBUTION = 13;
+	private static final int NNTP_HEADER_KEYWORDS = 14;
+	private static final int NNTP_HEADER_SUMMARY = 15;
+	private static final int NNTP_HEADER_APPROVED = 16;
+	private static final int NNTP_HEADER_LINES = 17;
+	private static final int NNTP_HEADER_XREF = 18;
+	private static final int NNTP_HEADER_ORGANIZATION = 19;
+	
+	
+	private static final int NO_CURRENT_ARTICLE = -1;
+	
+	public ClientHandler(NNTPServer nntpServer, Socket client) {
+		this.nntpServer = nntpServer;
+		this.client = client;
+		
+		df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
 		nntpDateFormat = new SimpleDateFormat("yyMMdd HHmmss");
-		this.client = client;
+	}
+
+	private int parseHeaderName(String headerName) {
+		int header = NNTP_HEADER_UNKNOWN;
+		if(headerName.equalsIgnoreCase("from")) {
+			header = NNTP_HEADER_FROM;
+		} else if(headerName.equalsIgnoreCase("date")) {
+			header = NNTP_HEADER_DATE;
+		} else if(headerName.equalsIgnoreCase("newsgroup")) {
+			header = NNTP_HEADER_NEWSGROUP;
+		} else if(headerName.equalsIgnoreCase("subject")) {
+			header = NNTP_HEADER_SUBJECT;
+		} else if(headerName.equalsIgnoreCase("message-id")) {
+			header = NNTP_HEADER_MESSAGE_ID;
+		} else if(headerName.equalsIgnoreCase("path")) {
+			header = NNTP_HEADER_PATH;
+		} else if(headerName.equalsIgnoreCase("followup-to")) {
+			header = NNTP_HEADER_FOLLOWUP_TO;
+		} else if(headerName.equalsIgnoreCase("expires")) {
+			header = NNTP_HEADER_EXPIRES;
+		} else if(headerName.equalsIgnoreCase("reply-to")) {
+			header = NNTP_HEADER_REPLY_TO;
+		} else if(headerName.equalsIgnoreCase("sender")) {
+			header = NNTP_HEADER_SENDER;
+		} else if(headerName.equalsIgnoreCase("references")) {
+			header = NNTP_HEADER_REFERENCES;
+		} else if(headerName.equalsIgnoreCase("control")) {
+			header = NNTP_HEADER_CONTROL;
+		} else if(headerName.equalsIgnoreCase("distribution")) {
+			header = NNTP_HEADER_DISTRIBUTION;
+		} else if(headerName.equalsIgnoreCase("keywords")) {
+			header = NNTP_HEADER_KEYWORDS;
+		} else if(headerName.equalsIgnoreCase("summary")) {
+			header = NNTP_HEADER_SUMMARY;
+		} else if(headerName.equalsIgnoreCase("approved")) {
+			header = NNTP_HEADER_APPROVED;
+		} else if(headerName.equalsIgnoreCase("lines")) {
+			header = NNTP_HEADER_LINES;
+		} else if(headerName.equalsIgnoreCase("xref")) {
+			header = NNTP_HEADER_XREF;
+		} else if(headerName.equalsIgnoreCase("organization")) {
+			header = NNTP_HEADER_ORGANIZATION;
+		}
+
+		return header;
 	}
 
 	private String[] parseParameters(String commandString) {
@@ -93,14 +171,33 @@ public class ClientHandler implements Runnable {
 			int rangePos = rangeStr.indexOf('-');
 			if (rangePos > -1
 				&& rangePos > 0
-				&& rangePos < rangeStr.length()) {
+				&& rangePos < rangeStr.length()-1) {
 				String startStr = rangeStr.substring(0, rangePos);
 				String endStr = rangeStr.substring(rangePos + 1);
 				range[0] = Integer.parseInt(startStr);
 				range[1] = Integer.parseInt(endStr);
+			} else if(rangePos > 0 && rangeStr.length() > 0) {
+				range[0] = Integer.parseInt(rangeStr.substring(0, rangePos));
+				range[1] = AppConstants.OPEN_ENDED_RANGE;
+			} else if(rangePos == 0) {
+				range[0] = AppConstants.OPEN_ENDED_RANGE;
+				range[1] = Integer.parseInt(rangeStr.substring(1));
+			} else {
+				range[0] = Integer.parseInt(rangeStr);
+				range[1] = range[0];
 			}
 		}
 		return range;
+	}
+
+	private String createMessageId(Item item) {
+		StringBuffer messageId = new StringBuffer();
+		messageId.append('<');
+		messageId.append(item.getSignature());
+		messageId.append('@');
+		messageId.append(item.getChannel().getName());
+		messageId.append('>');
+		return messageId.toString();
 	}
 
 	/**
@@ -115,13 +212,22 @@ public class ClientHandler implements Runnable {
 	private void writeArticle(PrintWriter pw,
 		Channel channel, Item item) throws IOException {
 
-		String boundary = "----=_Part_" + System.currentTimeMillis();
+		writeHead(pw, channel, item);
+		pw.println();
+		writeBody(pw, channel, item);
+
+	}
+
+
+
+	private void writeHead(PrintWriter pw,
+		Channel channel, Item item) throws IOException {
+
+		String boundary = "----=_Part_" + item.getDate().getTime();
 
 		pw.println("From: " + channel.getAuthor());
-		pw.println("Date: " + df.format(item.getDate()));
 		pw.println("Newsgroups: " + channel.getName());
-		pw.println("Content-Type: multipart/alternative;");
-		pw.println("      boundary=\"" + boundary + "\"");
+		pw.println("Date: " + df.format(item.getDate()));
 		pw.println("Subject: " + item.getTitle());
 		pw.println(
 			"Message-ID: "
@@ -131,52 +237,172 @@ public class ClientHandler implements Runnable {
 				+ channel.getName()
 				+ ">");
 		pw.println("Path: nntprss");
-		pw.println();
 
-		pw.println("--" + boundary);	
-		pw.println("Content-Type: text/plain");
-		pw.println();
-		pw.println();
+		switch(nntpServer.getContentType()) {
+			case AppConstants.CONTENT_TYPE_TEXT:
+				pw.println("Content-Type: text/plain; charset=utf-8");
+				break;
+			case AppConstants.CONTENT_TYPE_HTML:
+				pw.println("Content-Type: text/html; charset=utf-8");
+				break;
+			default:
+// Mixed		
+				pw.println("Content-Type: multipart/alternative;");
+				pw.println("      boundary=\"" + boundary + "\"");
+		}
+	}
 
+	private void writeBody(PrintWriter pw,
+		Channel channel, Item item) throws IOException {
 
-		pw.println(XMLHelper.stripTags(item.getDescription()));
-		pw.println();
+		String boundary = null;
 	
-		if(item.getLink() != null && item.getLink().length() > 0) {
-			pw.print("Link: ");
-			pw.println(item.getLink());
+		if(nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED) {
+			boundary = "----=_Part_" + item.getDate().getTime();
+			pw.println("--" + boundary);	
+			pw.println("Content-Type: text/plain; charset=utf-8");
 			pw.println();
 		}
 
-		pw.println();
-		pw.println();
-		pw.println("Served by nntp//rss (www.methodize.org/nntprss)");
-		pw.println();
+// Plain text content
+		if(nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED ||
+			nntpServer.getContentType() == AppConstants.CONTENT_TYPE_TEXT) {
 
-		pw.println("--" + boundary);	
-		pw.println("Content-Type: text/html");
-		pw.println();
+			pw.println(XMLHelper.stripHtmlTags(item.getDescription()));
+			pw.println();
+	
+			if(item.getLink() != null && item.getLink().length() > 0) {
+				pw.print("Link: ");
+				pw.println(item.getLink());
+				pw.println();
+			}
 
-		pw.println("<html>");
-		pw.println("<body>");
+			pw.println();
+			pw.println();
 
-		pw.println(item.getDescription());
+			if(channel.getTitle() != null ||
+				channel.getDescription() != null ||
+				channel.getLink() != null) {
 
-		// Output link
-		if (item.getLink() != null && item.getLink().length() > 0) {
-			pw.print("<p>Link: <a href=\"");
-			pw.print(item.getLink());
-			pw.print("\">");
-			pw.print(item.getLink());
-			pw.println("</a>");
+				pw.println("---");
+
+
+				StringBuffer header = new StringBuffer();
+
+				if(channel.getTitle() != null) {
+					header.append(channel.getTitle());
+				}
+				
+				if(channel.getLink() != null) {
+					if(header.length() > 0) {
+						header.append(' ');
+					}
+					header.append(channel.getLink());
+				}
+				
+				if(channel.getDescription() != null) {
+					if(header.length() > 0) {
+						header.append("\r\n");
+					}
+					header.append(channel.getDescription());
+				}
+				
+				pw.println(header.toString());
+			}
+
+			pw.println();
+			pw.println("Served by nntp//rss v"
+				+ AppConstants.VERSION
+				+" ( http://www.methodize.org/nntprss )");
+			pw.println();
 		}
 		
-		pw.println("<p>&nbsp;<p><hr><div align='right'><font size='-1'>Served by <a href=\"http://www.methodize.org/nntprss\">nntp//rss</a></font></div>");
-		pw.println("</body></html>");
+		
+		if(nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED) {
+			pw.println("--" + boundary);	
+			pw.println("Content-Type: text/html; charset=utf-8");
+			pw.println();
+		}
+		
 
-		pw.println("--" + boundary + "--");	
+// HTML Content
+		if(nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED ||
+			nntpServer.getContentType() == AppConstants.CONTENT_TYPE_HTML) {
+			pw.println("<html>");
+			pw.println("<body>");
+
+			pw.println(item.getDescription());
+	
+			// Output link
+			if (item.getLink() != null && item.getLink().length() > 0) {
+				pw.print("<p>Link: <a href=\"");
+				pw.print(item.getLink());
+				pw.print("\">");
+				pw.print(item.getLink());
+				pw.println("</a>");
+			}
+
+			pw.println("<p>&nbsp;<p><hr>");
+		
+			if(channel.getTitle() != null ||
+				channel.getDescription() != null ||
+				channel.getLink() != null) {
+				
+				pw.println("<table width='100%' border='0'><tr><td align='left' valign='top'>");
+
+				StringBuffer header = new StringBuffer();
+
+				pw.println("<font size='-1'>");
+
+				if(channel.getLink() == null) {
+					if(channel.getTitle() != null) {
+						header.append(channel.getTitle());
+					}
+				} else {
+					header.append("<a href='");
+					header.append(channel.getLink());
+					header.append("'>");
+					if(channel.getTitle() != null) {
+						header.append(channel.getTitle());
+					} else {
+						header.append(channel.getLink());
+					}
+					header.append("</a>");
+				}
+								
+				if(channel.getDescription() != null) {
+					if(header.length() > 0) {
+						header.append("<br>");
+					}
+					header.append(channel.getDescription());
+				}
+				
+				pw.println(header.toString());
+
+				pw.println("</font>");
+				pw.println("</td><td align='right' valign='top'>");
+				pw.println("<font size='-1'>Served by <a href=\"http://www.methodize.org/nntprss\">nntp//rss</a> v"
+				+ AppConstants.VERSION
+				+ "</font></td></tr></table>");
+			} else {
+				pw.println("<div align='right'><font size='-1'>Served by <a href=\"http://www.methodize.org/nntprss\">nntp//rss</a> v"
+				+ AppConstants.VERSION
+				+ "</font></div>");
+			}
+
+
+
+			pw.println("</body></html>");
+		}
+		
+		
+		if(nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED) {
+			pw.println("--" + boundary + "--");
+		}
 
 	}
+
+
 
 	/**
 	 * Main client request processing loop
@@ -196,9 +422,11 @@ public class ClientHandler implements Runnable {
 
 		boolean quitRequested = false;
 		String currentGroupName = null;
+		int currentArticle = NO_CURRENT_ARTICLE;
 
 		while (quitRequested == false) {
 			String requestString = br.readLine();
+			
 			String command = null;
 			String[] parameters = parseParameters(requestString);
 			if (parameters.length > 0) {
@@ -206,58 +434,113 @@ public class ClientHandler implements Runnable {
 			}
 
 			if (command != null) {
-				if (command.equalsIgnoreCase("ARTICLE")) {
+				if (command.equalsIgnoreCase("ARTICLE") ||
+					command.equalsIgnoreCase("HEAD") ||
+					command.equalsIgnoreCase("BODY") ||
+					command.equalsIgnoreCase("STAT")) {
 					//					pw.println("430 no such article found");
-					String artNumOrMsgId = parameters[1];
 					Item item = null;
 					Channel channel = null;
-					
-					if (artNumOrMsgId.indexOf('<') == -1) {
-						// Article number
-						//						item = channel.getItemByArticleNumber(Long.parseLong(artNumOrMsgId));
+
+// TODO resolve no current group scenario
+
+					if(parameters.length == 1 && currentArticle != NO_CURRENT_ARTICLE) {
+// Get current article
 						channel =
 							channelManager.channelByName(currentGroupName);
-
+	
 						item =
 							channelManager.getChannelManagerDAO().loadItem(
 								channel,
-								Integer.parseInt(artNumOrMsgId));
-					} else {
-// Message IDs are in the form
-// <itemsignature@channelname>
-						int sepPos = artNumOrMsgId.indexOf('@');
-						if(sepPos > -1) {
-							String itemSignature = artNumOrMsgId.substring(1, sepPos);
-							String artChannelName = artNumOrMsgId.substring(sepPos + 1, artNumOrMsgId.length()-1);
+								currentArticle);
 
+					} else {
+						String artNumOrMsgId = parameters[1];
+					
+						if (artNumOrMsgId.indexOf('<') == -1) {
+							// Article number
+							//						item = channel.getItemByArticleNumber(Long.parseLong(artNumOrMsgId));
 							channel =
-								channelManager.channelByName(artChannelName);
-							if(channel != null) {
-								item =
-									channelManager.getChannelManagerDAO().loadItem(
-										channel, itemSignature);
-							}
-
-						} 
+								channelManager.channelByName(currentGroupName);
+	
+							item =
+								channelManager.getChannelManagerDAO().loadItem(
+									channel,
+									Integer.parseInt(artNumOrMsgId));
+						} else {
+	// Message IDs are in the form
+	// <itemsignature@channelname>
+							int sepPos = artNumOrMsgId.indexOf('@');
+							if(sepPos > -1) {
+								String itemSignature = artNumOrMsgId.substring(1, sepPos);
+								String artChannelName = artNumOrMsgId.substring(sepPos + 1, artNumOrMsgId.length()-1);
+	
+								channel =
+									channelManager.channelByName(artChannelName);
+								if(channel != null) {
+									item =
+										channelManager.getChannelManagerDAO().loadItem(
+											channel, itemSignature);
+								}
+	
+							} 
+						}
 					}
+					
 					if (item == null) {
-						pw.println("430 no such article found");
+						if(parameters.length == 1 && currentArticle == NO_CURRENT_ARTICLE) {
+							pw.println("420 no current article has been selected");
+						} else {
+							pw.println("430 no such article found");
+						}
 					} else {
-						pw.println(
-							"220 "
-								+ item.getArticleNumber()
-								+ " <"
-								+ item.getSignature()
-								+ "@"
-								+ channel.getName()
-								+ "> article retrieved - head and body follow");
+						if(command.equalsIgnoreCase("ARTICLE")) {
+							pw.println(
+								"220 "
+									+ item.getArticleNumber()
+									+ " <"
+									+ item.getSignature()
+									+ "@"
+									+ channel.getName()
+									+ "> article retrieved - head and body follow");
+	
+							writeArticle(pw, channel, item);
+						} else if(command.equalsIgnoreCase("HEAD")) {
+							pw.println(
+								"221 "
+									+ item.getArticleNumber()
+									+ " <"
+									+ item.getSignature()
+									+ "@"
+									+ channel.getName()
+									+ "> article retrieved - head follows");
+	
+							writeHead(pw, channel, item);
+						} else if(command.equalsIgnoreCase("BODY")) {
+							pw.println(
+								"222 "
+									+ item.getArticleNumber()
+									+ " <"
+									+ item.getSignature()
+									+ "@"
+									+ channel.getName()
+									+ "> article retrieved - body follows");
+							writeBody(pw, channel, item);
+						} else if(command.equalsIgnoreCase("STAT")) {
+							pw.println(
+								"223 "
+									+ item.getArticleNumber()
+									+ " <"
+									+ item.getSignature()
+									+ "@"
+									+ channel.getName()
+									+ "> article retrieved - request text separately");
+						}
 
-						writeArticle(pw, channel, item);
+						currentArticle = item.getArticleNumber();
 
 						pw.println(".");
 					}
-				} else if (command.equalsIgnoreCase("BODY")) {
-					pw.println("430 no such article found");
 				} else if (command.equalsIgnoreCase("GROUP")) {
 					currentGroupName = parameters[1];
 					Channel channel =
@@ -272,38 +555,91 @@ public class ClientHandler implements Runnable {
 								+ channel.getLastArticleNumber()
 								+ " "
 								+ currentGroupName);
+						currentArticle = channel.getFirstArticleNumber();
 					} else {
 						pw.println("411 no such news group");
 					}
-				} else if (command.equalsIgnoreCase("HEAD")) {
-					pw.println("430 no such article found");
 				} else if (command.equalsIgnoreCase("HELP")) {
 					pw.println("100 help text follows");
 					pw.println(".");
 				} else if (command.equalsIgnoreCase("IHAVE")) {
 					pw.println("435 article not wanted - do not send it");
 				} else if (command.equalsIgnoreCase("LAST")) {
-					pw.println("422 no previous article in this group");
-				} else if (command.equalsIgnoreCase("LIST")) {
-					pw.println("215 list of newsgroups follows");
-					Iterator channelIter = channelManager.channels();
-					while (channelIter.hasNext()) {
-						Channel channel = (Channel) channelIter.next();
-						pw.println(
-							channel.getName()
+					if(currentGroupName == null) {
+						pw.println("412 No news group currently selected");
+					} else {
+						Channel channel =
+							channelManager.channelByName(currentGroupName);
+						if(currentArticle == NO_CURRENT_ARTICLE) {
+							pw.println("420 no current article has been selected");
+						} else	if(currentArticle > channel.getFirstArticleNumber()) {
+							Item item = channelManager.getChannelManagerDAO().loadPreviousItem(channel,
+								currentArticle);
+							currentArticle = item.getArticleNumber();
+							pw.println("223 "
+								+ item.getArticleNumber()
 								+ " "
-								+ channel.getFirstArticleNumber()
-								+ " "
-								+ (channel.getLastArticleNumber() - 1)
-								+ " n");
+								+ createMessageId(item)
+								+ " article retrieved - request text separately");
+						} else {
+							pw.println("422 no previous article in thie group");
+						}
 					}
-					pw.println(".");
+				} else if (command.equalsIgnoreCase("LIST")) {
+					if(parameters.length > 1 && !parameters[1].equalsIgnoreCase("ACTIVE")) {
+						if(parameters[1].equalsIgnoreCase("ACTIVE.TIMES")) {
+							pw.println("503 program error, function not performed");
+						} else if(parameters[1].equalsIgnoreCase("DISTRIBUTIONS")) {
+							pw.println("503 program error, function not performed");
+						} else if(parameters[1].equalsIgnoreCase("DISTRIB.PATS")) {
+							pw.println("503 program error, function not performed");
+						} else if(parameters[1].equalsIgnoreCase("NEWSGROUPS")) {
+//							pw.println("503 program error, function not performed");
+							pw.println("215 list of newsgroups follows");
+							Iterator channelIter = channelManager.channels();
+							while (channelIter.hasNext()) {
+								Channel channel = (Channel) channelIter.next();
+								pw.println(channel.getName() + " ");
+							}
+							pw.println(".");
+						} else if(parameters[1].equalsIgnoreCase("OVERVIEW.FMT")) {
+							pw.println("215 information follows");
+							pw.println("Subject:");
+							pw.println("From:");
+							pw.println("Date:");
+							pw.println("Message-ID:");
+							pw.println("References:");
+							pw.println("Bytes:");
+							pw.println("Lines:");
+//							pw.println("Xref:full");							
+							pw.println(".");
+						} else if(parameters[1].equalsIgnoreCase("SUBSCRIPTIONS")) {
+							pw.println("503 program error, function not performed");
+						} else {
+							pw.println("503 program error, function not performed");
+						}
+						
+					} else {
+						pw.println("215 list of newsgroups follows");
+						Iterator channelIter = channelManager.channels();
+						while (channelIter.hasNext()) {
+							Channel channel = (Channel) channelIter.next();
+							pw.println(
+								channel.getName()
+									+ " "
+									+ channel.getFirstArticleNumber()
+									+ " "
+									+ (channel.getLastArticleNumber() - 1)
+									+ " n");
+						}
+						pw.println(".");
+					}
 				} else if (command.equalsIgnoreCase("NEWGROUPS")) {
 					if (parameters.length < 3) {
 						pw.println("500 command not recognized");
 					} else {
 						if (parameters.length > 3
-							&& parameters[4].equalsIgnoreCase("GMT")) {
+							&& parameters[3].equalsIgnoreCase("GMT")) {
 							nntpDateFormat.setTimeZone(
 								TimeZone.getTimeZone("GMT"));
 						} else {
@@ -351,7 +687,26 @@ public class ClientHandler implements Runnable {
 						"230 list of new articles by message-id follows");
 					pw.println(".");
 				} else if (command.equalsIgnoreCase("NEXT")) {
-					pw.println("421 no next article in this group");
+					if(currentGroupName == null) {
+						pw.println("412 No news group currently selected");
+					} else {
+						Channel channel =
+							channelManager.channelByName(currentGroupName);
+						if(currentArticle == NO_CURRENT_ARTICLE) {
+							pw.println("420 no current article has been selected");
+						} else	if(currentArticle < channel.getLastArticleNumber()) {
+							Item item = channelManager.getChannelManagerDAO().loadNextItem(channel,
+								currentArticle);
+							currentArticle = item.getArticleNumber();
+							pw.println("223 "
+								+ item.getArticleNumber()
+								+ " "
+								+ createMessageId(item)
+								+ " article retrieved - request text separately");
+						} else {
+							pw.println("421 no next article in this group");
+						}
+					}
 				} else if (command.equalsIgnoreCase("POST")) {
 					pw.println("440 posting not allowed");
 				} else if (command.equalsIgnoreCase("QUIT")) {
@@ -359,52 +714,192 @@ public class ClientHandler implements Runnable {
 					quitRequested = true;
 				} else if (command.equalsIgnoreCase("SLAVE")) {
 					pw.println("202 slave status noted");
-				} else if (command.equalsIgnoreCase("STAT")) {
-					pw.println("430 no such article found");
 				} else if (command.equalsIgnoreCase("XHDR")) {
-					pw.println("502 no permission");
-				} else if (command.equalsIgnoreCase("XOVER")) {
-					pw.println("224 Overview information follows");
-					// Interpret parameters and restrict return
-					Channel channel =
-						channelManager.channelByName(currentGroupName);
-					int[] range = getIntRange(parameters[1]);
-					List items =
-						channelManager.getChannelManagerDAO().loadItems(
-							channel,
-							range,
-							false);
+					List items = null;
+					int header = NNTP_HEADER_UNKNOWN;
+					boolean useMessageId = false;
+					if(parameters.length == 2) {
+						header = parseHeaderName(parameters[1]);
+						Channel channel =
+							channelManager.channelByName(currentGroupName);
+						Item item = 
+							channelManager.getChannelManagerDAO().loadItem(
+								channel,
+								currentArticle);
+						if(item != null) {
+							items = new ArrayList();
+							items.add(item);
+						}
+					} else if(parameters.length == 3) {
+						header = parseHeaderName(parameters[1]);
+// Check parameter for message id...
+						if(parameters[2].charAt(0) == '<') {
+							useMessageId = true;
+							
+							int sepPos = parameters[2].indexOf('@');
+							if(sepPos > -1) {
+								String itemSignature = parameters[2].substring(1, sepPos);
+								String artChannelName = parameters[2].substring(sepPos + 1, parameters[2].length()-1);
+	
+								Channel channel =
+									channelManager.channelByName(artChannelName);
+								if(channel != null) {
+									Item item =
+										channelManager.getChannelManagerDAO().loadItem(
+											channel, itemSignature);
 
-					Iterator itemIter = items.iterator();
-					while (itemIter.hasNext()) {
-						Item item = (Item) itemIter.next();
-						try {
-							pw
-								.println(
-									item.getArticleNumber()
-									+ "\t"
-									+ item.getTitle()
-									+ "\t"
-									+ channel.getAuthor()
-									+ "\t"
-									+ df.format(item.getDate())
-									+ "\t"
-									+ "<"
-									+ item.getSignature()
-									+ "@"
-									+ channel.getName()
-									+ ">"
-									+ "\t" // no references
-// FIXME calculate content size and line count
-// This is currently a 'hack' - return an arbitrary line length
-// of 10 lines.
-							+"\t" + item.getDescription().length() + "\t10"
-							);
-						} catch(Exception e) {
-							e.printStackTrace();
+									if(item != null) {
+										items = new ArrayList();
+										items.add(item);
+									}
+
+								}
+	
+							} 
+							
+						} else {
+							int[] range = getIntRange(parameters[2]);
+							Channel channel =
+								channelManager.channelByName(currentGroupName);
+							items =
+								channelManager.getChannelManagerDAO().loadItems(
+									channel,
+									range,
+									false);
+						}
+					} else {
+// Invalid request...
+					}
+					
+					if(header == NNTP_HEADER_UNKNOWN) {
+						pw.println("500 command not recognized (unknown header name=" + parameters[1] + ")");
+					} else if(items == null || items.size() == 0) {
+						pw.println("430 no such article");
+					} else {
+						pw.println("221 Header follows");
+
+// Only support XHDR on the following 6 required headers...
+						if(header == NNTP_HEADER_FROM ||
+							header == NNTP_HEADER_DATE ||
+							header == NNTP_HEADER_NEWSGROUP ||
+							header == NNTP_HEADER_SUBJECT || 
+							header == NNTP_HEADER_MESSAGE_ID ||
+							header == NNTP_HEADER_PATH ||
+							header == NNTP_HEADER_REFERENCES ||
+							header == NNTP_HEADER_LINES) {
+
+							Iterator itemIter = items.iterator();
+							while (itemIter.hasNext()) {
+								Item item = (Item) itemIter.next();
+	
+								if(!useMessageId) {
+									pw.print(item.getArticleNumber());
+								} else {
+									pw.print("<"
+											+ item.getSignature()
+											+ "@"
+											+ item.getChannel().getName()
+											+ ">");
+								}
+								
+								pw.print(' ');
+	
+								switch(header) {
+									case NNTP_HEADER_FROM:
+										pw.println(item.getChannel().getAuthor());
+										break;
+									case NNTP_HEADER_DATE:
+										pw.println(df.format(item.getDate()));
+										break;
+									case NNTP_HEADER_NEWSGROUP:
+										pw.println(item.getChannel().getName());
+										break;
+									case NNTP_HEADER_SUBJECT:
+										pw.println(item.getTitle());
+										break;
+									case NNTP_HEADER_MESSAGE_ID:
+										pw.println("<"
+												+ item.getSignature()
+												+ "@"
+												+ item.getChannel().getName()
+												+ ">");
+										break;
+									case NNTP_HEADER_PATH:
+										pw.println("nntprss");
+										break;
+									case NNTP_HEADER_REFERENCES:
+										pw.println();
+										break;
+									case NNTP_HEADER_LINES:
+// TODO Calculate actual lines
+										pw.println(10);
+										break;
+									default:
+										pw.println();
+										break;
+								}
+							}
+						}
+						pw.println(".");						
+					}
+				} else if (command.equalsIgnoreCase("XOVER")) {
+					if(currentGroupName == null) {
+						pw.println("412 No news group currently selected");
+					} else {
+						pw.println("224 Overview information follows");
+						// Interpret parameters and restrict return
+						Channel channel =
+							channelManager.channelByName(currentGroupName);
+						int[] range = getIntRange(parameters[1]);
+						List items =
+							channelManager.getChannelManagerDAO().loadItems(
+								channel,
+								range,
+								false);
+	
+						if(items.size() == 0) {
+							pw.println("420 No article(s) selected");
+						} else {
+							Iterator itemIter = items.iterator();
+							while (itemIter.hasNext()) {
+								Item item = (Item) itemIter.next();
+								try {
+									pw
+										.println(
+											item.getArticleNumber()
+											+ "\t"
+											+ item.getTitle()
+											+ "\t"
+											+ channel.getAuthor()
+											+ "\t"
+											+ df.format(item.getDate())
+											+ "\t"
+											+ "<"
+											+ item.getSignature()
+											+ "@"
+											+ channel.getName()
+											+ ">"
+											+ "\t" // no references
+		// FIXME calculate content size and line count
+		// This is currently a 'hack' - return an arbitrary line length
+		// of 10 lines.
+									+"\t" + item.getDescription().length() + "\t10"
+	//										+ "\tXref: nntprss "
+	//										+ item.getChannel().getName()
+	//										+ ":"
+	//										+ item.getArticleNumber()
+											);
+								} catch(Exception e) {
+									if(log.isEnabledFor(Priority.WARN)) {
+										log.warn("Exception thrown in XOVER", 
+											e);
+									}
+	//								e.printStackTrace();
+								}
+							}
+							pw.println(".");
 						}
 					}
-					pw.println(".");
 				} else if (command.length() > 0) {
 					// Unknown command
 					pw.println("500 command not recognized");
@@ -432,7 +927,9 @@ public class ClientHandler implements Runnable {
 					new OutputStreamWriter(client.getOutputStream()));
 
 			// Send 201 connection header
-			pw.println("201 nntp//rss news server ready - no posting allowed");
+			pw.println("201 nntp//rss v"  
+				+ AppConstants.VERSION
+				+ " news server ready - no posting allowed");
 			pw.flush();
 
 			processRequestLoop(br, pw);
