@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.3 2003/03/22 16:28:02 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.4 2003/03/24 03:11:35 jasonbrome Exp $
  */
 
 public class NNTPServer {
@@ -167,6 +167,14 @@ public class NNTPServer {
 		}
 
 		return valid;
+	}
+
+	/**
+	 * Returns the listenerPort.
+	 * @return int
+	 */
+	public int getListenerPort() {
+		return listenerPort;
 	}
 
 }
