@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.10 2004/10/26 01:14:19 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.11 2004/10/26 01:37:58 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -68,6 +68,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 	static final int FIELD_CHANNEL_NAME_LENGTH = 255;
 	static final int FIELD_CHANNEL_AUTHOR_LENGTH = 255;
 	static final int FIELD_CHANNEL_MANAGING_EDITOR_LENGTH = 128;
+	static final int FIELD_CHANNEL_VERSION_LENGTH = 8;
 
 	static final int FIELD_ITEM_TITLE_LENGTH = 255;
 	static final int FIELD_ITEM_CREATOR_LENGTH = 255;
@@ -670,7 +671,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
             ps.setLong(paramCount++, channel.getLastModified());
             ps.setString(paramCount++, channel.getLastETag());
-            ps.setString(paramCount++, channel.getRssVersion());
+            ps.setString(paramCount++, trim(channel.getRssVersion(), FIELD_CHANNEL_VERSION_LENGTH));
             //                  ps.setBoolean(paramCount++, channel.isHistorical());
             ps.setBoolean(paramCount++, channel.isEnabled());
             ps.setBoolean(paramCount++, channel.isPostingEnabled());
