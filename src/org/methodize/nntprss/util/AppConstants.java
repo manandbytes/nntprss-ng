@@ -39,7 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.13 2004/02/08 18:03:01 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.14 2004/03/26 11:56:08 jasonbrome Exp $
  */
 public final class AppConstants {
 
@@ -57,7 +57,7 @@ public final class AppConstants {
 
 	public static final String USERS_CONFIG = "users.properties";
 
-	public static final String VERSION = "0.4-beta-5";
+	public static final String VERSION = "0.4-beta-6";
 
 
 	public static final int OPEN_ENDED_RANGE = -1;
