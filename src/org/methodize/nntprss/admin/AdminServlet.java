@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.16 2004/12/15 04:09:36 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.17 2005/02/13 21:54:57 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 

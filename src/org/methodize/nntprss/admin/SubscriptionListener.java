@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -32,7 +32,7 @@ package org.methodize.nntprss.admin;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: SubscriptionListener.java,v 1.3 2004/03/27 02:10:59 jasonbrome Exp $
+ * @version $Id: SubscriptionListener.java,v 1.4 2005/02/13 21:54:57 jasonbrome Exp $
  */
 
 public class SubscriptionListener {

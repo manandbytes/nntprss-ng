@@ -5,7 +5,7 @@ import java.util.Map;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -43,7 +43,7 @@ import java.util.Map;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: HTMLHelper.java,v 1.4 2004/03/27 02:13:22 jasonbrome Exp $
+ * @version $Id: HTMLHelper.java,v 1.5 2005/02/13 22:10:11 jasonbrome Exp $
  */
 
 public class HTMLHelper {
