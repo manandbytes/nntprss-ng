@@ -34,7 +34,7 @@ import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Item.java,v 1.3 2003/01/27 22:41:42 jasonbrome Exp $
+ * @version $Id: Item.java,v 1.4 2003/03/22 16:29:14 jasonbrome Exp $
  */
 public class Item {
 
@@ -46,6 +46,9 @@ public class Item {
 	private Date date;
 	private String comments;
 	private Channel channel;
+
+	public Item() {
+	}
 
 	public Item(int articleNumber, String signature) {
 		this.articleNumber = articleNumber;
