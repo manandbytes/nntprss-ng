@@ -36,9 +36,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.7 2003/03/22 16:35:11 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.8 2003/07/19 00:06:54 jasonbrome Exp $
  */
-public class AppConstants {
+public final class AppConstants {
 
 	private static DocumentBuilderFactory docBuilderFactory;
 	private static String platform;
@@ -48,9 +48,13 @@ public class AppConstants {
 		
 	public static final String NNTPRSS_CONFIGURATION_FILE =
 		"nntprss-config.xml";
+
+	public static final String NNTPRSS_PUBLISH_CONFIGURATION_FILE =
+		"xml/publish-config.xml";
+
 	public static final String USERS_CONFIG = "users.properties";
 
-	public static final String VERSION = "0.3";
+	public static final String VERSION = "0.4-alpha";
 
 
 	public static final int OPEN_ENDED_RANGE = -1;
@@ -80,7 +84,7 @@ public class AppConstants {
 		}
 		
 		platform = pltfmBuf.toString();
-		userAgent = "nntp//rss v"+ VERSION
+		userAgent = "nntprss/"+ VERSION
 			+ " ("
 			+ platform
 			+ "; http://www.methodize.org/nntprss/)";
