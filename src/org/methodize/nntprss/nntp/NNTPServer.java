@@ -30,8 +30,11 @@ package org.methodize.nntprss.nntp;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -43,6 +46,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.SimpleThreadPool;
@@ -52,10 +56,12 @@ import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.5 2003/07/19 00:05:43 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.6 2003/09/28 20:23:26 jasonbrome Exp $
  */
 
-public class NNTPServer {
+public class NNTPServer implements Externalizable {
+
+	public static final int EXTERNAL_VERSION = 1;  
 
 	private Logger log = Logger.getLogger(NNTPServer.class);
 
@@ -73,19 +79,14 @@ public class NNTPServer {
 	private int contentType = AppConstants.CONTENT_TYPE_MIXED;
 	private boolean secure = false;
 	private boolean footnoteUrls = true;
-	
+	private String hostName = null;
 
-	private ChannelManagerDAO channelManagerDAO;
+	private ChannelDAO channelDAO;
 
 	private Map users = new HashMap();
 
-	public NNTPServer() throws Exception {
-		simpleThreadPool =
-			new SimpleThreadPool(
-				"NNTP Client Handlers",
-				"NNTP Client Thread",
-				20);
-		channelManagerDAO = ChannelManagerDAO.getChannelManagerDAO();
+	public NNTPServer() {
+		channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
 	}
 
 	public void configure(Document config) {
@@ -108,7 +109,7 @@ public class NNTPServer {
 		}
 
 		// Load DB persisted configuration
-		channelManagerDAO.loadConfiguration(this);
+		channelDAO.loadConfiguration(this);
 
 		if (log.isInfoEnabled()) {
 			if(address == null) {
@@ -145,6 +146,12 @@ public class NNTPServer {
 	}
 
 	public void start() throws Exception {
+		simpleThreadPool =
+			new SimpleThreadPool(
+				"NNTP Client Handlers",
+				"NNTP Client Thread",
+				20);
+
 		if (listener == null) {
 			if(address == null) {
 				listener = new NNTPServerListener(this, listenerPort);
@@ -181,7 +188,7 @@ public class NNTPServer {
 	}
 
 	public void saveConfiguration() {
-		channelManagerDAO.saveConfiguration(this);
+		channelDAO.saveConfiguration(this);
 	}
 
 	/**
@@ -233,6 +240,44 @@ public class NNTPServer {
 	 */
 	public void setFootnoteUrls(boolean footnoteUrls) {
 		this.footnoteUrls = footnoteUrls;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getHostName() {
+		return hostName;
+	}
+
+	/**
+	 * @param string
+	 */
+	public void setHostName(String string) {
+		hostName = string;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	public void readExternal(ObjectInput in)
+		throws IOException, ClassNotFoundException {
+
+		in.readInt();
+		contentType = in.readInt();
+		secure = in.readBoolean();
+		footnoteUrls = in.readBoolean();
+		hostName = in.readUTF();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(EXTERNAL_VERSION);
+		out.writeInt(contentType);
+		out.writeBoolean(secure);
+		out.writeBoolean(footnoteUrls);
+		out.writeUTF(hostName != null ? hostName : "");
 	}
 
 }
