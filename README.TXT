@@ -1,11 +1,11 @@
-nntp//rss - version 0.1-prealpha
---------------------------------
+nntp//rss - version 0.1
+-----------------------
 
-December 29, 2002
+December 30, 2002
 
 Bridging the worlds of NNTP clients and RSS feeds, nntp//rss is an 
-application that will enable you to use your existing favorite NNTP 
-newsreader to read your information channels.
+application that will enable you to use your existing NNTP 
+newsreader to read your favourite RSS syndicated information channels.
 
 Project Home Page: http://www.methodize.org/nntprss
 Source Forge Project Page: http://www.sourceforge.net/projects/nntprss
@@ -50,17 +50,23 @@ interface.
 Accessing nntp//rss from your existing news reader
 ==================================================
 
-The configuration process varies from one news reader to another,
-but all you need to do is configure another news server, and specify
-the following as its address:
+The configuration process varies from one news reader to another, so
+check the documentation for your news reader on this process.  
+
+When configuring a new news server within your newsreader for nntp//rss,
+specify the following as the news server's address:
 
 127.0.0.1
 
 e.g. In Outlook Express, you'll specify 127.0.0.1 as the value in
 the News (NNTP) Server field.
 
-Once you have configured the news server, you should be able to
+Once you have configured the news server, you will be able to
 download a list of the currently configured groups.
+
+If you experience problems with a particular news reader, please
+send an email, containing details about your Operating System,
+news reader version, and the problem itself to nntprss@methodize.org
 
 
 Administration of nntp//rss
@@ -69,14 +75,38 @@ Administration of nntp//rss
 nntp//rss has a Web-based administration interface.  Point your web
 browser to the following location:
 
-http://localhost:7810/
+http://127.0.0.1:7810/
 
 A list of the currently configured channels will be displayed.  From 
 here you will be able add, delete, and check the status of existing
-channels.  In addition, you can alter the platform-wide polling 
-interval.  This defines how often nntp//rss will go out and check
-RSS feeds for updates.
+channels.  
 
+System Configuration - Here you can alter the platform-wide polling 
+interval.  This defines how often nntp//rss will go out and check
+RSS feeds for updates.  In addition, you can export your current
+channel configuration, or import a previous configuration.
+
+
+Shutting down nntp//rss
+=======================
+
+Windows - Issue a CTRL+C in the Window where nntp//rss is running.
+The application will terminate all activity and cleanly shutdown
+
+Unix/Linux - If nntp//rss is running as a foreground process in a
+shell, issue a CTRL+C to cleanly shutdown the application.  If it
+is running as a background process, send a SIGTERM to the java
+process that is running nntp//rss.
+
+
+Running nntp//rss as a Windows Service
+======================================
+
+Check out http://www.eworksmart.com/JNT/ for a Windows Service 
+wrapper for Java applications.  This has yet to be tested with
+nntp//rss, however has proven reliable with other applications.
+In a future release a separate HOW-TO will be published detailing 
+how to configure JNT to run nntp//rss as a service.
 
 
 Support
