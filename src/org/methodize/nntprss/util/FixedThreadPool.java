@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -38,7 +38,7 @@ import org.apache.log4j.Priority;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: FixedThreadPool.java,v 1.4 2003/03/08 19:48:53 jasonbrome Exp $
+ * @version $Id: FixedThreadPool.java,v 1.5 2004/01/04 21:26:46 jasonbrome Exp $
  */
 
 

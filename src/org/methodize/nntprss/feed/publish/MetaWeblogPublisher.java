@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.publish;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * web:   http://www.methodize.org/nntprss
@@ -44,7 +44,7 @@ import org.methodize.nntprss.feed.Item;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MetaWeblogPublisher.java,v 1.1 2003/07/18 23:59:09 jasonbrome Exp $
+ * @version $Id: MetaWeblogPublisher.java,v 1.2 2004/01/04 21:21:58 jasonbrome Exp $
  */
 
 public class MetaWeblogPublisher implements Publisher {

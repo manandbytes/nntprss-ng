@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -38,7 +38,7 @@ import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Item.java,v 1.3 2003/10/24 02:34:28 jasonbrome Exp $
+ * @version $Id: Item.java,v 1.4 2004/01/04 21:24:40 jasonbrome Exp $
  */
 public class Item implements Externalizable, Cloneable {
 

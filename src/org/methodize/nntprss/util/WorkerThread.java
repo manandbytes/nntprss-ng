@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -32,7 +32,7 @@ package org.methodize.nntprss.util;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: WorkerThread.java,v 1.2 2003/01/22 05:12:15 jasonbrome Exp $
+ * @version $Id: WorkerThread.java,v 1.3 2004/01/04 21:26:46 jasonbrome Exp $
  */
 public class WorkerThread extends Thread {
 

@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -40,7 +40,7 @@ import org.methodize.nntprss.util.FixedThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.1 2003/07/18 23:57:36 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.2 2004/01/04 21:24:29 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
