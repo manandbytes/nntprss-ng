@@ -31,27 +31,11 @@ package org.methodize.nntprss.feed.db;
  * ----------------------------------------------------- */
 
 import java.net.MalformedURLException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.sql.*;
+import java.util.*;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DbcpException;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDriver;
+import org.apache.commons.dbcp.*;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.methodize.nntprss.feed.Category;
@@ -66,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.1 2004/01/04 21:18:22 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.2 2004/03/23 02:33:40 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -74,6 +58,12 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 	public static final String POOL_CONNECT_STRING =
 		"jdbc:apache:commons:dbcp:nntprss";
 
+	static final String TABLE_CATEGORIES = "categories";
+	static final String TABLE_CATEGORYITEM = "categoryitem";
+	static final String TABLE_CHANNELS = "channels";
+	static final String TABLE_CONFIG = "config";
+	static final String TABLE_ITEMS = "items";
+	
 	public Map loadCategories() {
 		Map categories = new TreeMap();
 		Connection conn = null;
@@ -90,11 +80,11 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			conn =
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM categories");
+			rs = stmt.executeQuery("SELECT * FROM " + TABLE_CATEGORIES);
 			if (rs != null) {
 				ps =
 					conn.prepareStatement(
-						"SELECT MIN(articleNumber), COUNT(articleNumber) FROM categoryitem WHERE category = ?");
+						"SELECT MIN(articleNumber), COUNT(articleNumber) FROM " + TABLE_CATEGORYITEM + " WHERE category = ?");
 				while (rs.next()) {
 					Category category = new Category();
 					category.setName(rs.getString("name"));
@@ -175,11 +165,11 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			conn =
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM channels");
+			rs = stmt.executeQuery("SELECT * FROM " + TABLE_CHANNELS);
 			if (rs != null) {
 				ps =
 					conn.prepareStatement(
-						"SELECT MIN(articleNumber), COUNT(articleNumber) FROM items WHERE channel = ?");
+						"SELECT MIN(articleNumber), COUNT(articleNumber) FROM " + TABLE_ITEMS + " WHERE channel = ?");
 				while (rs.next()) {
 					String name = rs.getString("name");
 					String url = rs.getString("url");
@@ -297,7 +287,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			stmt = conn.createStatement();
 			rs =
 				stmt.executeQuery(
-					"SELECT contentType, nntpSecure, footnoteUrls, hostName FROM config");
+					"SELECT contentType, nntpSecure, footnoteUrls, hostName FROM " + TABLE_CONFIG);
 			if (rs != null) {
 				if (rs.next()) {
 					nntpServer.setContentType(rs.getInt("contentType"));
@@ -336,7 +326,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			conn =
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM config");
+			rs = stmt.executeQuery("SELECT * FROM " + TABLE_CONFIG);
 			if (rs != null) {
 				if (rs.next()) {
 					channelManager.setPollingIntervalSeconds(
@@ -438,7 +428,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
 			try {
-				rs = stmt.executeQuery("SELECT * FROM config");
+				rs = stmt.executeQuery("SELECT * FROM " + TABLE_CONFIG);
 				if (rs != null) {
 					if (rs.next()) {
 						int dbVersion = rs.getInt("dbVersion");
@@ -509,10 +499,10 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-						"SELECT articleNumber FROM items WHERE channel = ?");
+						"SELECT articleNumber FROM " + TABLE_ITEMS + " WHERE channel = ?");
 			ps2 = 
 				conn.prepareStatement(
-						"INSERT INTO categoryitem (category, articleNumber, channel, channelArticleNumber) VALUES(?,?,?,?)");
+						"INSERT INTO " + TABLE_CATEGORYITEM + " (category, articleNumber, channel, channelArticleNumber) VALUES(?,?,?,?)");
 
 			int paramCount = 1;
 			ps2.setInt(paramCount++, category.getId());
@@ -534,7 +524,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			rs = null;
 			ps.close();
 
-			ps = conn.prepareStatement("SELECT count(articleNumber) FROM category where id = ?");
+			ps = conn.prepareStatement("SELECT count(articleNumber) FROM " + TABLE_CATEGORYITEM + " where category = ?");
 			paramCount = 1;
 			ps.setInt(paramCount++, category.getId());
 			rs = ps.executeQuery();
@@ -614,7 +604,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"UPDATE channels "
+					"UPDATE " + TABLE_CHANNELS + " "
 						+ "SET author = ?, name = ?, url = ?, "
 						+ "title = ?, link = ?, description = ?, "
 						+ "lastArticle = ?, "
@@ -628,7 +618,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 						+ "pollingInterval = ?, "
 						+ "status = ?, "
 						+ "expiration = ?, "
-						+ "category = ?"
+						+ "category = ? "
 						+ "WHERE id = ?");
 
 			int paramCount = 1;
@@ -699,14 +689,14 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			conn =
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 
-			ps = conn.prepareStatement("DELETE FROM items WHERE channel = ?");
+			ps = conn.prepareStatement("DELETE FROM " + TABLE_ITEMS + " WHERE channel = ?");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, channel.getId());
 			ps.executeUpdate();
 			ps.close();
 
-			ps = conn.prepareStatement("DELETE FROM channels WHERE id = ?");
+			ps = conn.prepareStatement("DELETE FROM " + TABLE_CHANNELS + " WHERE id = ?");
 
 			paramCount = 1;
 			ps.setInt(paramCount++, channel.getId());
@@ -756,7 +746,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"SELECT * FROM items WHERE articleNumber = ? AND channel = ?");
+					"SELECT * FROM " + TABLE_ITEMS + " WHERE articleNumber = ? AND channel = ?");
 			int paramCount = 1;
 			ps.setInt(paramCount++, articleNumber);
 			ps.setInt(paramCount++, channel.getId());
@@ -794,14 +784,14 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 		return loadRelativeItem(
 			channel,
 			relativeArticleNumber,
-			"SELECT TOP 1 * FROM items WHERE articleNumber > ? AND channel = ? ORDER BY articleNumber");
+			"SELECT TOP 1 * FROM " + TABLE_ITEMS + " WHERE articleNumber > ? AND channel = ? ORDER BY articleNumber");
 	}
 
 	public Item loadPreviousItem(Channel channel, int relativeArticleNumber) {
 		return loadRelativeItem(
 			channel,
 			relativeArticleNumber,
-			"SELECT TOP 1 * FROM items WHERE articleNumber < ? AND channel = ? ORDER BY articleNumber DESC");
+			"SELECT TOP 1 * FROM " + TABLE_ITEMS + " WHERE articleNumber < ? AND channel = ? ORDER BY articleNumber DESC");
 	}
 
 	private Item loadRelativeItem(
@@ -859,7 +849,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"SELECT * FROM items WHERE signature = ? AND channel = ?");
+					"SELECT * FROM " + TABLE_ITEMS + " WHERE signature = ? AND channel = ?");
 			int paramCount = 1;
 			ps.setString(paramCount++, signature);
 			ps.setInt(paramCount++, channel.getId());
@@ -909,23 +899,23 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				&& articleRange[1] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
-						"SELECT * FROM items WHERE articleNumber >= ? and articleNumber <= ? AND channel = ? ORDER BY articleNumber");
+						"SELECT * FROM " + TABLE_ITEMS + " WHERE articleNumber >= ? and articleNumber <= ? AND channel = ? ORDER BY articleNumber");
 			} else if (
 				articleRange[0] == AppConstants.OPEN_ENDED_RANGE
 					&& articleRange[1] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
-						"SELECT * FROM items WHERE articleNumber <= ? AND channel = ? ORDER BY articleNumber");
+						"SELECT * FROM " + TABLE_ITEMS + " WHERE articleNumber <= ? AND channel = ? ORDER BY articleNumber");
 			} else if (
 				articleRange[1] == AppConstants.OPEN_ENDED_RANGE
 					&& articleRange[0] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
-						"SELECT * FROM items WHERE articleNumber >= ? AND channel = ? ORDER BY articleNumber");
+						"SELECT * FROM " + TABLE_ITEMS + " WHERE articleNumber >= ? AND channel = ? ORDER BY articleNumber");
 			} else {
 				ps =
 					conn.prepareStatement(
-						"SELECT * FROM items WHERE channel = ? ORDER BY articleNumber");
+						"SELECT * FROM " + TABLE_ITEMS + " WHERE channel = ? ORDER BY articleNumber");
 			}
 
 			int paramCount = 1;
@@ -1001,7 +991,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"SELECT articleNumber FROM items WHERE channel = ? ORDER BY articleNumber");
+					"SELECT articleNumber FROM " + TABLE_ITEMS + " WHERE channel = ? ORDER BY articleNumber");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, channel.getId());
@@ -1045,7 +1035,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"INSERT INTO items "
+					"INSERT INTO " + TABLE_ITEMS
 						+ "(articleNumber, channel, title, link, description, comments, dtStamp, signature, creator, guid, guidIsPermaLink) "
 						+ "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 
@@ -1070,7 +1060,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				ps.close();
 				ps =
 					conn.prepareStatement(
-						"INSERT INTO categoryitem(category, articleNumber, channel, channelArticleNumber) values(?,?,?,?)");
+						"INSERT INTO " + TABLE_CATEGORYITEM + "(category, articleNumber, channel, channelArticleNumber) values(?,?,?,?)");
 				paramCount = 1;
 				ps.setInt(
 					paramCount++,
@@ -1108,7 +1098,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"UPDATE config "
+					"UPDATE " + TABLE_CONFIG + " "
 						+ "SET pollingInterval = ?, "
 						+ "proxyServer = ?, "
 						+ "proxyPort = ?, "
@@ -1155,7 +1145,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"UPDATE config "
+					"UPDATE " + TABLE_CONFIG + " "
 						+ "SET contentType = ?, nntpSecure = ?, footnoteUrls = ?, hostName = ?");
 
 			int paramCount = 1;
@@ -1203,7 +1193,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			if (channel.getCategory() != null) {
 				ps =
 					conn.prepareStatement(
-						"SELECT articleNumber FROM items WHERE channel = ? AND dtStamp < ?");
+						"SELECT articleNumber FROM " + TABLE_ITEMS + " WHERE channel = ? AND dtStamp < ?");
 				int paramCount = 1;
 				ps.setInt(paramCount++, channel.getId());
 				ps.setTimestamp(
@@ -1217,7 +1207,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
 				// Delete category items				
 				StringBuffer stBuf =
-					new StringBuffer("DELETE FROM categoryitem WHERE channel = ? AND category = ? AND articleNumber IN (");
+					new StringBuffer("DELETE FROM " + TABLE_CATEGORYITEM + " WHERE channel = ? AND category = ? AND articleNumber IN (");
 
 				// Create question marks for signature parameters
 				for (int i = 0; i < expiredIds.size(); i++) {
@@ -1243,7 +1233,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
 				// Delete items				
 				stBuf =
-					new StringBuffer("DELETE FROM items WHERE channel = ? AND articleNumber IN (");
+					new StringBuffer("DELETE FROM " + TABLE_ITEMS + " WHERE channel = ? AND articleNumber IN (");
 
 				// Create question marks for signature parameters
 				for (int i = 0; i < expiredIds.size(); i++) {
@@ -1269,7 +1259,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			} else {
 				ps =
 					conn.prepareStatement(
-						"DELETE FROM items WHERE channel = ? AND dtStamp < ?");
+						"DELETE FROM " + TABLE_ITEMS + " WHERE channel = ? AND dtStamp < ?");
 				int paramCount = 1;
 				ps.setInt(paramCount++, channel.getId());
 				ps.setTimestamp(
@@ -1283,7 +1273,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			// TODO: only really need to do this if first article number is not in set...
 			ps =
 				conn.prepareStatement(
-					"SELECT MIN(articleNumber) as firstArticleNumber FROM items WHERE channel = ?");
+					"SELECT MIN(articleNumber) as firstArticleNumber FROM " + TABLE_ITEMS + " WHERE channel = ?");
 			int paramCount = 1;
 
 			ps.setInt(paramCount++, channel.getId());
@@ -1339,7 +1329,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 
 			StringBuffer stBuf =
-				new StringBuffer("DELETE FROM items WHERE channel = ? AND signature NOT IN (");
+				new StringBuffer("DELETE FROM " + TABLE_ITEMS + " WHERE channel = ? AND signature NOT IN (");
 
 			// Create question marks for signature parameters
 			for (int i = 0; i < itemSignatures.size(); i++) {
@@ -1366,7 +1356,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			// TODO: only really need to do this if first article number is not in set...
 			ps =
 				conn.prepareStatement(
-					"SELECT MIN(articleNumber) as firstArticleNumber FROM items WHERE channel = ?");
+					"SELECT MIN(articleNumber) as firstArticleNumber FROM " + TABLE_ITEMS + " WHERE channel = ?");
 			paramCount = 1;
 
 			ps.setInt(paramCount++, channel.getId());
@@ -1424,7 +1414,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			conn =
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			StringBuffer stBuf =
-				new StringBuffer("SELECT signature FROM items WHERE channel = ? AND signature IN (");
+				new StringBuffer("SELECT signature FROM " + TABLE_ITEMS + " WHERE channel = ? AND signature IN (");
 
 			// Create question marks for signature parameters
 			for (int i = 0; i < itemSignatures.size(); i++) {
@@ -1498,7 +1488,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"SELECT articleNumber FROM categoryitem WHERE category = ? ORDER BY articleNumber");
+					"SELECT articleNumber FROM " + TABLE_CATEGORYITEM + " WHERE category = ? ORDER BY articleNumber");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, category.getId());
@@ -1545,7 +1535,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			conn =
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 
-			ps = conn.prepareStatement("DELETE FROM categoryitem WHERE channel = ? and category = ?");
+			ps = conn.prepareStatement("DELETE FROM " + TABLE_CATEGORYITEM + " WHERE channel = ? and category = ?");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, channel.getId());
@@ -1553,7 +1543,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			ps.executeUpdate();
 			ps.close();
 
-			ps = conn.prepareStatement("SELECT count(articleNumber) FROM category where id = ?");
+			ps = conn.prepareStatement("SELECT count(articleNumber) FROM " + TABLE_CATEGORYITEM + " WHERE channel = ?");
 			paramCount = 1;
 			ps.setInt(paramCount++, category.getId());
 			rs = ps.executeQuery();
@@ -1595,14 +1585,14 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
 			ps =
 				conn.prepareStatement(
-					"DELETE FROM categoryitem WHERE category = ?");
+					"DELETE FROM " + TABLE_CATEGORYITEM + " WHERE category = ?");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, category.getId());
 			ps.executeUpdate();
 			ps.close();
 
-			ps = conn.prepareStatement("DELETE FROM categories WHERE id = ?");
+			ps = conn.prepareStatement("DELETE FROM " + TABLE_CATEGORIES + " WHERE id = ?");
 
 			paramCount = 1;
 			ps.setInt(paramCount++, category.getId());
@@ -1638,7 +1628,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"SELECT channel, channelArticleNumber FROM categoryitem WHERE articleNumber = ? AND category = ?");
+					"SELECT channel, channelArticleNumber FROM " + TABLE_CATEGORYITEM + " WHERE articleNumber = ? AND category = ?");
 			int paramCount = 1;
 			ps.setInt(paramCount++, articleNumber);
 			ps.setInt(paramCount++, category.getId());
@@ -1699,23 +1689,23 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				&& articleRange[1] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
-						"SELECT categoryitem.articleNumber as categoryArticleNumber,items.* FROM categoryitem, items WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber >= ? and categoryitem.articleNumber <= ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
+						"SELECT categoryitem.articleNumber as categoryArticleNumber,items.* FROM " + TABLE_CATEGORYITEM + ", " + TABLE_ITEMS + " WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber >= ? and categoryitem.articleNumber <= ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
 			} else if (
 				articleRange[0] == AppConstants.OPEN_ENDED_RANGE
 					&& articleRange[1] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
-						"SELECT categoryitem.articleNumber as categoryArticleNumber,items.* FROM categoryitem, items WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber <= ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
+						"SELECT categoryitem.articleNumber as categoryArticleNumber,items.* FROM " + TABLE_CATEGORYITEM + ", " + TABLE_ITEMS + " WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber <= ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
 			} else if (
 				articleRange[1] == AppConstants.OPEN_ENDED_RANGE
 					&& articleRange[0] != AppConstants.OPEN_ENDED_RANGE) {
 				ps =
 					conn.prepareStatement(
-						"SELECT categoryitem.articleNumber as categoryArticleNumber,items.* FROM categoryitem, items WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber >= ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
+						"SELECT categoryitem.articleNumber as categoryArticleNumber,items.* FROM " + TABLE_CATEGORYITEM + ", " + TABLE_ITEMS + " WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber >= ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
 			} else {
 				ps =
 					conn.prepareStatement(
-						"categoryitem.articleNumber as categoryArticleNumber,items.* FROM categoryitem, items WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
+						"categoryitem.articleNumber as categoryArticleNumber,items.* FROM " + TABLE_CATEGORYITEM + ", " + TABLE_ITEMS + " WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
 			}
 
 			int paramCount = 1;
@@ -1790,7 +1780,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 		return loadRelativeItem(
 			category,
 			relativeArticleNumber,
-			"SELECT TOP 1 categoryitem.articleNumber as categoryArticleNumber,items.* FROM categoryitem, items WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber > ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
+			"SELECT TOP 1 categoryitem.articleNumber as categoryArticleNumber,items.* FROM " + TABLE_CATEGORYITEM + ", " + TABLE_ITEMS + " WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber > ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber");
 	}
 
 	/* (non-Javadoc)
@@ -1802,7 +1792,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 		return loadRelativeItem(
 			category,
 			relativeArticleNumber,
-			"SELECT TOP 1 categoryitem.articleNumber as categoryArticleNumber,items.* FROM categoryitem, items WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber > ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber DESC");
+			"SELECT TOP 1 categoryitem.articleNumber as categoryArticleNumber,items.* FROM " + TABLE_CATEGORYITEM + ", " + TABLE_ITEMS + " WHERE items.channel = categoryitem.channel AND items.articleNumber = categoryitem.channelArticleNumber AND categoryitem.articleNumber > ? AND categoryitem.category = ? ORDER BY categoryitem.articleNumber DESC");
 	}
 
 	private Item loadRelativeItem(
