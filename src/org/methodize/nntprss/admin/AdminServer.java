@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.rss.ChannelManager;
+import org.methodize.nntprss.util.AppConstants;
 import org.mortbay.http.BasicAuthenticator;
 import org.mortbay.http.HashUserRealm;
 import org.mortbay.http.HttpContext;
@@ -49,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServer.java,v 1.2 2003/01/22 05:03:38 jasonbrome Exp $
+ * @version $Id: AdminServer.java,v 1.3 2003/03/22 16:26:48 jasonbrome Exp $
  */
 public class AdminServer {
 
@@ -61,7 +62,6 @@ public class AdminServer {
 	public static final String SERVLET_CTX_NNTP_SERVER = "nntp.server";
 
 	public static final String REALM_NAME = "nntprss-realm";
-	public static final String REALM_USERS_CONFIG = "users.properties";
 
 
 	public AdminServer(ChannelManager channelManager, NNTPServer nntpServer) {
@@ -79,12 +79,12 @@ public class AdminServer {
 
 // Check for user realm properties file
 // If it exists, use security.
-		InputStream userRealmConfig = this.getClass().getResourceAsStream("/" + REALM_USERS_CONFIG);
+		InputStream userRealmConfig = this.getClass().getResourceAsStream("/" + AppConstants.USERS_CONFIG);
 		boolean useSecurity = false;
 		if(userRealmConfig != null) {
 			useSecurity = true;
 			HashUserRealm userRealm = new HashUserRealm(REALM_NAME);
-			userRealm.load(REALM_USERS_CONFIG);
+			userRealm.load(AppConstants.USERS_CONFIG);
 			httpServer.addRealm(userRealm);
 		}
 
