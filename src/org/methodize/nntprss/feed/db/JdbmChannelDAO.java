@@ -1,6 +1,11 @@
 package org.methodize.nntprss.feed.db;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -72,7 +77,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.2 2003/09/28 20:50:37 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.3 2003/09/28 21:14:25 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
@@ -402,10 +407,15 @@ public class JdbmChannelDAO extends ChannelDAO {
 	 */
 	public void loadConfiguration(ChannelManager channelManager) {
 		try {
-			recMan.fetch(
+			ChannelManager channelManagerInstance = 
+				(ChannelManager)recMan.fetch(
 				recMan.getNamedObject(RECORD_CHANNEL_CONFIG),
 				new InstanceJdbmSerializer(channelManager));
-		} catch (IOException ie) {
+//			If item retrieved from cache, ensure that instance is appropriately 
+//			updated
+			 transferExternalState(channelManagerInstance, channelManager);
+
+		} catch (Exception ie) {
 			throw new RuntimeException(ie);
 		}
 	}
@@ -415,11 +425,29 @@ public class JdbmChannelDAO extends ChannelDAO {
 	 */
 	public void loadConfiguration(NNTPServer nntpServer) {
 		try {
-			recMan.fetch(
-				recMan.getNamedObject(RECORD_CHANNEL_CONFIG),
+			NNTPServer nntpServerInstance = (NNTPServer)recMan.fetch(
+				recMan.getNamedObject(RECORD_NNTP_CONFIG),
 				new InstanceJdbmSerializer(nntpServer));
-		} catch (IOException ie) {
+// If item retrieved from cache, ensure that instance is appropriately 
+// updated
+			transferExternalState(nntpServerInstance, nntpServer);
+		} catch (Exception ie) {
 			throw new RuntimeException(ie);
+		}
+	}
+	private void transferExternalState(
+		Externalizable source,
+		Externalizable destination)
+		throws IOException, ClassNotFoundException {
+		if(source != destination) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			source.writeExternal(oos);
+			oos.flush();
+			oos.close();
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			destination.readExternal(ois);		
 		}
 	}
 
