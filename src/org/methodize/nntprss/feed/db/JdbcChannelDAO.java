@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.3 2004/03/24 04:27:26 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.4 2004/03/25 02:09:58 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -2021,8 +2021,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 			stmt.execute("SHUTDOWN");
 			hsqlFound = true;
 		} catch (Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Exception thrown when trying to migrate hsqldb", e);
+			if (log.isEnabledFor(Priority.ERROR)) {
+				log.error("Exception thrown when trying to migrate hsqldb", e);
 			}
 		} finally {
 			try {
