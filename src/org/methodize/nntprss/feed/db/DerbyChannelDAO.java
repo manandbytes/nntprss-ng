@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DerbyChannelDAO.java,v 1.3 2004/12/15 04:13:30 jasonbrome Exp $
+ * @version $Id: DerbyChannelDAO.java,v 1.4 2005/02/13 21:59:44 jasonbrome Exp $
  */
 
 public class DerbyChannelDAO extends JdbcChannelDAO {
@@ -62,6 +62,12 @@ public class DerbyChannelDAO extends JdbcChannelDAO {
     private Logger log = Logger.getLogger(DerbyChannelDAO.class);
 
     public DerbyChannelDAO() {
+    	String mrjVersion = System.getProperty("mrj.version");
+		if(mrjVersion != null) {
+			// We're running on a Mac, set the Derby property
+			log.warn("Running on Derby on Mac (mrj.version=" + mrjVersion + "), so setting derby.storage.fileSyncTransactionLog=true");
+			System.setProperty("derby.storage.fileSyncTransactionLog", "true");
+		}
     }
 
     protected void createTables() {
