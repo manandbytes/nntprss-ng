@@ -2,7 +2,7 @@ package org.methodize.nntprss.nntp;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -39,19 +39,18 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: NNTPServerListener.java,v 1.2 2003/01/22 05:07:39 jasonbrome Exp $
  */
 public class NNTPServerListener extends Thread {
 
 	private Logger log = Logger.getLogger(NNTPServerListener.class);
 
 	private ServerSocket serverSocket = null;
-	private static final int NNTP_PORT = 119;
 	private boolean active = true;
 	private NNTPServer nntpServer = null;
 
-	public NNTPServerListener(NNTPServer nntpServer) throws Exception {
-		serverSocket = new ServerSocket(NNTP_PORT);
+	public NNTPServerListener(NNTPServer nntpServer, int port) throws Exception {
+		serverSocket = new ServerSocket(port);
 		this.nntpServer = nntpServer;
 	}
 
