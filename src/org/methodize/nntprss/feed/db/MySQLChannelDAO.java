@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.4 2004/01/04 21:19:37 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.5 2004/03/23 02:34:10 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -77,7 +77,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 			stmt = conn.createStatement();
 
 			stmt.executeUpdate(
-				"CREATE TABLE channels ("
+				"CREATE TABLE " + TABLE_CHANNELS + "("
 					+ "id int not null primary key auto_increment, "
 					+ "url varchar(255) not null, "
 					+ "name varchar(255) not null, "
@@ -103,7 +103,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 					+ "category int)");
 
 			stmt.executeUpdate(
-				"CREATE TABLE items ("
+				"CREATE TABLE " + TABLE_ITEMS + "("
 					+ "articleNumber int not null, "
 					+ "channel int not null, "
 					+ "title varchar(255), "
@@ -117,26 +117,26 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 					+ "guidIsPermaLink bit)");
 					
 			stmt.executeUpdate(
-				"CREATE INDEX fk_channel ON items (channel)");
+				"CREATE INDEX fk_channel ON " + TABLE_ITEMS + " (channel)");
 //			stmt.executeUpdate(
 //				"CREATE INDEX fk_signature ON items (signature)");
 
 			stmt.executeUpdate(
-				"CREATE TABLE categories ("
+				"CREATE TABLE " + TABLE_CATEGORIES + "("
 					+ "id int not null primary key auto_increment, "
 					+ "name varchar(255) not null, "
 					+ "lastArticle int not null, "
 					+ "created timestamp)");
 					
 			stmt.executeUpdate(
-				"CREATE TABLE categoryitem("
+				"CREATE TABLE " + TABLE_CATEGORYITEM + "("
 					+ "category int not null, "
 					+ "articleNumber int not null, "
 					+ "channel int not null, "
 					+ "channelArticleNumber int not null)");
 				
 			stmt.executeUpdate(
-				"CREATE TABLE config ("
+				"CREATE TABLE " + TABLE_CONFIG + "("
 					+ "pollingInterval bigint not null, "
 					+ "proxyServer varchar(255), "
 					+ "proxyPort int, "
@@ -151,7 +151,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 					+ "hostName varchar(255))");
 					
 			stmt.executeUpdate(
-				"INSERT INTO config(pollingInterval, contentType, dbVersion, nntpSecure, footnoteUrls, useProxy, observeHttp301, hostName) VALUES(60*60, "
+				"INSERT INTO " + TABLE_CONFIG + "(pollingInterval, contentType, dbVersion, nntpSecure, footnoteUrls, useProxy, observeHttp301, hostName) VALUES(60*60, "
 					+ AppConstants.CONTENT_TYPE_MIXED 
 					+ ", "
 					+ DBVERSION
@@ -209,7 +209,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 
 					ps =
 						conn.prepareStatement(
-							"INSERT INTO channels(url, name, created, lastPolled, lastArticle, enabled, postingEnabled, parseAtAllCost, pollingInterval, status, expiration) "
+							"INSERT INTO " + TABLE_CHANNELS + "(url, name, created, lastPolled, lastArticle, enabled, postingEnabled, parseAtAllCost, pollingInterval, status, expiration) "
 								+ "values(?, ?, ?, 0, ?, "
 								+ MYSQL_TRUE
 								+ ", "
@@ -283,59 +283,59 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 			switch(dbVersion) {
 // v0.1 updates
 				case 0:
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN contentType int");
-					stmt.executeUpdate("UPDATE config SET contentType = " 
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN contentType int");
+					stmt.executeUpdate("UPDATE " + TABLE_CONFIG + " SET contentType = " 
 						+ AppConstants.CONTENT_TYPE_MIXED);
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN dbVersion int");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN dbVersion int");
 		
 // Channel
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN title varchar(255)");
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN link blob");
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN description blob");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN title varchar(255)");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN link blob");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN description blob");
 		
 // Items
-					stmt.executeUpdate("ALTER TABLE items ADD COLUMN comments blob");					
+					stmt.executeUpdate("ALTER TABLE " + TABLE_ITEMS + " ADD COLUMN comments blob");					
 
 				case 2:
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN nntpSecure bit");
-					stmt.executeUpdate("UPDATE config SET nntpSecure = " + MYSQL_FALSE);
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN nntpSecure bit");
+					stmt.executeUpdate("UPDATE " + TABLE_CONFIG + " SET nntpSecure = " + MYSQL_FALSE);
 
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN proxyUserID varchar(255)");
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN proxyPassword varchar(255)");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN proxyUserID varchar(255)");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN proxyPassword varchar(255)");
 
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN enabled bit");
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN postingEnabled bit");
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN parseAtAllCost bit");
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN publishAPI varchar(128)");
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN publishConfig blob");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN enabled bit");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN postingEnabled bit");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN parseAtAllCost bit");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN publishAPI varchar(128)");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN publishConfig blob");
 
-					stmt.executeUpdate("UPDATE channels SET enabled = " 
+					stmt.executeUpdate("UPDATE " + TABLE_CHANNELS + " SET enabled = " 
 						+ MYSQL_TRUE
 						+ ", postingEnabled = "
 						+ MYSQL_FALSE
 						+ ", parseAtAllCost = '" 
 						+ MYSQL_FALSE);
 
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN managingEditor varchar(128)");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN managingEditor varchar(128)");
 
 				case 3:
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN pollingInterval bigint");
-					stmt.executeUpdate("UPDATE channels SET pollingInterval = 0");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN pollingInterval bigint");
+					stmt.executeUpdate("UPDATE " + TABLE_CHANNELS + " SET pollingInterval = 0");
 				
 
 				case 4:
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN footnoteUrls bit");
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN useProxy bit");
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN observeHttp301 bit");
-					stmt.executeUpdate("ALTER TABLE config ADD COLUMN hostName varchar(255)");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN footnoteUrls bit");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN useProxy bit");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN observeHttp301 bit");
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CONFIG + " ADD COLUMN hostName varchar(255)");
 
-					stmt.executeUpdate("ALTER TABLE items ADD COLUMN creator varchar(255)");					
-					stmt.executeUpdate("ALTER TABLE items ADD COLUMN guid varchar(255)");					
-					stmt.executeUpdate("ALTER TABLE items ADD COLUMN guidIsPermaLink bit");					
+					stmt.executeUpdate("ALTER TABLE " + TABLE_ITEMS + " ADD COLUMN creator varchar(255)");					
+					stmt.executeUpdate("ALTER TABLE " + TABLE_ITEMS + " ADD COLUMN guid varchar(255)");					
+					stmt.executeUpdate("ALTER TABLE " + TABLE_ITEMS + " ADD COLUMN guidIsPermaLink bit");					
 
-					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN status int");					
+					stmt.executeUpdate("ALTER TABLE " + TABLE_CHANNELS + " ADD COLUMN status int");					
 
-					stmt.executeUpdate("UPDATE config SET footnoteUrls = " 
+					stmt.executeUpdate("UPDATE " + TABLE_CONFIG + " SET footnoteUrls = " 
 						+ MYSQL_TRUE
 						+ ", useProxy = "
 						+ MYSQL_FALSE
@@ -345,13 +345,13 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 						+ AppConstants.getCurrentHostName()
 						+ "'");
 
-					stmt.executeUpdate("CREATE INDEX fk_channel ON items (channel)");
+					stmt.executeUpdate("CREATE INDEX fk_channel ON " + TABLE_ITEMS + " (channel)");
 
 				default:
 // Force re-poll of all channels after DB upgrade...
-					stmt.executeUpdate("UPDATE config SET dbVersion = " 
+					stmt.executeUpdate("UPDATE " + TABLE_CONFIG + " SET dbVersion = " 
 						+ DBVERSION);
-					stmt.executeUpdate("UPDATE channels SET lastPolled = null, lastModified = null, lastETag = null");
+					stmt.executeUpdate("UPDATE " + TABLE_CHANNELS + " SET lastPolled = null, lastModified = null, lastETag = null");
 			}
 
 			if(log.isInfoEnabled()) {
@@ -385,7 +385,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"INSERT INTO channels(url, name, lastArticle, created, enabled, postingEnabled, publishAPI, publishConfig, parseAtAllCost, pollingInterval, status, expiration) "
+					"INSERT INTO " + TABLE_CHANNELS + "(url, name, lastArticle, created, enabled, postingEnabled, publishAPI, publishConfig, parseAtAllCost, pollingInterval, status, expiration) "
 						+ "values(?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 			int paramCount = 1;
@@ -447,7 +447,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
-					"INSERT INTO categories(name, lastArticle, created) "
+					"INSERT INTO " + TABLE_CATEGORIES + "(name, lastArticle, created) "
 						+ "values(?, 0, ?)");
 
 			int paramCount = 1;
