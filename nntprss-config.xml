@@ -4,19 +4,32 @@
 <!-- http://www.methodize.org/nntprss -->
 
 <nntprss>
-<!--  <db connect='jdbc:hsqldb:hsql://localhost'/> -->
-  <db connect='jdbc:hsqldb:nntprssdb' driverClass='org.hsqldb.jdbcDriver' daoClass='org.methodize.nntprss.feed.db.HSqlDbChannelDAO'/>
 
-<!-- MySQL - Not yet implemented  
-  <db connect='jdbc:mysql://127.0.0.1/nntprssdb?user=blah&password=blah&autoReconnect=true' driverClass='com.mysql.jdbc.Driver' daoClass='org.methodize.nntprss.rss.db.MySqlChannelDAO'/>
+<!-- hsqldb (now deprecated) -->
+<!-- <db connect='jdbc:hsqldb:nntprssdb' driverClass='org.hsqldb.jdbcDriver' daoClass='org.methodize.nntprss.feed.db.HSqlDbChannelDAO'/>  -->
+
+<!-- JDBM -->
+ <db daoClass='org.methodize.nntprss.feed.db.JdbmChannelDAO'/> 
+
+<!-- MySQL -->
+<!-- MySQL
+  <db connect='jdbc:mysql://127.0.0.1/nntprssdb?user=blah&password=blah&autoReconnect=true' driverClass='com.mysql.jdbc.Driver' daoClass='org.methodize.nntprss.feed.db.MySQLChannelDAO'/>
 -->
-
 
 <!-- Listener port for NNTP server -->
   <nntp port='119'/>
 
 <!-- Listener port for web admin interface -->
   <admin port='7810'/>
+
+<!-- Subscription listeners -->
+<!--  <subscribe name='AmphetaDesk' port='8888' path='/index.html' param='add_url' />
+  <subscribe name='Radio Userland' port='5335' path='/system/pages/subscriptions' param='url' /> 
+  <subscribe name='Awasu' port='2604' path='/subscribe' param='url' />
+  <subscribe name='BottomFeeder' port='8666' path='/btf' param='rss' />
+  <subscribe name='Headline Viewer' port='8900' path='/add_provider' param='url' />
+  <subscribe name='Wildgrape NewsDesk' port='8888' path='NewsDesk.html' param='add_url' /> -->
+
 
 <!-- Initial channel list -->
 <!-- These are the channels defined during a fresh installation of nntp//rss -->
@@ -27,8 +40,6 @@
     <channel name='com.danielsjourney' url='http://www.danielsjourney.com/rss.php' historical='true'/>
     <channel name='com.dynamicobjects.abort.retry.fail' url='http://www.dynamicobjects.com/~diego/weblogs/arf/index.xml' historical='true'/>
     <channel name='com.jasonbrome' url='http://www.jasonbrome.com/blog/index.rdf' historical='true'/>
-    <channel name='com.phrasewise.archipelago' url='http://archipelago.phrasewise.com/xml/rss.xml' historical='true'/>
-    <channel name='com.phrasewise.mpt' url='http://mpt.phrasewise.com/xml/rss.xml' historical='true'/>
     <channel name='com.russellbeattie' url='http://www.russellbeattie.com/notebook/rss.jsp' historical='true'/>
     <channel name='com.sixapart' url='http://www.sixapart.com/log/index.rdf' historical='true'/>
     <channel name='com.scripting.news' url='http://www.scripting.com/rss.xml' historical='true'/>
