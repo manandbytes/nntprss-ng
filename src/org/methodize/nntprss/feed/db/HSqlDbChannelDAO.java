@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: HSqlDbChannelDAO.java,v 1.1 2003/07/18 23:58:05 jasonbrome Exp $
+ * @version $Id: HSqlDbChannelDAO.java,v 1.2 2003/07/20 02:40:28 jasonbrome Exp $
  */
 public class HSqlDbChannelDAO implements ChannelDAO {
 
@@ -140,7 +140,8 @@ public class HSqlDbChannelDAO implements ChannelDAO {
 					+ "dbVersion int, "
 					+ "nntpSecure bit, "
 					+ "footnoteUrls bit, "
-					+ "useProxy bit");
+					+ "useProxy bit, "
+					+ "observeHttp301 bit");
 					
 			stmt.executeUpdate(
 				"INSERT INTO config(pollingInterval, contentType, dbVersion, nntpSecure, footnoteUrls) VALUES(60*60, "
@@ -282,12 +283,13 @@ public class HSqlDbChannelDAO implements ChannelDAO {
 				case 4:
 					stmt.executeUpdate("ALTER TABLE config ADD COLUMN footnoteUrls bit");
 					stmt.executeUpdate("ALTER TABLE config ADD COLUMN useProxy bit");
+					stmt.executeUpdate("ALTER TABLE config ADD COLUMN observeHttp301 bit");
 
 					stmt.executeUpdate("ALTER TABLE items ADD COLUMN creator varchar(256)");					
 					stmt.executeUpdate("ALTER TABLE items ADD COLUMN guid varchar(256)");					
 					stmt.executeUpdate("ALTER TABLE items ADD COLUMN guidIsPermaLink bit");					
 
-					stmt.executeUpdate("UPDATE config SET footnoteUrls = true, useProxy = false");
+					stmt.executeUpdate("UPDATE config SET footnoteUrls = true, useProxy = false, observeHttp301 = true");
 
 					stmt.executeUpdate("CREATE INDEX fk_channel ON items (channel)");
 
@@ -392,6 +394,7 @@ public class HSqlDbChannelDAO implements ChannelDAO {
                     channelManager.setProxyUserID(rs.getString("proxyUserID"));
                     channelManager.setProxyPassword(rs.getString("proxyPassword"));
                     channelManager.setUseProxy(rs.getBoolean("useProxy"));
+					channelManager.setObserveHttp301(rs.getBoolean("observeHttp301"));
 				}
 			}
 		} catch (SQLException se) {
@@ -1107,7 +1110,8 @@ public class HSqlDbChannelDAO implements ChannelDAO {
 						+ "proxyPort = ?, "
 						+ "proxyUserID = ?, "
 						+ "proxyPassword = ?, "
-						+ "useProxy = ?");
+						+ "useProxy = ?, "
+						+ "observeHttp301 = ?");
 
 			int paramCount = 1;
 			ps.setLong(paramCount++, channelManager.getPollingIntervalSeconds());
@@ -1116,6 +1120,7 @@ public class HSqlDbChannelDAO implements ChannelDAO {
             ps.setString(paramCount++, channelManager.getProxyUserID());
             ps.setString(paramCount++, channelManager.getProxyPassword());
 			ps.setBoolean(paramCount++, channelManager.isUseProxy());
+			ps.setBoolean(paramCount++, channelManager.isObserveHttp301());
 			ps.executeUpdate();
 
 		} catch (SQLException se) {
