@@ -1,3 +1,20 @@
+February 13, 2005 - nntp//rss v0.5-beta-2
+
++ Introduced Item Processors - this allows custom modules to be plugged
+  into the polling engine.  ItemProcessor classes are called when new
+  items are received.  An example processor, ItemLogPlugin, logs the 
+  channel and item title for every new item to the nntp//rss log file.
+  Potential plugins could include alerting and email modules.
++ Set derby.storage.fileSyncTransactionLog=true system property when
+  running under Mac OS.
++ Fixed HTTP URL username/password support for those usernames or passwords
+  that require URL-encoded characters 
+  (e.g. Username: myuser@mysite.com, Password: test,
+  URL: http://myuser%40mysite.com:test@some.url.com/feed.xml)
+  Thanks to Steven Rohall for his help in finding and resolving this bug!
++ Fixed redirection bug
++ Added 6 month and 1 year expiration options
+
 October 25, 2004 - nntp//rss v0.5-beta-1
 
 + Added HSQLDB -> Derby and HSQLDB -> MySQL migration
