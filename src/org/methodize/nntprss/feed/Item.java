@@ -38,9 +38,9 @@ import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Item.java,v 1.2 2003/09/28 20:19:00 jasonbrome Exp $
+ * @version $Id: Item.java,v 1.3 2003/10/24 02:34:28 jasonbrome Exp $
  */
-public class Item implements Externalizable {
+public class Item implements Externalizable, Cloneable {
 
 	public static final int EXTERNAL_VERSION = 1;  
 
@@ -275,6 +275,14 @@ public class Item implements Externalizable {
 			out.writeInt(channel.getId());
 			out.writeUTF(guid != null ? guid : "");
 			out.writeBoolean(guidIsPermaLink);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 
 }
