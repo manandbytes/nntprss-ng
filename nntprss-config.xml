@@ -18,7 +18,7 @@
 
   <channels>
 
-    <channel name='com.benhammersley' url='http://www.benhammersley.com/index.xml' historical='true'/>
+    <channel name='com.benhammersley' url='http://www.benhammersley.com/index.rdf' historical='true'/>
     <channel name='com.danielsjourney' url='http://www.danielsjourney.com/rss.php' historical='true'/>
     <channel name='com.dynamicobjects.abort.retry.fail' url='http://www.dynamicobjects.com/~diego/weblogs/arf/index.xml' historical='true'/>
     <channel name='com.hyperorg.joho' url='http://www.hyperorg.com/blogger/index.rdf' historical='true'/>
