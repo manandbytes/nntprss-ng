@@ -39,7 +39,7 @@ import java.net.URLClassLoader;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Startup.java,v 1.2 2003/01/22 05:02:57 jasonbrome Exp $
+ * @version $Id: Startup.java,v 1.3 2003/03/22 16:25:42 jasonbrome Exp $
  */
 public class Startup {
 
@@ -53,6 +53,10 @@ public class Startup {
 			"./ext/lib/org.mortbay.jetty-jdk1.2.jar",
 			"./ext/lib/hsqldb.jar",
 			"./ext/lib/crimson.jar",
+			"./ext/lib/xmlrpc-1.1.jar",
+			"./ext/lib/mailapi.jar",
+			"./ext/lib/activation.jar",
+			"./ext/lib/systray4j.jar",
 			".",
 
 			};
