@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.14 2004/03/27 02:10:59 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.15 2004/10/26 01:11:51 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -157,8 +157,11 @@ public class AdminServlet extends HttpServlet {
         writer.write("<tr>");
         writer.write(
             "<th class='subHead"
-                + (tab.equals(TAB_FIND_FEEDS) ? "Selected" : "")
-                + "' width='50%' align='left'>&nbsp;<a class='head' href='?action=findfeedsform'>Find Feeds</a></th>");
+                + "' width='50%' align='left'>&nbsp;</th>");
+//		writer.write(
+//			"<th class='subHead"
+//				+ (tab.equals(TAB_FIND_FEEDS) ? "Selected" : "")
+//				+ "' width='50%' align='left'>&nbsp;<a class='head' href='?action=findfeedsform'>Find Feeds</a></th>");
         writer.write(
             "<th class='subHead"
                 + (tab.equals(TAB_VIEW_CATEGORIES) ? "Selected" : "")
