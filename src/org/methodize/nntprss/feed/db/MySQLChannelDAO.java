@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -40,6 +40,7 @@ import java.sql.Timestamp;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.methodize.nntprss.feed.Category;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.XMLHelper;
@@ -49,10 +50,10 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.3 2003/10/24 02:32:41 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.4 2004/01/04 21:19:37 jasonbrome Exp $
  */
 
-public class MySQLChannelDAO extends ChannelDAO {
+public class MySQLChannelDAO extends JdbcChannelDAO {
 
 	private static final int DBVERSION = 5;
 	private static final int MYSQL_FALSE = 0;
@@ -72,7 +73,7 @@ public class MySQLChannelDAO extends ChannelDAO {
 		}
 
 		try {
-			conn = DriverManager.getConnection(ChannelDAO.POOL_CONNECT_STRING);
+			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
 
 			stmt.executeUpdate(
@@ -98,7 +99,8 @@ public class MySQLChannelDAO extends ChannelDAO {
 					+ "managingEditor varchar(128), "
 					+ "pollingInterval bigint not null, "
 					+ "status int, "
-					+ "expiration bigint)");
+					+ "expiration bigint, "
+					+ "category int)");
 
 			stmt.executeUpdate(
 				"CREATE TABLE items ("
@@ -118,6 +120,20 @@ public class MySQLChannelDAO extends ChannelDAO {
 				"CREATE INDEX fk_channel ON items (channel)");
 //			stmt.executeUpdate(
 //				"CREATE INDEX fk_signature ON items (signature)");
+
+			stmt.executeUpdate(
+				"CREATE TABLE categories ("
+					+ "id int not null primary key auto_increment, "
+					+ "name varchar(255) not null, "
+					+ "lastArticle int not null, "
+					+ "created timestamp)");
+					
+			stmt.executeUpdate(
+				"CREATE TABLE categoryitem("
+					+ "category int not null, "
+					+ "articleNumber int not null, "
+					+ "channel int not null, "
+					+ "channelArticleNumber int not null)");
 				
 			stmt.executeUpdate(
 				"CREATE TABLE config ("
@@ -134,7 +150,6 @@ public class MySQLChannelDAO extends ChannelDAO {
 					+ "observeHttp301 bit, "
 					+ "hostName varchar(255))");
 					
-
 			stmt.executeUpdate(
 				"INSERT INTO config(pollingInterval, contentType, dbVersion, nntpSecure, footnoteUrls, useProxy, observeHttp301, hostName) VALUES(60*60, "
 					+ AppConstants.CONTENT_TYPE_MIXED 
@@ -183,7 +198,7 @@ public class MySQLChannelDAO extends ChannelDAO {
 		}
 
 		try {
-			conn = DriverManager.getConnection(ChannelDAO.POOL_CONNECT_STRING);
+			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			NodeList channelsList =
 				config.getDocumentElement().getElementsByTagName("channels");
 
@@ -262,7 +277,7 @@ public class MySQLChannelDAO extends ChannelDAO {
 		}
 
 		try {
-			conn = DriverManager.getConnection(ChannelDAO.POOL_CONNECT_STRING);
+			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			stmt = conn.createStatement();
 
 			switch(dbVersion) {
@@ -367,7 +382,7 @@ public class MySQLChannelDAO extends ChannelDAO {
 		Statement s = null;
 		
 		try {
-			conn = DriverManager.getConnection(ChannelDAO.POOL_CONNECT_STRING);
+			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
 			ps =
 				conn.prepareStatement(
 					"INSERT INTO channels(url, name, lastArticle, created, enabled, postingEnabled, publishAPI, publishConfig, parseAtAllCost, pollingInterval, status, expiration) "
@@ -420,6 +435,58 @@ public class MySQLChannelDAO extends ChannelDAO {
 			}
 		}
 
+	}
+
+	public void addCategory(Category category) {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		Statement s = null;
+		
+		try {
+			conn = DriverManager.getConnection(JdbcChannelDAO.POOL_CONNECT_STRING);
+			ps =
+				conn.prepareStatement(
+					"INSERT INTO categories(name, lastArticle, created) "
+						+ "values(?, 0, ?)");
+
+			int paramCount = 1;
+			ps.setString(paramCount++, category.getName());
+			ps.setTimestamp(
+				paramCount++,
+				new Timestamp(category.getCreated().getTime()));
+			ps.executeUpdate();
+
+			ps.close();
+			ps = null;
+			
+			s = conn.createStatement();
+			rs = s.executeQuery("SELECT LAST_INSERT_ID()");
+			
+			if(rs != null) {
+				if(rs.next()) {
+					category.setId(rs.getInt(1));
+				}
+			}
+		} catch (SQLException se) {
+			throw new RuntimeException(se);
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException se) {
+			}
+			try {
+				if (s != null)
+					s.close();
+			} catch (SQLException se) {
+			}
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+			}
+		}
 	}
 
 	/* (non-Javadoc)
