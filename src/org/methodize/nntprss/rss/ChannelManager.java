@@ -30,6 +30,8 @@ package org.methodize.nntprss.rss;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +42,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.3 2003/01/22 05:08:44 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.4 2003/03/22 16:30:23 jasonbrome Exp $
  */
 public class ChannelManager {
 
@@ -48,7 +50,10 @@ public class ChannelManager {
 	
 	private String proxyServer = null;
 	private int proxyPort = 0;
-	
+    private String proxyUserID = null;
+    private transient String proxyPassword = null;
+   
+
 	private Map channels;
 	private static ChannelManager channelManager = new ChannelManager();
 	private ChannelManagerDAO channelManagerDAO;
@@ -79,10 +84,28 @@ public class ChannelManager {
 		channelManagerDAO.loadConfiguration(this);
 
 // Set proxy configuration, if necessary.
-		if(proxyServer != null && proxyServer.length() > 0) {
+        if ((proxyServer != null) && (proxyServer.length() > 0)) {
 			System.setProperty("http.proxyHost", proxyServer);
 			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
 			System.setProperty("http.proxySet", "true");
+
+            if ((proxyUserID != null && proxyUserID.length() > 0) ||
+            	(proxyPassword != null && proxyPassword.length() > 0)) {
+                Authenticator.setDefault(new Authenticator() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(proxyUserID,
+                                (proxyPassword == null) ? new char[0]
+                                                        : proxyPassword.toCharArray());
+                        }
+                    });
+            } else {
+            	Authenticator.setDefault(null);
+            }
+        } else {
+            System.setProperty("http.proxyHost", "");
+            System.setProperty("http.proxyPort", "");
+            System.setProperty("http.proxySet", "false");
+            Authenticator.setDefault(null);
 		}
 
 		// Load feeds...
@@ -140,12 +163,27 @@ public class ChannelManager {
 			System.setProperty("http.proxyHost", proxyServer);
 			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
 			System.setProperty("http.proxySet", "true");
+
+            if ((proxyUserID != null && proxyUserID.length() > 0) ||
+            	(proxyPassword != null && proxyPassword.length() > 0)) {
+                Authenticator.setDefault(new Authenticator() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(proxyUserID,
+                                (proxyPassword == null) ? new char[0]
+                                                        : proxyPassword.toCharArray());
+                        }
+                    });
+            } else {
+            	Authenticator.setDefault(null);
+            }
+            
 		} else {
 			Properties props = System.getProperties();
 			System.setProperty("http.proxyHost", "");
 			System.setProperty("http.proxyPort", "");
 			System.setProperty("http.proxySet", "false");
-		}
+            Authenticator.setDefault(null);
+  		}
 
 	}
 
@@ -203,6 +241,38 @@ public class ChannelManager {
 	 */
 	public void setProxyServer(String proxyServer) {
 		this.proxyServer = proxyServer;
+	}
+
+	/**
+	 * Returns the proxyPassword.
+	 * @return String
+	 */
+	public String getProxyPassword() {
+		return proxyPassword;
+	}
+
+	/**
+	 * Returns the proxyUserID.
+	 * @return String
+	 */
+	public String getProxyUserID() {
+		return proxyUserID;
+	}
+
+	/**
+	 * Sets the proxyPassword.
+	 * @param proxyPassword The proxyPassword to set
+	 */
+	public void setProxyPassword(String proxyPassword) {
+		this.proxyPassword = proxyPassword;
+	}
+
+	/**
+	 * Sets the proxyUserID.
+	 * @param proxyUserID The proxyUserID to set
+	 */
+	public void setProxyUserID(String proxyUserID) {
+		this.proxyUserID = proxyUserID;
 	}
 
 }
