@@ -54,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
@@ -64,6 +65,7 @@ import org.methodize.nntprss.feed.publish.Publisher;
 import org.methodize.nntprss.feed.publish.PublisherException;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.HTMLHelper;
+import org.methodize.nntprss.util.HttpUserException;
 import org.methodize.nntprss.util.RSSHelper;
 import org.methodize.nntprss.util.XMLHelper;
 import org.mortbay.servlet.MultiPartRequest;
@@ -74,7 +76,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.8 2003/07/19 00:03:06 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.9 2003/07/20 02:47:29 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -99,8 +101,9 @@ public class AdminServlet extends HttpServlet {
 		+ "td.chlerror	{ background-color: #FF0000; } "
 		+ "td.chlwarning	{ background-color: #FFFF00; } "
 		+ "td.chldisabled	{ background-color: #CCCCCC; } "
-		+ "td.row1	{ background-color: #EFEFEF; } "
-		+ "td.row2	{ background-color: #DEE3E7; } "
+		+ "td.row1	{ background-color: #EFEFEF; vertical-align: top } "
+		+ "td.row2	{ background-color: #DEE3E7; vertical-align: top } "
+		+ "a.chlerror { color: #FFFFFF; text-decoration: underline} "
 		+ "a.head { color: #FFFFFF; text-decoration: none} "
 		+ "a:hover.head { text-decoration: underline; color : #FFF240; } "
 		+ "a.row { text-decoration: none} "
@@ -171,6 +174,9 @@ public class AdminServlet extends HttpServlet {
 
 		writer.write("<tr><th colspan='2' class='titleHead'>System Configuration</th></tr>");
 
+// Polling
+		writer.write("<tr><th colspan='2' class='subHead'>Polling</th></tr>");
+
 		writer.write("<tr><td class='row1' align='right'><nobr>Default Channel Polling Interval<nobr></td>");
 		writer.write("<td class='row2'>Every <select name='pollingInterval'>");
 		writer.write("<option selected value='" + channelManager.getPollingIntervalSeconds() + "'>" + channelManager.getPollingIntervalSeconds() / 60 + "\n");
@@ -179,26 +185,15 @@ public class AdminServlet extends HttpServlet {
 		}
 		writer.write("</select> minutes </td></tr>");
 
-		writer.write("<tr><td class='row1' align='right'>Use Proxy</td>");
-		writer.write("<td class='row2'><input type='checkbox' name='useProxy' value='true' ");
-		if(channelManager.isUseProxy()) {
+		writer.write("<tr><td class='row1' align='right'>Observe HTTP 301</td>");
+		writer.write("<td class='row2'><input type='checkbox' name='observeHttp301' value='true' ");
+		if(channelManager.isObserveHttp301()) {
 			writer.write("checked");
 		}
-		writer.write("></td></tr>");
+		writer.write("><br><i>(When checked, nntp//rss will update the URL of a feed when a 301 (Permanent Redirection) message is received from the remote web server)</td></tr>");
 
-		writer.write("<tr><td class='row1' align='right'>Proxy Server Hostname</td><td class='row2'><input type='text' name='proxyServer' value='"
-			+ (channelManager.getProxyServer() == null? "" : channelManager.getProxyServer())
-			+ "'><br><i>Host name of your proxy server, leave blank if no proxy</i></td></tr>");
-		writer.write("<tr><td class='row1' align='right'>Proxy Server Port</td><td class='row2'><input type='text' name='proxyPort' value='"
-			+ (channelManager.getProxyPort() == 0 ? "" : Integer.toString(channelManager.getProxyPort()))
-			+ "'><br><i>Proxy server listener port, leave blank if no proxy</i></td></tr>");
-        writer.write("<tr><td class='row1' align='right'>Proxy User ID</td><td class='row2'><input type='text' name='proxyUserID' value='" 
-        	+ ((channelManager.getProxyUserID() == null) ? "" : channelManager.getProxyUserID()) 
-        	+ "'><br><i>Proxy userid, leave blank if no userid</i></td></tr>");
-        writer.write("<tr><td class='row1' align='right'>Proxy Password</td><td class='row2'><input type='password' name='proxyPassword' value='" 
-        	+ ((channelManager.getProxyPassword() == null) ? "" : channelManager.getProxyPassword()) 
-        	+ "'><br><i>Proxy password, leave blank if no password</i></td></tr>");
-
+// NNTP Server
+		writer.write("<tr><th colspan='2' class='subHead'>NNTP Server</th></tr>");
 
 		writer.write("<tr><td class='row1' align='right'>Content Type</td>");
 		writer.write("<td class='row2'><select name='contentType'>");
@@ -230,6 +225,29 @@ public class AdminServlet extends HttpServlet {
 			writer.write("checked");
 		}
 		writer.write("></td></tr>");
+
+// Proxy
+		writer.write("<tr><th colspan='2' class='subHead'>Proxy</th></tr>");
+
+		writer.write("<tr><td class='row1' align='right'>Use Proxy</td>");
+		writer.write("<td class='row2'><input type='checkbox' name='useProxy' value='true' ");
+		if(channelManager.isUseProxy()) {
+			writer.write("checked");
+		}
+		writer.write("></td></tr>");
+
+		writer.write("<tr><td class='row1' align='right'>Proxy Server Hostname</td><td class='row2'><input type='text' name='proxyServer' value='"
+			+ (channelManager.getProxyServer() == null? "" : channelManager.getProxyServer())
+			+ "'><br><i>Host name of your proxy server, leave blank if no proxy</i></td></tr>");
+		writer.write("<tr><td class='row1' align='right'>Proxy Server Port</td><td class='row2'><input type='text' name='proxyPort' value='"
+			+ (channelManager.getProxyPort() == 0 ? "" : Integer.toString(channelManager.getProxyPort()))
+			+ "'><br><i>Proxy server listener port, leave blank if no proxy</i></td></tr>");
+        writer.write("<tr><td class='row1' align='right'>Proxy User ID</td><td class='row2'><input type='text' name='proxyUserID' value='" 
+        	+ ((channelManager.getProxyUserID() == null) ? "" : channelManager.getProxyUserID()) 
+        	+ "'><br><i>Proxy userid, leave blank if no userid</i></td></tr>");
+        writer.write("<tr><td class='row1' align='right'>Proxy Password</td><td class='row2'><input type='password' name='proxyPassword' value='" 
+        	+ ((channelManager.getProxyPassword() == null) ? "" : channelManager.getProxyPassword()) 
+        	+ "'><br><i>Proxy password, leave blank if no password</i></td></tr>");
 
 				
 		writer.write("<tr><td class='row2' align='center' colspan='2'><input type='submit' name='update' value='Update'></td></tr>");
@@ -274,20 +292,22 @@ public class AdminServlet extends HttpServlet {
 			(NNTPServer) getServletContext().getAttribute(
 				AdminServer.SERVLET_CTX_NNTP_SERVER);
 
+// NNTP Server config
 		nntpServer.setContentType(Integer.parseInt(request.getParameter("contentType")));
-
 
 		String secure = request.getParameter("nntpSecure");
 		nntpServer.setSecure((secure != null) && secure.equals("true"));
 
 		String footnoteUrls = request.getParameter("footnoteUrls");
 		nntpServer.setFootnoteUrls((footnoteUrls != null) && footnoteUrls.equals("true"));
-		
 		nntpServer.saveConfiguration();
 
+// Channel Manager config
 		channelManager.setPollingIntervalSeconds(Long.parseLong(request.getParameter("pollingInterval")));
-		channelManager.setProxyServer(request.getParameter("proxyServer").trim());
+		String observeHttp301 = request.getParameter("observeHttp301");
+		channelManager.setObserveHttp301((observeHttp301 != null) && observeHttp301.equals("true"));
 
+		channelManager.setProxyServer(request.getParameter("proxyServer").trim());
 		String proxyPortStr = request.getParameter("proxyPort");
 		boolean validPort = true;
 		
@@ -371,30 +391,36 @@ public class AdminServlet extends HttpServlet {
 			}
 			writer.write("</select></td></tr>");
 
-			writer.write("<tr><td class='row1' align='right'>Parse-at-all-cost</td><td class='row2'><input name='parseAtAllCost' type='checkbox' value='true' "
+			writer.write("<tr><td class='row1' align='right'>Parse-at-all-costs</td><td class='row2'><input name='parseAtAllCost' type='checkbox' value='true' "
 				+ (parseAtAllCost ? "checked>" : ">")
-				+ "<br><i>This will enable the experimental parse-at-all-cost RSS parser.  This feature supports the parsing of badly-formatted RSS feeds.</i></td></tr>");
+				+ "<br><i>This will enable the experimental parse-at-all-costs RSS parser.  This feature supports the parsing of badly-formatted RSS feeds.</i></td></tr>");
 
 			writer.write("<tr><td class='row1' align='right'>Status</td>");
 
 			switch(channel.getStatus()) {
 				case Channel.STATUS_NOT_FOUND:
-					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>RSS web server is returning File Not Found.</font>");
+					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Feed Web Server is returning File Not Found.</font>");
 					break;
 				case Channel.STATUS_INVALID_CONTENT:
-					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Last RSS document retrieved could not be parsed, check URL.</font>");
+					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Last feed document retrieved could not be parsed, <a class='chlerror' target='validate' href='http://feeds.archive.org/validator/check?url=" + HTMLHelper.escapeString(url) + "'>check URL</a>.</font>");
 					break;
 				case Channel.STATUS_UNKNOWN_HOST:
-					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Unable to contact RSS web server (Unknown Host).  Check URL.</font>");
+					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Unable to contact Feed Web Server (Unknown Host).  Check URL.</font>");
 					break;
 				case Channel.STATUS_NO_ROUTE_TO_HOST:
-					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Unable to contact RSS web server (No Route To Host).  Check URL.</font>");
+					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Unable to contact Feed Web Server (No Route To Host).  Check URL.</font>");
 					break;
 				case Channel.STATUS_CONNECTION_TIMEOUT:
-					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><font color='#000000'>Currently unable to contact RSS web server (Connection timeout).</font>");
+					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><font color='#000000'>Currently unable to contact Feed Web Server (Connection timeout).</font>");
 					break;
 				case Channel.STATUS_SOCKET_EXCEPTION:
-					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><font color='#000000'>Currently unable to contact RSS web server (Socket exception).</font>");
+					writer.write("<td class='chlwarning' bgcolor='#FFFF00'><font color='#000000'>Currently unable to contact Feed Web Server (Socket exception).</font>");
+					break;
+				case Channel.STATUS_PROXY_AUTHENTICATION_REQUIRED:
+					writer.write("<td class='chlerror' bgcolor='#FFFF00'><font color='#FFFFFF'>Proxy authentication required.  Please configure user name and password in <a class='chlerror' href='?action=showconfig'>System Configuration</a>.</font>");
+					break;
+				case Channel.STATUS_USER_AUTHENTICATION_REQUIRED:
+					writer.write("<td class='chlerror' bgcolor='#FFFF00'><font color='#FFFFFF'>User authentication required. Please specific user name and password in the URL, e.g.<br>http://username:password@www.myhost.com/feed.xml</font>");
 					break;
 				default:
 					writer.write("<td class='row2'>OK");
@@ -407,20 +433,20 @@ public class AdminServlet extends HttpServlet {
 				+ "</td></tr>");
 			writer.write("<tr><td class='row1' align='right'>Last Modified</td><td class='row2'>");
 			if(channel.getLastModified() == 0) {
-				writer.write("Last modified not supplied by RSS Web Server");
+				writer.write("Last modified not supplied by Feed Web Server");
 			} else {
 				writer.write( df.format(new Date(channel.getLastModified())) );
 			} 
 			writer.write("</td></tr>");
 			writer.write("<tr><td class='row1' align='right'>Last ETag</td><td class='row2'>");
 			if(channel.getLastETag() == null) {
-				writer.write("ETag not supplied by RSS Web Server");
+				writer.write("ETag not supplied by Feed Web Server");
 			} else {
 				writer.write(channel.getLastETag());
 			}
 			writer.write("</td></tr>");
 			
-			writer.write("<tr><td class='row1' align='right'>RSS Version</td><td class='row2'>");
+			writer.write("<tr><td class='row1' align='right'>Feed Type</td><td class='row2'>");
 			if(channel.getRssVersion() == null) { 
 				writer.write("Unknown");
 			} else {
@@ -815,12 +841,29 @@ public class AdminServlet extends HttpServlet {
 				try {
 					boolean parseAtAllCost = isChecked(request, "parseAtAllCost");
 					boolean enabled = isChecked(request, "enabled");
+					boolean valid = true;
 					
 					URL url = new URL(urlString);
-					if((!parseAtAllCost) && (enabled && !Channel.isValid(url))) {
-						errors.add("URL does not point to valid RSS document");
-						errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS Validator @ archive.org</a><br>");
-					} else {
+					if(!parseAtAllCost && enabled) {
+						try {
+							valid = Channel.isValid(url);
+							if(!valid) {
+								errors.add("URL does not point to valid RSS or ATOM document");
+								errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a><br>");
+							}
+						} catch(HttpUserException hue) {
+							if(hue.getStatus() == HttpStatus.SC_UNAUTHORIZED) {
+								errors.add("This feed requires user name and password authentication.  Please specify User Name and Password in the URL, e.g.");
+								errors.add("http://username:password@www.myhost.com/");
+							} else if(hue.getStatus() == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
+								errors.add("You are using a proxy server that requires authentication.");
+								errors.add("Please enter your User Name and Password in the <a href='?action=showconfig'>System Configuration.</a>");
+							}
+							valid = false;
+						}
+					}
+
+					if(valid) {
 						channel.setUrl(url);
 						channel.setHistorical(isChecked(request, "historical"));
 
@@ -966,7 +1009,7 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<table class='tableborder' border='0'>");
 		writer.write("<tr><th colspan='5' class='tableHead'>Channels</td></th>");
 //		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>RSS URL</th><th class='subHead'>Last Polled</th></tr>");
-		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>&nbsp;</th><th class='subHead'>RSS URL</th><th class='subHead'>Last Polled</th></tr>");
+		writer.write("<tr><th class='subHead'><input type='checkbox' name='change' onClick='checkAllChannels(this);'></th><th class='subHead'>Newsgroup Name</th><th class='subHead'>&nbsp;</th><th class='subHead'>Feed URL</th><th class='subHead'>Last Polled</th></tr>");
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -1000,7 +1043,7 @@ public class AdminServlet extends HttpServlet {
 			if(channel.getLastPolled() != null) {
 				lastPolled = df.format(channel.getLastPolled());
 			} else {
-				lastPolled = "Yet to be polled";
+				lastPolled = "Awaiting poll";
 			}
 
 			String parser = (channel.isParseAtAllCost() ? "*" : "");
@@ -1010,6 +1053,8 @@ public class AdminServlet extends HttpServlet {
 				case Channel.STATUS_NOT_FOUND:
 				case Channel.STATUS_UNKNOWN_HOST:
 				case Channel.STATUS_NO_ROUTE_TO_HOST:
+				case Channel.STATUS_PROXY_AUTHENTICATION_REQUIRED:
+				case Channel.STATUS_USER_AUTHENTICATION_REQUIRED:
 					writer.write("<td class='chlerror' bgcolor='#FF0000'>"
 						+ parser
 						+ "<a class='row' title='Channel configuration' href='/?action=show&name=" + URLEncoder.encode(channel.getName()) + "'><font color='#FFFFFF'>" + channel.getName() + "</font></a></td>");
@@ -1260,7 +1305,7 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<form action='/?action=add' method='post'>");
 		writer.write("<table class='tableborder'>");
 
-		writer.write("<tr><th colspan='2'>Add RSS Channel</th></tr>");
+		writer.write("<tr><th colspan='2'>Add Channel</th></tr>");
 
 		if(name != null) {
 			writer.write("<tr><td class='row1' align='right'>Newsgroup Name:</td><td class='row2'><input type='text' name='name' size='64' value='" + HTMLHelper.escapeString(name) + "'></td></tr>");
@@ -1270,21 +1315,21 @@ public class AdminServlet extends HttpServlet {
 
 		if(urlString != null && urlString.length() > 0) {
 			writer.write(
-				"<tr><td class='row1' align='right'>RSS URL:</td><td class='row2' ><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'></td></tr>");
+				"<tr><td class='row1' align='right'>Feed URL:</td><td class='row2' ><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'><br><i>(nntp//rss supports both RSS and ATOM feeds)</i></td></tr>");
 		} else {
 			writer.write(
-				"<tr><td class='row1' align='right'>RSS URL:</td><td class='row2' ><input type='text' name='url' size='64' value='http://'></td></tr>");
+				"<tr><td class='row1' align='right'>Feed URL:</td><td class='row2' ><input type='text' name='url' size='64' value='http://'><br><i>(nntp//rss supports both RSS and ATOM feeds)</i></td></tr>");
 		}
 
 		writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
 			+ (historical ? "checked" : "")
 			+ ">"
-			+ "<br><i>(Checked = Keep items removed from the original RSS document)</i></td></tr>");
+			+ "<br><i>(Checked = Keep items removed from the original feed document)</i></td></tr>");
 
 		writer.write("<tr><td class='row1' align='right' valign='top'>Validate</td><td class='row2'><input type='checkbox' value='true' name='validate' "
 			+ (validate ? "checked" : "")
 			+ ">"
-			+ "<br><i>(Checked = Ensure URL points to a valid RSS document)</i></td></tr>");
+			+ "<br><i>(Checked = Ensure URL points to a valid RSS or ATOM document)</i></td></tr>");
 
 		writer.write(
 			"<tr><td class='row2' align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
@@ -1339,11 +1384,20 @@ public class AdminServlet extends HttpServlet {
 				newChannel = new Channel(name, urlString);
 				newChannel.setHistorical(historical);
 				if(validate && !newChannel.isValid()) {
-					errors.add("URL does not point to valid RSS document");
-					errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS Validator @ archive.org</a>");
+					errors.add("URL does not point to valid RSS or ATOM document");
+					errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a>");
 					newChannel = null;
 				}
-			}catch(MalformedURLException me) {
+			} catch(HttpUserException hue) {
+				if(hue.getStatus() == HttpStatus.SC_UNAUTHORIZED) {
+					errors.add("This feed requires user name and password authentication.");
+					errors.add("Please specify User Name and Password in the URL, e.g.");
+					errors.add("http://username:password@www.myhost.com/");
+				} else if(hue.getStatus() == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
+					errors.add("You are using a proxy server that requires authentication.");
+					errors.add("Please enter your User Name and Password in the <a href='?action=showconfig'>System Configuration.</a>");
+				}
+			} catch(MalformedURLException me) {
 				errors.add("URL is malformed (" + me.getLocalizedMessage() + ")");
 			}
 		}
@@ -1358,10 +1412,10 @@ public class AdminServlet extends HttpServlet {
 			writer.write("<form action='/?action=add' method='post'>");
 			writer.write("<table class='tableborder'>");
 
-			writer.write("<tr><th colspan='2'>Add RSS Channel</th></tr>");
+			writer.write("<tr><th colspan='2'>Add Channel</th></tr>");
 			writer.write("<tr><td class='row1' align='right'>Newsgroup Name:</td><td class='row2'><input type='text' name='name' size='64' value='" + HTMLHelper.escapeString(name) + "'></td></tr>");
 			writer.write(
-				"<tr><td class='row1' align='right'>RSS URL:</td><td class='row2'><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'></td></tr>");
+				"<tr><td class='row1' align='right'>Feed URL:</td><td class='row2'><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'><br><i>(nntp//rss supports both RSS and ATOM feeds)</i></td></tr>");
 
 			writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
 				+ (historical ? "checked" : "")
@@ -1922,10 +1976,10 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<tr><td>"
 			+ "<br><b>Add Channel</b></p>"
 			+ "Channels can be added to nntp//rss through this screen.<p><ul>"
-			+ "<li>Newsgroup name - name of the NNTP newsgroup that this RSS feed will appear as in your newsreader"
-			+ "<li>URL - URL for the RSS feed"
+			+ "<li>Newsgroup name - name of the NNTP newsgroup that this feed will appear as in your newsreader"
+			+ "<li>URL - URL for the feed"
 			+ "<li>Historical - keep items once they have been removed from the original feed"
-			+ "<li>Validate - check the URL for a validate RSS document when adding to the list of channels.  You may want to disable this validation if the remote feed is temporarily unavailable, but you still wish to add it to the list."
+			+ "<li>Validate - check the URL to a validate the feed when adding to the list of channels.  You may want to disable this validation if the remote feed is temporarily unavailable, but you still wish to add it to the list."
 			+ "</ul>"
 			+ "<p><b>View Channels</b><p>"
 			+ "This screen provides an overview of configured channels, their status, and the date and time of the last poll.<p>"
@@ -1934,7 +1988,7 @@ public class AdminServlet extends HttpServlet {
 			+ "<tr><td class='row1'><b>OK</b></td><td class='row2'>Last poll was successful.</td></tr>"
 			+ "<tr><td class='chldisabled'><b>Disabled</b></td><td class='row2'>Channel has been disabled.</td></tr>"
 			+ "<tr><td class='chlwarning'><b>Warning</b></td><td class='row2'>nntp//rss is was unable to contact the channel's web server on the last poll.  This usually indicates an temporary problem, generally resolved on the next poll.</td></tr>"
-			+ "<tr><td class='chlerror'><b>Error</b></td><td class='row2'>A significant error occured when polling.  This may either be that the RSS feed no longer exists, or that it is badly formatted.  In the case of the latter, enabling <i>Parse-at-all-cost</i> within the channel's configuration may provide a resolution</td></tr>"
+			+ "<tr><td class='chlerror'><b>Error</b></td><td class='row2'>A significant error occured when polling.  This may either be that the feed no longer exists, or that it is badly formatted.  In the case of the latter, enabling <i>Parse-at-all-cost</i> within the channel's configuration may provide a resolution</td></tr>"
 			+ "</table><p>"
 			+ "Clicking on the name of a channel will display the channel's configuration screen.<p>"
 			+ "Clicking on the [Read] button will open the channel in your default newsreader.<p>"
@@ -1944,7 +1998,7 @@ public class AdminServlet extends HttpServlet {
 			+ "<li>Enable or disable polling of the channel,"
 			+ "<li>Set a channel-specific polling interval, or use the system wide default (set in <i>System Configuration</i>),"
 			+ "<li>Enable the Parse-at-all-cost parser.  This experimental parser will parse RSS feeds that are not well-formed XML," 
-			+ "<li>Change the historical status of the channel.  If a channel is 'historical', items that are removed from the RSS feed will be kept within nntp//rss's database,"
+			+ "<li>Change the historical status of the channel.  If a channel is 'historical', items that are removed from the feed will be kept within nntp//rss's database,"
 			+ "<li>Enabled posting (See below)."
 			+ "</ul>"
 			+ "<p><b>Posting</b><p>"
@@ -1953,7 +2007,7 @@ public class AdminServlet extends HttpServlet {
 			+ "<b>Note: It is recommended that you enable <a href='#SecureNNTP'>Authenticated NNTP Access</a> if you enable posting.  This will ensure that only an authenticated newsreader will be able to post to the blog.</b>"
 			+ "<p><b>System Configuration</b><p>"
 			+ "System wide configuration is managed on this screen.<p>"
-			+ "<i>Channel Polling Interval</i> - this determines how often nntp//rss will check RSS feeds for updates.  This can be set as low as ten minutes, but sixty minutes should be sufficient for most feeds.<p>"
+			+ "<i>Channel Polling Interval</i> - this determines how often nntp//rss will check feeds for updates.  This can be set as low as ten minutes, but sixty minutes should be sufficient for most feeds.<p>"
 			+ "<i>Content Type</i> - By default, nntp//rss serves messages to newsreaders in a combined (multipart/alternative) plain text and HTML MIME format.  This means that each message contains both a plain text and an HTML version of the item.  If you a using an older newsreader that does not support this mode, you may want to change the content type to Text (text/plain).<p>"
 			+ "<i>Proxy</i> - If you are running nntp//rss behind a proxy, you may need to configure your proxy settings here.  Proxy host name, port and an optional username and password can be specified.  Leave these fields blank if you are not behind a proxy.<p>"
 			+ "<i><a name='SecureNNTP'>Authenticated NNTP Access</a></i>, when enabled, will require NNTP newsreaders to authenticate themselves before being allowed to read or post.  This uses the same user information as used for securing the web interface.<p>"
