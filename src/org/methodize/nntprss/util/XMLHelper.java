@@ -31,16 +31,18 @@ package org.methodize.nntprss.util;
  * ----------------------------------------------------- */
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.w3c.dom.CDATASection;
+import org.hsqldb.lib.StringInputStream;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: XMLHelper.java,v 1.4 2003/02/08 06:21:35 jasonbrome Exp $
+ * @version $Id: XMLHelper.java,v 1.5 2003/03/22 16:36:11 jasonbrome Exp $
  */
 public class XMLHelper {
 
@@ -50,7 +52,7 @@ public class XMLHelper {
 
 		String elementValue = null;
 		NodeList elemList = parentElm.getElementsByTagName(elementName);
-		if (elemList.getLength() > 0) {
+		if (elemList != null && elemList.getLength() > 0) {
 			// Use the first matching child element
 			Element elm = (Element) elemList.item(0);
 			NodeList childNodes = elm.getChildNodes();
@@ -58,10 +60,10 @@ public class XMLHelper {
 			for (int elemCount = 0;
 				elemCount < childNodes.getLength();
 				elemCount++) {
-				
+
 				if (childNodes.item(elemCount) instanceof org.w3c.dom.Text) {
 					value.append(childNodes.item(elemCount).getNodeValue());
-				} 
+				}
 			}
 			elementValue = value.toString();
 		}
@@ -102,17 +104,17 @@ public class XMLHelper {
 	private static String preprocessMarkup(String value) {
 		StringBuffer trimmedString = new StringBuffer();
 		boolean lastCharSpace = false;
-		for(int c = 0; c < value.length(); c++) {
+		for (int c = 0; c < value.length(); c++) {
 			char currentChar = value.charAt(c);
-			if(currentChar == '\n') {
+			if (currentChar == '\n') {
 				trimmedString.append(currentChar);
-			} else if(currentChar < 32) {
+			} else if (currentChar < 32) {
 				continue;
-			} else if(currentChar == ' ') {
-				if(!lastCharSpace) {
+			} else if (currentChar == ' ') {
+				if (!lastCharSpace) {
 					trimmedString.append(currentChar);
 					lastCharSpace = true;
-				} 
+				}
 			} else {
 				trimmedString.append(currentChar);
 				lastCharSpace = false;
@@ -122,7 +124,7 @@ public class XMLHelper {
 	}
 
 	public static String stripHtmlTags(String value) {
-// Trim white space... Use html markup (p, br) as line breaks
+		// Trim white space... Use html markup (p, br) as line breaks
 		value = preprocessMarkup(value);
 
 		StringTokenizer strTok = new StringTokenizer(value, "<>\n", true);
@@ -135,15 +137,15 @@ public class XMLHelper {
 			if (token.equals("<")) {
 				inTag = true;
 
-// Read entire tag... Tag contents might be split over multiple lines
+				// Read entire tag... Tag contents might be split over multiple lines
 				StringBuffer concatToken = new StringBuffer();
-				while(strTok.hasMoreTokens()) {
+				while (strTok.hasMoreTokens()) {
 					token = strTok.nextToken();
-					if(token.equals(">")) {
+					if (token.equals(">")) {
 						inTag = false;
 						break;
 					} else {
-						if(!token.equals("\n")) {
+						if (!token.equals("\n")) {
 							concatToken.append(token);
 						}
 					}
@@ -152,61 +154,64 @@ public class XMLHelper {
 				token = concatToken.toString();
 
 				String upperToken = token.toUpperCase();
-				if(upperToken.startsWith("A ")) {
+				if (upperToken.startsWith("A ")) {
 					int hrefPos = upperToken.indexOf("HREF=");
-					if(hrefPos > -1) {
+					if (hrefPos > -1) {
 						int quotePos = hrefPos + 5;
-														
-						while(quotePos < token.length() &&
-						    Character.isWhitespace(token.charAt(quotePos))) {
-							quotePos ++;
+
+						while (quotePos < token.length()
+							&& Character.isWhitespace(token.charAt(quotePos))) {
+							quotePos++;
 						}
 
 						char quote = upperToken.charAt(quotePos);
-						
+
 						int endPos;
-						if(quote == '"' || quote == '\'') {
-// URL wrapped in quotes / apostrophes
-							endPos = token.indexOf(quote, quotePos+1);
+						if (quote == '"' || quote == '\'') {
+							// URL wrapped in quotes / apostrophes
+							endPos = token.indexOf(quote, quotePos + 1);
 						} else {
-// URL not enclosed								
+							// URL not enclosed								
 							endPos = quotePos + 1;
-							while(endPos < token.length() &&
-							    !Character.isWhitespace(token.charAt(endPos))) {
+							while (endPos < token.length()
+								&& !Character.isWhitespace(
+									token.charAt(endPos))) {
 								endPos++;
 							}
 						}
-						
-						if(endPos != -1) {
+
+						if (endPos != -1) {
 							lastURL = token.substring(quotePos + 1, endPos);
-							if(upperToken.endsWith("/")) {
+							if (upperToken.endsWith("/")) {
 								strippedString.append(" (");
 								strippedString.append(lastURL);
 								strippedString.append(')');
 								lastURL = null;
 								startOfLine = false;
-							} 
+							}
 						}
-					}		
-				} else if(upperToken.startsWith("/A")) {
-					if(lastURL != null) {
-							strippedString.append(" (");
-							strippedString.append(lastURL);
-							strippedString.append(')');
-							lastURL = null;
-							startOfLine = false;
 					}
-				} else if(upperToken.equals("P") ||
-					upperToken.equals("P/") ||
-					upperToken.equals("P /") ||
-					upperToken.equals("UL") ||
-					upperToken.equals("/UL")) {
+				} else if (upperToken.startsWith("/A")) {
+					if (lastURL != null) {
+						strippedString.append(" (");
+						strippedString.append(lastURL);
+						strippedString.append(')');
+						lastURL = null;
+						startOfLine = false;
+					}
+				} else if (
+					upperToken.equals("P")
+						|| upperToken.equals("P/")
+						|| upperToken.equals("P /")
+						|| upperToken.equals("UL")
+						|| upperToken.equals("/UL")) {
 					strippedString.append("\r\n\r\n");
 					startOfLine = true;
-				} else if(upperToken.equals("BR") ||
-					upperToken.equals("BR/") ||
-					upperToken.equals("BR /") ||
-					upperToken.equals("LI")) {
+				} else if (
+					upperToken.equals("BR")
+						|| upperToken.equals("BR/")
+						|| upperToken.equals("BR /")
+						|| upperToken.equals("LI")) {
 					strippedString.append("\r\n");
 					startOfLine = true;
 				}
@@ -214,7 +219,7 @@ public class XMLHelper {
 			} else if (token.equals(">")) {
 				inTag = false;
 			} else if (token.equals("\n")) {
-				if(!inTag && !startOfLine) {
+				if (!inTag && !startOfLine) {
 					strippedString.append(' ');
 				}
 			} else if (!inTag) {
@@ -225,32 +230,89 @@ public class XMLHelper {
 		return strippedString.toString();
 
 	}
-	
+
 	public static String escapeString(String value) {
 		StringBuffer escapedString = new StringBuffer();
-		for(int charCount = 0; charCount < value.length(); charCount++) {
+		for (int charCount = 0; charCount < value.length(); charCount++) {
 			char c = value.charAt(charCount);
-			switch(c) {
-				case '&':
+			switch (c) {
+				case '&' :
 					escapedString.append("&amp;");
 					break;
-				case '<':
+				case '<' :
 					escapedString.append("&lt;");
 					break;
-				case '>':
+				case '>' :
 					escapedString.append("&gt;");
 					break;
-				case '\"':
+				case '\"' :
 					escapedString.append("&quot;");
 					break;
-				case '\'':
+				case '\'' :
 					escapedString.append("&apos;");
 					break;
-				default:
+				default :
 					escapedString.append(c);
 			}
 		}
 		return escapedString.toString();
 	}
-	
+
+	/**
+	 * Some helper functions used to serialize String-based
+	 * maps (i.e. where both key and value are strings) to
+	 * an XML document.
+	 */
+
+	public static String stringMapToXML(Map stringMap) {
+		String mapXMLResult = null;
+		if (stringMap != null && stringMap.size() > 0) {
+			StringBuffer mapXML = new StringBuffer();
+			mapXML.append("<?xml version='1.0' encoding='UTF-8'?>\n<map>\n");
+
+			Iterator mapIter = stringMap.entrySet().iterator();
+
+			while (mapIter.hasNext()) {
+				Map.Entry entry = (Map.Entry) mapIter.next();
+				mapXML.append("<entry key='");
+				mapXML.append(escapeString((String) entry.getKey()));
+				mapXML.append("' value='");
+				mapXML.append(escapeString((String) entry.getValue()));
+				mapXML.append("'/>\n");
+			}
+
+			mapXML.append("</map>");
+
+			mapXMLResult = mapXML.toString();
+		}
+		return mapXMLResult;
+	}
+
+	public static Map xmlToStringHashMap(String xml) {
+		Map map = new HashMap();
+
+		if (xml != null && xml.length() > 0) {
+			try {
+				Document doc =
+					AppConstants.newDocumentBuilder().parse(
+						new StringInputStream(xml));
+				Element rootElm = doc.getDocumentElement();
+				NodeList entryList = rootElm.getElementsByTagName("entry");
+				for (int elmCount = 0;
+					elmCount < entryList.getLength();
+					elmCount++) {
+					Element entry = (Element) entryList.item(elmCount);
+					map.put(
+						entry.getAttribute("key"),
+						entry.getAttribute("value"));
+				}
+			} catch (Exception e) {
+				// XXX do we need to handle this scenario?			
+			}
+		}
+
+		return map;
+
+	}
+
 }
