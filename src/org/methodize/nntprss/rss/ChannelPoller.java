@@ -30,16 +30,18 @@ package org.methodize.nntprss.rss;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.methodize.nntprss.util.FixedThreadPool;
 import org.methodize.nntprss.util.SimpleThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.2 2003/01/22 04:58:37 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.3 2003/01/28 06:12:03 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
@@ -78,11 +80,24 @@ public class ChannelPoller extends Thread {
 				log.debug("Checking feeds for poll action");
 			}
 			Iterator channelIter = channels.values().iterator();
-			while (channelIter.hasNext() && active) {
-				Channel channel = (Channel) channelIter.next();
-				if (channel.isAwaitingPoll()) {
-//					simpleThreadPool.run(channel);
-					fixedThreadPool.run(channel);
+
+			try {
+				while (channelIter.hasNext() && active) {
+					Channel channel = (Channel) channelIter.next();
+					if (channel.isAwaitingPoll()) {
+	//					simpleThreadPool.run(channel);
+						fixedThreadPool.run(channel);
+					}
+				}
+			} catch(ConcurrentModificationException cme) {
+// Some channel management activity coincided with channel poll
+// FIXME implement thread-safe approach				
+				if (log.isDebugEnabled()) {
+					log.debug("ConcurrentModificationException in Channel Poller");
+				}
+			} catch(Exception e) {
+				if (log.isEnabledFor(Priority.WARN)) {
+					log.warn("Exception thrown in Channel Poller", e);
 				}
 			}
 
