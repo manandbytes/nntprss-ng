@@ -86,11 +86,13 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.4 2003/10/24 02:33:51 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.5 2004/01/04 21:23:41 jasonbrome Exp $
  */
-public class Channel extends ItemContainer implements Runnable, Externalizable {
+public class Channel
+	extends ItemContainer
+	implements Runnable, Externalizable {
 
-	public static final int EXTERNAL_VERSION = 2;  
+	public static final int EXTERNAL_VERSION = 2;
 
 	public static final int STATUS_OK = 0;
 	public static final int STATUS_NOT_FOUND = 1;
@@ -121,7 +123,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 	private String rssVersion;
 	private String managingEditor;
 
-//	private boolean historical = true;
+	//	private boolean historical = true;
 	private boolean enabled = true;
 	private boolean parseAtAllCost = false;
 
@@ -135,7 +137,6 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 	private int status = STATUS_OK;
 	private long pollingIntervalSeconds = DEFAULT_POLLING_INTERVAL;
 
-
 	private ChannelManager channelManager;
 	private ChannelDAO channelDAO;
 	private Category category = null;
@@ -144,10 +145,9 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 	private transient boolean connected = false;
 
 	public static final long DEFAULT_POLLING_INTERVAL = 0;
-// Clean channels every 24 hours
+	// Clean channels every 24 hours
 	public static final long CLEANING_INTERVAL = 1000 * 60 * 60 * 24;
 	private static final int HTTP_CONNECTION_TIMEOUT = 1000 * 60 * 5;
-
 
 	//	private HttpURLConnection httpCon = null;
 
@@ -155,11 +155,9 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 	private SimpleDateFormat httpDate =
 		new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
-// Channel Doc Parsers
-	private static GenericParser[] parsers = new GenericParser[] {
-		RSSParser.getParser(),
-		AtomParser.getParser()
-	};
+	// Channel Doc Parsers
+	private static GenericParser[] parsers =
+		new GenericParser[] { RSSParser.getParser(), AtomParser.getParser()};
 
 	public Channel() {
 	}
@@ -170,7 +168,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		this.url = new URL(urlString);
 		initialize();
 	}
-	
+
 	private void initialize() {
 		channelManager = ChannelManager.getChannelManager();
 		channelDAO = channelManager.getChannelDAO();
@@ -184,7 +182,8 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		// Initialize user id / password for protected feeds
 		if (url.getUserInfo() != null) {
 			httpClient.getState().setCredentials(
-				null, null,
+				null,
+				null,
 				new UsernamePasswordCredentials(url.getUserInfo()));
 		}
 
@@ -208,7 +207,8 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		// Initialize user id / password for protected feeds
 		if (url.getUserInfo() != null) {
 			httpClient.getState().setCredentials(
-				null, null,
+				null,
+				null,
 				new UsernamePasswordCredentials(url.getUserInfo()));
 		}
 		return httpClient;
@@ -223,7 +223,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		// Guard against change in history mid-poll
 		polling = true;
 
-//		boolean keepHistory = historical;
+		//		boolean keepHistory = historical;
 		long keepExpiration = expiration;
 
 		lastPolled = new Date();
@@ -242,7 +242,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 				boolean redirected = false;
 				int count = 0;
 				do {
-//					URL url = new URL(urlString);
+					//					URL url = new URL(urlString);
 					method = new GetMethod(urlString);
 					method.setRequestHeader(
 						"User-agent",
@@ -281,16 +281,18 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 
 						redirected = true;
 						urlString = result.getLocation();
-						if(statusCode == HttpStatus.SC_MOVED_PERMANENTLY
+						if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY
 							&& channelManager.isObserveHttp301()) {
 							try {
 								url = new URL(urlString);
-								if(log.isInfoEnabled()) {
-									log.info("Channel = " + this.name
-										+ ", updated URL from HTTP Permanent Redirect");
+								if (log.isInfoEnabled()) {
+									log.info(
+										"Channel = "
+											+ this.name
+											+ ", updated URL from HTTP Permanent Redirect");
 								}
-							} catch(MalformedURLException mue) {
-// Ignore URL permanent redirect for now...								
+							} catch (MalformedURLException mue) {
+								// Ignore URL permanent redirect for now...								
 							}
 						}
 					} else {
@@ -365,7 +367,19 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 				try {
 					Document rssDoc = null;
 					if (!parseAtAllCost) {
-						rssDoc = db.parse(bis);
+						try {
+							rssDoc = db.parse(bis);
+						} catch (InternalError ie) {
+							// Crimson library throws InternalErrors
+							if (log.isDebugEnabled()) {
+								log.debug(
+									"InternalError thrown by Crimson",
+									ie);
+							}
+							throw new SAXException(
+								"InternalError thrown by Crimson: "
+									+ ie.getMessage());
+						}
 					} else {
 						// Parse-at-all-costs selected
 						// Read in document to local array - may need to parse twice
@@ -429,15 +443,14 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 				bis.close();
 
 				// end if response code == HTTP_OK
-			} else if (
-				connected
-					&& statusCode == HttpStatus.SC_NOT_MODIFIED) {
+			} else if (connected && statusCode == HttpStatus.SC_NOT_MODIFIED) {
 				if (log.isDebugEnabled()) {
 					log.debug(
 						"Channel=" + name + " - HTTP_NOT_MODIFIED, skipping");
 				}
 				status = STATUS_OK;
-			} else if (statusCode == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
+			} else if (
+				statusCode == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
 				if (log.isEnabledFor(Priority.WARN)) {
 					log.warn(
 						"Channel=" + name + " - Proxy authentication required");
@@ -445,8 +458,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 				status = STATUS_PROXY_AUTHENTICATION_REQUIRED;
 			} else if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
 				if (log.isEnabledFor(Priority.WARN)) {
-					log.warn(
-						"Channel=" + name + " - Authentication required");
+					log.warn("Channel=" + name + " - Authentication required");
 				}
 				status = STATUS_USER_AUTHENTICATION_REQUIRED;
 			}
@@ -485,17 +497,20 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		Element rootElm = rssDoc.getDocumentElement();
 
 		GenericParser docParser = null;
-		for(int i = 0; i < parsers.length; i++) {
-			if(parsers[i].isParsable(rootElm)) {
+		for (int i = 0; i < parsers.length; i++) {
+			if (parsers[i].isParsable(rootElm)) {
 				docParser = parsers[i];
 				break;
 			}
 		}
-		
-		if(docParser != null) {
+
+		if (docParser != null) {
 			rssVersion = docParser.getFormatVersion(rootElm);
-			docParser.extractFeedInfo(rootElm, this);	
-			docParser.processFeedItems(rootElm, this, channelDAO,
+			docParser.extractFeedInfo(rootElm, this);
+			docParser.processFeedItems(
+				rootElm,
+				this,
+				channelDAO,
 				keepExpiration != 0);
 		} // end if docParser != null
 
@@ -510,7 +525,6 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		}
 		return time;
 	}
-
 
 	/**
 	 * Simple channel validation - ensures URL
@@ -527,7 +541,8 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 			ChannelManager.getChannelManager().configureHttpClient(client);
 			if (url.getUserInfo() != null) {
 				client.getState().setCredentials(
-					null, null,
+					null,
+					null,
 					new UsernamePasswordCredentials(url.getUserInfo()));
 			}
 
@@ -581,15 +596,16 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 				Document rssDoc = db.parse(bis);
 				Element rootElm = rssDoc.getDocumentElement();
 
-				for(int i = 0; i < parsers.length; i++) {
-					if(parsers[i].isParsable(rootElm)) {
+				for (int i = 0; i < parsers.length; i++) {
+					if (parsers[i].isParsable(rootElm)) {
 						valid = true;
 						break;
 					}
 				}
-			} else if(statusCode == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
+			} else if (
+				statusCode == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
 				throw new HttpUserException(statusCode);
-			} else if(statusCode == HttpStatus.SC_UNAUTHORIZED) {
+			} else if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
 				throw new HttpUserException(statusCode);
 			}
 
@@ -601,8 +617,8 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 		
-		
+		}
+
 		return valid;
 	}
 
@@ -713,10 +729,10 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 			if ((currentTimeMillis - lastPolled.getTime())
 				> (pollingInterval * 1000)) {
 				awaitingPoll = true;
-			} else if(lastPolled.getTime() > currentTimeMillis) {
-// Sanity date check - if the last polling time is greater than the
-// current time, assume that there was an issue with the system clock,
-// and repoll
+			} else if (lastPolled.getTime() > currentTimeMillis) {
+				// Sanity date check - if the last polling time is greater than the
+				// current time, assume that there was an issue with the system clock,
+				// and repoll
 				awaitingPoll = true;
 			}
 
@@ -812,17 +828,17 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 	 * Returns the historical.
 	 * @return boolean
 	 */
-//	public boolean isHistorical() {
-//		return historical;
-//	}
+	//	public boolean isHistorical() {
+	//		return historical;
+	//	}
 
 	/**
 	 * Sets the historical.
 	 * @param historical The historical to set
 	 */
-//	public void setHistorical(boolean historical) {
-//		this.historical = historical;
-//	}
+	//	public void setHistorical(boolean historical) {
+	//		this.historical = historical;
+	//	}
 
 	/**
 	 * Returns the status.
@@ -1126,46 +1142,46 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 	 */
 	public void readExternal(ObjectInput in)
 		throws IOException, ClassNotFoundException {
-			in.readInt();
-			author = in.readUTF();
-			name = in.readUTF();
-			url = new URL(in.readUTF());
-			id = in.readInt();
-			title = in.readUTF();
-			link = in.readUTF();
-			description = in.readUTF();
-			lastPolled = new Date(in.readLong());
-			lastCleaned = new Date(in.readLong());
-			lastModified = in.readLong();
-			lastETag = in.readUTF();
-			created = new Date(in.readLong());
-			firstArticleNumber = in.readInt();
-			lastArticleNumber = in.readInt();
-			totalArticles = in.readInt();
-			rssVersion = in.readUTF();
-			managingEditor = in.readUTF();
+		in.readInt();
+		author = in.readUTF();
+		name = in.readUTF();
+		url = new URL(in.readUTF());
+		id = in.readInt();
+		title = in.readUTF();
+		link = in.readUTF();
+		description = in.readUTF();
+		lastPolled = new Date(in.readLong());
+		lastCleaned = new Date(in.readLong());
+		lastModified = in.readLong();
+		lastETag = in.readUTF();
+		created = new Date(in.readLong());
+		firstArticleNumber = in.readInt();
+		lastArticleNumber = in.readInt();
+		totalArticles = in.readInt();
+		rssVersion = in.readUTF();
+		managingEditor = in.readUTF();
 
-//			historical = in.readBoolean();
-//			in.readBoolean();
+		//			historical = in.readBoolean();
+		//			in.readBoolean();
 
-			enabled = in.readBoolean();
-			parseAtAllCost = in.readBoolean();
+		enabled = in.readBoolean();
+		parseAtAllCost = in.readBoolean();
 
-			postingEnabled = in.readBoolean();
-			publishAPI = in.readUTF();
-			publishConfig = XMLHelper.xmlToStringHashMap(in.readUTF());
-			status = in.readInt();
-			pollingIntervalSeconds = in.readLong();
+		postingEnabled = in.readBoolean();
+		publishAPI = in.readUTF();
+		publishConfig = XMLHelper.xmlToStringHashMap(in.readUTF());
+		status = in.readInt();
+		pollingIntervalSeconds = in.readLong();
 
-			expiration = in.readLong();
-			int categoryId = in.readInt();
+		expiration = in.readLong();
+		int categoryId = in.readInt();
 
-			initialize();
-			
-			if(categoryId != 0) {
-				category = channelManager.categoryById(categoryId);
-				category.getChannels().put(new Integer(id), this);
-			}
+		initialize();
+
+		if (categoryId != 0) {
+			category = channelManager.categoryById(categoryId);
+			category.getChannels().put(new Integer(id), this);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -1191,7 +1207,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		out.writeUTF(rssVersion != null ? rssVersion : "");
 		out.writeUTF(managingEditor != null ? managingEditor : "");
 
-//		out.writeBoolean(historical);
+		//		out.writeBoolean(historical);
 		out.writeBoolean(enabled);
 		out.writeBoolean(parseAtAllCost);
 
@@ -1200,7 +1216,7 @@ public class Channel extends ItemContainer implements Runnable, Externalizable {
 		out.writeUTF(XMLHelper.stringMapToXML(publishConfig));
 		out.writeInt(status);
 		out.writeLong(pollingIntervalSeconds);
-		
+
 		out.writeLong(expiration);
 		out.writeInt(category != null ? category.getId() : 0);
 	}
