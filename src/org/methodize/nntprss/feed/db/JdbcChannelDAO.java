@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.9 2004/10/22 03:41:03 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.10 2004/10/26 01:14:19 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -63,6 +63,15 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     static final String TABLE_CHANNELS = "channels";
     static final String TABLE_CONFIG = "config";
     static final String TABLE_ITEMS = "items";
+
+	static final int FIELD_CHANNEL_TITLE_LENGTH = 255;
+	static final int FIELD_CHANNEL_NAME_LENGTH = 255;
+	static final int FIELD_CHANNEL_AUTHOR_LENGTH = 255;
+	static final int FIELD_CHANNEL_MANAGING_EDITOR_LENGTH = 128;
+
+	static final int FIELD_ITEM_TITLE_LENGTH = 255;
+	static final int FIELD_ITEM_CREATOR_LENGTH = 255;
+
 
     public Map loadCategories() {
         Map categories = new TreeMap();
@@ -643,10 +652,10 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                         + "WHERE id = ?");
 
             int paramCount = 1;
-            ps.setString(paramCount++, channel.getAuthor());
-            ps.setString(paramCount++, channel.getName());
+            ps.setString(paramCount++, trim(channel.getAuthor(), FIELD_CHANNEL_AUTHOR_LENGTH));
+            ps.setString(paramCount++, trim(channel.getName(), FIELD_CHANNEL_NAME_LENGTH));
             ps.setString(paramCount++, channel.getUrl());
-            ps.setString(paramCount++, channel.getTitle());
+            ps.setString(paramCount++, trim(channel.getTitle(), FIELD_CHANNEL_TITLE_LENGTH));
             ps.setString(paramCount++, channel.getLink());
             ps.setString(paramCount++, channel.getDescription());
             ps.setInt(paramCount++, channel.getLastArticleNumber());
@@ -671,7 +680,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 XMLHelper.stringMapToXML(channel.getPublishConfig()));
             ps.setBoolean(paramCount++, channel.isParseAtAllCost());
 
-            ps.setString(paramCount++, channel.getManagingEditor());
+            ps.setString(paramCount++, trim(channel.getManagingEditor(), FIELD_CHANNEL_MANAGING_EDITOR_LENGTH));
 
             ps.setLong(paramCount++, channel.getPollingIntervalSeconds());
             ps.setInt(paramCount++, channel.getStatus());
@@ -1086,7 +1095,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             int paramCount = 1;
             ps.setInt(paramCount++, item.getArticleNumber());
             ps.setInt(paramCount++, item.getChannel().getId());
-            ps.setString(paramCount++, item.getTitle());
+            ps.setString(paramCount++, trim(item.getTitle(), FIELD_ITEM_TITLE_LENGTH));
             ps.setString(paramCount++, item.getLink());
             ps.setString(paramCount++, item.getDescription());
             ps.setString(paramCount++, item.getComments());
@@ -1094,7 +1103,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 paramCount++,
                 new Timestamp(item.getDate().getTime()));
             ps.setString(paramCount++, item.getSignature());
-            ps.setString(paramCount++, item.getCreator());
+            ps.setString(paramCount++, trim(item.getCreator(), FIELD_ITEM_CREATOR_LENGTH));
             ps.setString(paramCount++, item.getGuid());
             ps.setBoolean(paramCount++, item.isGuidIsPermaLink());
             ps.executeUpdate();
@@ -1958,5 +1967,13 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     protected void migrateInitializeDatabase() throws Exception {
         // No initialization required
     }
+
+	String trim(String value, int length)
+	{
+		if(value != null && value.length() > length)
+			value = value.substring(0, length);
+			
+		return value;
+	}
 
 }

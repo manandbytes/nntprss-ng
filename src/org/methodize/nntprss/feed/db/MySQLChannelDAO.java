@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.9 2004/10/22 03:41:55 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.10 2004/10/26 01:14:58 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -521,7 +521,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 
             int paramCount = 1;
             ps.setString(paramCount++, channel.getUrl());
-            ps.setString(paramCount++, channel.getName());
+            ps.setString(paramCount++, trim(channel.getName(), FIELD_CHANNEL_NAME_LENGTH));
             ps.setTimestamp(
                 paramCount++,
                 new Timestamp(channel.getCreated().getTime()));

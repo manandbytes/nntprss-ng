@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DerbyChannelDAO.java,v 1.1 2004/10/22 03:02:15 jasonbrome Exp $
+ * @version $Id: DerbyChannelDAO.java,v 1.2 2004/10/26 01:14:38 jasonbrome Exp $
  */
 
 public class DerbyChannelDAO extends JdbcChannelDAO {
@@ -523,7 +523,7 @@ public class DerbyChannelDAO extends JdbcChannelDAO {
 
             int paramCount = 1;
             ps.setString(paramCount++, channel.getUrl());
-            ps.setString(paramCount++, channel.getName());
+            ps.setString(paramCount++, trim(channel.getName(), FIELD_CHANNEL_NAME_LENGTH));
             ps.setTimestamp(
                 paramCount++,
                 new Timestamp(channel.getCreated().getTime()));
