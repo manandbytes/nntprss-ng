@@ -46,7 +46,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
+import javax.mail.internet.MailDateFormat;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +57,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.methodize.nntprss.nntp.NNTPServer;
+import org.methodize.nntprss.admin.search.Syndic8Search;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.feed.publish.BloggerPublisher;
@@ -63,6 +65,7 @@ import org.methodize.nntprss.feed.publish.LiveJournalPublisher;
 import org.methodize.nntprss.feed.publish.MetaWeblogPublisher;
 import org.methodize.nntprss.feed.publish.Publisher;
 import org.methodize.nntprss.feed.publish.PublisherException;
+import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.HTMLHelper;
 import org.methodize.nntprss.util.HttpUserException;
@@ -76,7 +79,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.9 2003/07/20 02:47:29 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.10 2003/09/28 20:05:12 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -88,6 +91,12 @@ import org.xml.sax.SAXException;
  */
 public class AdminServlet extends HttpServlet {
 
+	private static final String TAB_HELP = "help";
+	private static final String TAB_CONFIG = "config";
+	private static final String TAB_QUICKEDIT = "quickedit";
+	private static final String TAB_ADD_CHANNEL = "add";
+	private static final String TAB_VIEW_CHANNELS = "channels";
+	private static final String TAB_FIND_FEEDS = "findfeeds";
 	private static final String CSS_HEADER =
 		"<style type='text/css'>"
 		+ "<!--"
@@ -109,7 +118,9 @@ public class AdminServlet extends HttpServlet {
 		+ "a.row { text-decoration: none} "
 		+ "a:hover.row { text-decoration: underline } "
 		+ "th	{ color: #FFF240; font-size: 11px; font-weight : bold; background-color: #408BFF; height: 25px; } "
+		+ "a.tableHead { color: #FFF240; text-decoration: underline} "
 		+ "th.subHead	{ background-color: #2D62B3; color: #FFFFFF; height: 18px;} "
+		+ "th.subHeadSelected	{ background-color: #408BFF; color: #FFFFFF; height: 18px;} "
 		+ "input,textarea, select {	color : #000000; font: normal 11px Verdana, Arial, Helvetica, sans-serif; border-width: 2px; border-color : #000000; } "
 		+ "-->"
 		+ "</style>";		
@@ -120,6 +131,10 @@ public class AdminServlet extends HttpServlet {
 		= "###__KCV__###";
 
 	private void writeHeader(Writer writer) throws IOException {
+		writeHeader(writer, "");
+	}
+	
+	private void writeHeader(Writer writer, String tab) throws IOException {
 
 		writer.write("<html><head><title>nntp//rss admin</title>");
 		writer.write(CSS_HEADER);
@@ -132,12 +147,12 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<table width='100%' border='0' cellspacing='3' cellpadding='0'>");
 		writer.write("<tr><th colspan='6'>nntp//rss Administration</th></tr>");
 		writer.write("<tr>");
-		writer.write("<th class='subHead' width='50%' align='left'>&nbsp;<a class='head' href='?action=findfeeds'>Find Feeds</a></th>");
-		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='/'>View Channels</a>&nbsp;</td>");
-		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='?action=addform'>Add Channel</a>&nbsp;</td>");
-		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='?action=quickedit'>Quick Edit</a>&nbsp;</td>");
-		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='?action=showconfig'>System Configuration</a>&nbsp;</td>");
-		writer.write("<th class='subHead' width='50%' align='right'><a class='head' href='?action=help'>Help</a>&nbsp;</th>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_FIND_FEEDS) ? "Selected" : "") + "' width='50%' align='left'>&nbsp;<a class='head' href='?action=findfeedsform'>Find Feeds</a></th>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_VIEW_CHANNELS) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='/'>View Channels</a>&nbsp;</td>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_ADD_CHANNEL) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=addform'>Add Channel</a>&nbsp;</td>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_QUICKEDIT) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=quickedit'>Quick Edit</a>&nbsp;</td>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_CONFIG) ? "Selected" : "") + "' nowrap='nowrap'>&nbsp;<a class='head' href='?action=showconfig'>System Configuration</a>&nbsp;</td>");
+		writer.write("<th class='subHead" + (tab.equals(TAB_HELP) ? "Selected" : "") + "' width='50%' align='right'><a class='head' href='?action=help'>Help</a>&nbsp;</th>");
 		writer.write("</tr>");
 		writer.write("</table>");
 
@@ -190,10 +205,14 @@ public class AdminServlet extends HttpServlet {
 		if(channelManager.isObserveHttp301()) {
 			writer.write("checked");
 		}
-		writer.write("><br><i>(When checked, nntp//rss will update the URL of a feed when a 301 (Permanent Redirection) message is received from the remote web server)</td></tr>");
+		writer.write("><br><i>When checked, nntp//rss will update the URL of a feed when a 301 (Permanent Redirection) message is received from the remote web server.</td></tr>");
 
 // NNTP Server
 		writer.write("<tr><th colspan='2' class='subHead'>NNTP Server</th></tr>");
+
+		writer.write("<tr><td class='row1' align='right'>This Machine's Hostname</td><td class='row2'><input type='text' name='hostName' value='"
+			+ (nntpServer.getHostName() == null? "" : nntpServer.getHostName())
+			+ "'><br><i>The host name of the machine running nntp//rss.  This is used when creating news:// links, and enabling access to the nntp//rss web interface from within your newsreader.</i></td></tr>");
 
 		writer.write("<tr><td class='row1' align='right'>Content Type</td>");
 		writer.write("<td class='row2'><select name='contentType'>");
@@ -254,7 +273,7 @@ public class AdminServlet extends HttpServlet {
 		writer.write("</table>");
 		writer.write("</form>");
 		writer.write("<p>");
-		writer.write("<a class='row' href='/?action=export'>Export nntp//rss Channel List</a><p>");
+		writer.write("Export <a class='row' href='/?action=export'>nntp//rss</a> or <a class='row' href='/?action=exportopml'>mySubscriptions.opml</a> Channel List<p>");
 		writer.write("<a class='row' href='/?action=importform'>Import nntp//rss or mySubscriptions.opml Channel List</a>");
 	}
 	
@@ -264,7 +283,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_CONFIG);
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -283,7 +302,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_CONFIG);
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -301,6 +320,13 @@ public class AdminServlet extends HttpServlet {
 		String footnoteUrls = request.getParameter("footnoteUrls");
 		nntpServer.setFootnoteUrls((footnoteUrls != null) && footnoteUrls.equals("true"));
 		nntpServer.saveConfiguration();
+
+// We will not allow the hostname to be blank - if the user erases the
+// contents of the field, default to the current host name
+		nntpServer.setHostName(request.getParameter("hostName").trim());
+		if(nntpServer.getHostName().length() == 0) {
+			nntpServer.setHostName(AppConstants.getCurrentHostName());
+		}
 
 // Channel Manager config
 		channelManager.setPollingIntervalSeconds(Long.parseLong(request.getParameter("pollingInterval")));
@@ -368,7 +394,8 @@ public class AdminServlet extends HttpServlet {
 
 			writer.write("<tr><th class='tableHead' colspan='2'>Channel Configuration</th></tr>");
 
-			writer.write("<tr><td class='row1' align='right'>Name</td><td class='row2'>" + channel.getName() + "</td></tr>");
+			writer.write("<tr><td class='row1' align='right'>Title</td><td class='row2'>" + HTMLHelper.escapeString(channel.getTitle() == null ? "Unknown" : channel.getTitle()) + "</td></tr>");
+			writer.write("<tr><td class='row1' align='right'>Newsgroup Name</td><td class='row2'>" + HTMLHelper.escapeString(channel.getName()) + "</td></tr>");
 			writer.write("<tr><td class='row1' align='right'>URL</td><td class='row2'><input type='text' name='URL' value='" + HTMLHelper.escapeString(url) + "' size='64'></td></tr>");
 			writer.write("<tr><td class='row1' align='right'>Polling</td><td class='row2'>"
 				+ "<input name='enabled' type='checkbox' value='true' "
@@ -402,7 +429,7 @@ public class AdminServlet extends HttpServlet {
 					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Feed Web Server is returning File Not Found.</font>");
 					break;
 				case Channel.STATUS_INVALID_CONTENT:
-					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Last feed document retrieved could not be parsed, <a class='chlerror' target='validate' href='http://feeds.archive.org/validator/check?url=" + HTMLHelper.escapeString(url) + "'>check URL</a>.</font>");
+					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Last feed document retrieved could not be parsed, <a class='chlerror' target='validate' href='http://feedvalidator.org/check?url=" + HTMLHelper.escapeString(url) + "'>check URL</a>.</font>");
 					break;
 				case Channel.STATUS_UNKNOWN_HOST:
 					writer.write("<td class='chlerror' bgcolor='#FF0000'><font color='#FFFFFF'>Unable to contact Feed Web Server (Unknown Host).  Check URL.</font>");
@@ -702,7 +729,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_VIEW_CHANNELS);
 
 		String channelName = request.getParameter("name");
 
@@ -721,7 +748,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_VIEW_CHANNELS);
 
 		String channelName = request.getParameter("name");
 		ChannelManager channelManager =
@@ -849,7 +876,7 @@ public class AdminServlet extends HttpServlet {
 							valid = Channel.isValid(url);
 							if(!valid) {
 								errors.add("URL does not point to valid RSS or ATOM document");
-								errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a><br>");
+								errors.add("<a target='validate' href='http://feedvalidator.org/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a><br>");
 							}
 						} catch(HttpUserException hue) {
 							if(hue.getStatus() == HttpStatus.SC_UNAUTHORIZED) {
@@ -914,7 +941,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_VIEW_CHANNELS);
 
 		String channelName = request.getParameter("name");
 		ChannelManager channelManager =
@@ -1001,7 +1028,7 @@ public class AdminServlet extends HttpServlet {
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_VIEW_CHANNELS);
 		
 		writeCheckboxSelector(writer, "checkAllChannels", "chl", "channels");
 		
@@ -1019,14 +1046,7 @@ public class AdminServlet extends HttpServlet {
 				AdminServer.SERVLET_CTX_NNTP_SERVER);
 
 		Iterator channelIter = channelManager.channels();
-		String newsPrefix = null;
-		if(nntpServer.getListenerPort() == 119) {
-			newsPrefix = "news://127.0.0.1/";
-		} else {
-			newsPrefix = "news://127.0.0.1:"
-					+ nntpServer.getListenerPort()
-					+ "/";
-		}
+		String newsPrefix = getNewsURLPrefix(nntpServer);
 					
 		while (channelIter.hasNext()) {
 			Channel channel = (Channel) channelIter.next();
@@ -1111,6 +1131,18 @@ public class AdminServlet extends HttpServlet {
 
 	}
 
+	private String getNewsURLPrefix(NNTPServer nntpServer) {
+		String newsPrefix;
+		if(nntpServer.getListenerPort() == 119) {
+			newsPrefix = "news://" + nntpServer.getHostName() + "/";
+		} else {
+			newsPrefix = "news://" + nntpServer.getHostName() + ":"
+					+ nntpServer.getListenerPort()
+					+ "/";
+		}
+		return newsPrefix;
+	}
+
 
 	private void cmdQuickEditChannels(
 		HttpServletRequest request,
@@ -1121,7 +1153,7 @@ public class AdminServlet extends HttpServlet {
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_QUICKEDIT);
 
 		writeCheckboxSelector(writer, "checkAllEnabled", "enabled", "channels");
 		writeCheckboxSelector(writer, "checkAllParse", "parseAtAllCost", "channels");
@@ -1301,7 +1333,7 @@ public class AdminServlet extends HttpServlet {
 
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_ADD_CHANNEL);
 		writer.write("<form action='/?action=add' method='post'>");
 		writer.write("<table class='tableborder'>");
 
@@ -1355,6 +1387,10 @@ public class AdminServlet extends HttpServlet {
 			(ChannelManager) getServletContext().getAttribute(
 				AdminServer.SERVLET_CTX_RSS_MANAGER);
 
+		NNTPServer nntpServer =
+			(NNTPServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_NNTP_SERVER);
+
 		String name = request.getParameter("name").trim();
 		String urlString = request.getParameter("url").trim();
 		boolean historical = isChecked(request, "historical");
@@ -1385,7 +1421,7 @@ public class AdminServlet extends HttpServlet {
 				newChannel.setHistorical(historical);
 				if(validate && !newChannel.isValid()) {
 					errors.add("URL does not point to valid RSS or ATOM document");
-					errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a>");
+					errors.add("<a target='validate' href='http://feedvalidator.org/check?url=" + urlString + "'>Check the URL with the RSS and ATOM Validator @ archive.org</a>");
 					newChannel = null;
 				}
 			} catch(HttpUserException hue) {
@@ -1403,7 +1439,7 @@ public class AdminServlet extends HttpServlet {
 		}
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_ADD_CHANNEL);
 
 		if(errors.size() > 0) {
 			writer.write("<b>There were errors adding your channel:</b><p>");
@@ -1433,7 +1469,13 @@ public class AdminServlet extends HttpServlet {
 		} else {
 			channelManager.addChannel(newChannel);
 			
-			writer.write("Channel " + newChannel.getName() + " successfully added.");
+			writer.write("Channel " + newChannel.getName() + " successfully added.<p>");
+			
+			writer.write("<a href='"
+				+ getNewsURLPrefix(nntpServer)
+				+ newChannel.getName()
+				+ "'>"
+				+ "[View the channel in your newsreader]</a>");
 		}
 
 		writeFooter(writer);
@@ -1478,6 +1520,74 @@ public class AdminServlet extends HttpServlet {
 		writer.println("</nntprss-channels>");		
 	}
 
+	private void cmdExportOpmlChannelConfig(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+			
+//		response.setContentType("text/xml");
+		response.setContentType("application/octet-stream; charset=UTF-8");
+		response.setHeader("Content-Disposition",
+			"attachment; filename=\"nntprss-channels-opml.xml\"");
+		PrintWriter writer = new PrintWriter(response.getWriter());
+		writer.println("<?xml version='1.0' encoding='UTF-8'?>");
+		writer.println();
+		writer.println("<!-- Generated on "
+			+ new Date().toString() + " -->");
+		writer.println("<!-- nntp//rss v"
+			+ XMLHelper.escapeString(AppConstants.VERSION)
+			+ " - http://www.methodize.org/nntprss/ -->");
+
+		writer.println("<opml version='1.1'>");
+		writer.println(" <head>");
+		writer.println("  <title>My nntp//rss Subscriptions</title>");
+
+		MailDateFormat mailDateFormat = new MailDateFormat();
+		String currentDateTime = mailDateFormat.format(new Date());
+		writer.println("  <dateCreated>"
+			+ currentDateTime
+			+ "</dateCreated>");
+		writer.println("  <dateModified>"
+			+ currentDateTime
+			+"</dateModified>");
+		writer.println(" </head>");
+		writer.println(" <body>");
+
+
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+
+		Iterator channelIter = channelManager.channels();				
+		while(channelIter.hasNext()) {
+			Channel channel = (Channel)channelIter.next();
+			writer.print("  <outline text='");
+			writer.print(XMLHelper.escapeString(channel.getTitle()));
+			writer.print("' description='");
+			writer.print(XMLHelper.escapeString(channel.getDescription()));
+			writer.print("' htmlUrl='");
+			writer.print(XMLHelper.escapeString(channel.getLink()));
+			writer.print("' title='");
+			writer.print(XMLHelper.escapeString(channel.getTitle()));
+			writer.print("' ");
+			if(channel.getRssVersion() != null) {
+				if(channel.getRssVersion().toUpperCase().startsWith("RSS")
+					|| channel.getRssVersion().startsWith("RDF")) {
+						writer.print("type='rss' version='RSS' ");
+				} else if(channel.getRssVersion().toUpperCase().startsWith("ATOM")) {
+					writer.print("type='atom' version='ATOM' ");
+				}
+			}
+			writer.print("xmlUrl='");
+			writer.print(XMLHelper.escapeString(channel.getUrl()));
+			writer.println("'/>");
+		}
+
+		writer.println(" </body>");
+		writer.println("</opml>");		
+	}
+
+
 	private void writeImportForm(Writer writer) throws IOException {
 		writer.write("<form action='?action=import' method='POST' enctype='multipart/form-data'>");
 		writer.write("<table class='tableBorder'>");
@@ -1501,7 +1611,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_CONFIG);
 
 		writeImportForm(writer);
 
@@ -1534,7 +1644,7 @@ public class AdminServlet extends HttpServlet {
 
 			
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_CONFIG);
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -1714,7 +1824,7 @@ public class AdminServlet extends HttpServlet {
 
 			
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_CONFIG);
 
 		writeCheckboxSelector(writer, "checkAllImport", "import", "channels");
 		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
@@ -1747,14 +1857,19 @@ public class AdminServlet extends HttpServlet {
 					+ "</th><th>Channel Name</th><th>Historical<br>"
 					+ "<input type='checkbox' name='changeHistorical' onClick='checkAllHistorical(this);'>"
 					+ "</th><th>URL</th></tr>");
-	
-				for(int channelCount = 0; channelCount < channels.getLength(); channelCount++) {
-					Element chanElm = (Element)channels.item(channelCount);
+
+				int channelCount = 0;
+				for(int chlLoopCounter = 0; chlLoopCounter < channels.getLength(); chlLoopCounter++) {
+					Element chanElm = (Element)channels.item(chlLoopCounter);
 	
 					String name = fixChannelName(chanElm.getAttribute("title"));
 					String urlString = chanElm.getAttribute("xmlUrl");
 					if(urlString == null || urlString.length() == 0) {
 						urlString = chanElm.getAttribute("xmlurl");
+					}
+
+					if(urlString == null || urlString.length() == 0) {
+						continue;	
 					}
 	
 					if(name.length() == 0) {
@@ -1782,6 +1897,8 @@ public class AdminServlet extends HttpServlet {
 						+ "'>"
 						+ HTMLHelper.escapeString(urlString)
 						+ "</td></tr>\n");
+
+					channelCount++;
 				}
 				
 				writer.write("<tr><td align='center' class='row2' colspan='4'><input type='submit' value='Import Channels'></td></tr>");
@@ -1816,7 +1933,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_CONFIG);
 
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -1964,7 +2081,7 @@ public class AdminServlet extends HttpServlet {
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_HELP);
 
 		writer.write("<table class='tableborder' border='0' width='80%'>");
 		writer.write("<tr><th class='tableHead'>Help</td></th>");
@@ -2039,19 +2156,110 @@ public class AdminServlet extends HttpServlet {
 		writer.flush();
 	}
 
+	private void cmdFindFeedsForm(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Writer writer = response.getWriter();
+		writeHeader(writer, TAB_FIND_FEEDS);
+
+		writer.write("<b>Find Feeds<b>");
+
+		writer.write("<form action='?action=findfeeds' method='POST'>");
+		writer.write("<table class='tableBorder'>");
+
+		writer.write("<tr><th class='titleHead'>&nbsp;<a class='tableHead' href='http://www.feedster.com' target='feedster'>Feedster</a>&nbsp;</th><td class='row2'><input type='text' name='search' maxLength='256' size='55'></td><td class='row1'><input type='submit' value='Search'><input type='hidden' name='engine' value='feedster'></td>");
+		writer.write("</tr>");
+
+		writer.write("</table>");
+		writer.write("</form>");
+
+		writer.write("<form action='?action=findfeeds' method='POST'>");
+		writer.write("<table class='tableBorder'>");
+
+//		writer.write("<br>&nbsp;<br>");
+
+		writer.write("<tr><th class='titleHead'>&nbsp;<a class='tableHead' href='http://www.syndic8.com' target='syndic8'>Syndic8</a>&nbsp;</th><td class='row2'><input type='text' name='search' maxLength='256' size='55'></td><td class='row1'><input type='submit' value='Search'><input type='hidden' name='engine' value='syndic8'></td>");
+		writer.write("</tr>");
+
+		writer.write("</table>");
+		writer.write("</form>");
+
+		writer.write("<br>&nbsp;<br>");
+
+		writeFooter(writer);
+		writer.flush();
+	}
+
 	private void cmdFindFeeds(
 		HttpServletRequest request,
 		HttpServletResponse response)
 		throws ServletException, IOException {
 
 		Writer writer = response.getWriter();
-		writeHeader(writer);
+		writeHeader(writer, TAB_FIND_FEEDS);
 
-		writer.write("<a href='http://www.feedster.com/'><img  title='Feedster Logo' height='66'  width='336' alt='Feedster' src='http://www.feedster.com/i/logo_feedster_big.gif' border='0' /></a>");
+		String searchTerm = request.getParameter("search");
+
+		writer.flush();
+		
+		String engine = request.getParameter("engine");
+		
+		if(engine.equals("feedster")) {
+			writer.write("Feedster search not yet supported.");
+		} else {
+			Syndic8Search s = new Syndic8Search();
+			try {
+				Vector results = s.search(searchTerm);
+				if(results.size() == 0) {
+					writer.write("No matches found for " + searchTerm);
+				} else {
+// Write channel listing...
+
+					writer.write("<table class='tableborder' border='0'>");
+					writer.write("<tr><th colspan='5' class='tableHead'><a class='tableHead' href='http://www.syndic8.com/'>Syndic8.com</a> - Search Results for <b>"
+						+ searchTerm						+ "</b> ("
+						+ results.size()
+						+ " matches)</td></th>");
+					writer.write("<tr><th class='subHead'>Name</th><th class='subHead'>Description</th><th class='subHead'>&nbsp;</th></tr>");
+
+					for(int chlCount = 0; chlCount < results.size(); chlCount++) {
+						Map channel = (Map)results.get(chlCount);
+						
+						writer.write("<tr>");
+// Name
+						writer.write("<td class='row1'>"
+							+ "<a target='homepage' class='row' title='Channel' href='" + channel.get(Syndic8Search.FIELD_HOMEPAGE_URL)
+							+ "'>" + HTMLHelper.escapeString((String)channel.get(Syndic8Search.FIELD_NAME)) + "</a></td>");
+
+// Description						
+						writer.write("<td class='row1'>"
+							+ HTMLHelper.escapeString((String)channel.get(Syndic8Search.FIELD_DESCRIPTION))
+							+ "</td>");
+							
+// Subscribe
+						writer.write("<td class='row1'>"
+							+ "<a class='row' title='Subscribe' href='/?action=addform&URL=" + URLEncoder.encode((String)channel.get(Syndic8Search.FIELD_FEED_URL))
+							+ "'>[Subscribe]</a></td>");
+
+						writer.write("</tr>");
+							
+					}
+
+					writer.write("</table><p>");
+
+				}
+			} catch(Exception e) {
+				writer.write("Unable to execute your Syndic8 search.<br>The Syndic8 server returned the following error message:<br>");
+				writer.write(e.getMessage());
+			}
+			
+		}
+
 		writeFooter(writer);
 		writer.flush();
 	}
-
 
 
 	private void processRequest(
@@ -2061,45 +2269,80 @@ public class AdminServlet extends HttpServlet {
 
 		response.setContentType("text/html");
 
-		String action = request.getParameter("action");
-		if (action == null || action.length() == 0) {
-			cmdShowCurrentChannels(request, response);
-		} else if (action.equals("add")) {
-			cmdAddChannel(request, response);
-		} else if (action.equals("addform")) {
-			cmdAddChannelForm(request, response);
-		} else if (action.equals("showconfig")) {
-			cmdShowConfig(request, response);
-		} else if (action.equals("updateconfig")) {
-			cmdUpdateConfig(request, response);
-		} else if (action.equals("show")) {
-			cmdShowChannel(request, response);
-		} else if (action.equals("update")) {
-			cmdUpdateChannel(request, response);
-		} else if (action.equals("export")) {
-			cmdExportChannelConfig(request, response);
-		} else if (action.equals("import")) {
-			cmdImportChannelConfig(request, response);
-		} else if (action.equals("importform")) {
-			cmdImportChannelConfigForm(request, response);
-		} else if (action.equals("importopml")) {
-			cmdImportOpmlChannelConfig(request, response);
-		} else if (action.equals("channelaction")) {
-			cmdChannelAction(request, response);
-		} else if (action.equals("editchlrefresh")) {
-			cmdEditChannelRefresh(request, response);
-		} else if (action.equals("quickedit")) {
-			cmdQuickEditChannels(request, response, false);
-		} else if (action.equals("quickeditupdate")) {
-			cmdQuickEditChannelsUpdate(request, response);
-		} else if (action.equals("help")) {
-			cmdHelp(request, response);
-		} else if (action.equals("findfeeds")) {
-			cmdFindFeeds(request, response);
-		} else {
-			cmdShowCurrentChannels(request, response);
-		}
+		AdminServer adminServer =
+			(AdminServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_ADMIN_SERVER);
 
+		if(request.getServerPort() == adminServer.getPort()) {
+			String action = request.getParameter("action");
+			if (action == null || action.length() == 0) {
+				cmdShowCurrentChannels(request, response);
+			} else if (action.equals("add")) {
+				cmdAddChannel(request, response);
+			} else if (action.equals("addform")) {
+				cmdAddChannelForm(request, response);
+			} else if (action.equals("showconfig")) {
+				cmdShowConfig(request, response);
+			} else if (action.equals("updateconfig")) {
+				cmdUpdateConfig(request, response);
+			} else if (action.equals("show")) {
+				cmdShowChannel(request, response);
+			} else if (action.equals("update")) {
+				cmdUpdateChannel(request, response);
+			} else if (action.equals("export")) {
+				cmdExportChannelConfig(request, response);
+			} else if (action.equals("exportopml")) {
+				cmdExportOpmlChannelConfig(request, response);
+			} else if (action.equals("import")) {
+				cmdImportChannelConfig(request, response);
+			} else if (action.equals("importform")) {
+				cmdImportChannelConfigForm(request, response);
+			} else if (action.equals("importopml")) {
+				cmdImportOpmlChannelConfig(request, response);
+			} else if (action.equals("channelaction")) {
+				cmdChannelAction(request, response);
+			} else if (action.equals("editchlrefresh")) {
+				cmdEditChannelRefresh(request, response);
+			} else if (action.equals("quickedit")) {
+				cmdQuickEditChannels(request, response, false);
+			} else if (action.equals("quickeditupdate")) {
+				cmdQuickEditChannelsUpdate(request, response);
+			} else if (action.equals("help")) {
+				cmdHelp(request, response);
+			} else if (action.equals("findfeedsform")) {
+				cmdFindFeedsForm(request, response);
+			} else if (action.equals("findfeeds")) {
+				cmdFindFeeds(request, response);
+			} else {
+				cmdShowCurrentChannels(request, response);
+			}
+		} else {
+// Must be a subscription listener...
+			List subListeners = (List)adminServer.getSubscriptionListeners().get(new Integer(request.getServerPort()));
+			String url = null;
+			if(subListeners != null) {
+				for(int i = 0; i < subListeners.size(); i++) {
+					SubscriptionListener subListener = (SubscriptionListener)subListeners.get(i);
+					if(request.getPathInfo().equals(subListener.getPath())) {
+						url = request.getParameter(subListener.getParam());
+						break;
+					}
+				}
+			}
+			
+			if(url != null) {
+// Generate HTML redirect, as sendRedirect does not seem to function
+// @TODO: Investigate behavior...
+				Writer out = response.getWriter();
+				String destinationURL = new URL("http", request.getServerName(), adminServer.getPort(), "/?action=addform&URL=" + URLEncoder.encode(url)).toString();
+				out.write("<html><head>");
+				out.write("<META HTTP-EQUIV='Refresh' Content='0; URL=" + destinationURL + "'>");
+				out.write("</head><body><a href='" + destinationURL + "'>Redirecting to nntp//rss admin...</a></html>");
+//				response.sendRedirect(new URL("http", request.getServerName(), adminServer.getPort(), "/?action=addform&URL=" + URLEncoder.encode(url)).toString()); 
+			} else {
+				response.sendRedirect(new URL("http", request.getServerName(), adminServer.getPort(), "/").toString()); 
+			}
+		}
 	}
 
 	/**
