@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.3 2003/09/28 20:16:30 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.4 2003/10/24 02:33:08 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
@@ -263,6 +263,26 @@ public class RSSParser extends GenericParser {
 								"date");
 						if (dcDateStr != null && dcDateStr.length() > 0) {
 							log.debug("dc:date == " + dcDateStr);
+
+							if(dcDateStr.indexOf("GMT") == -1) {
+// Check for : in RFC822 time zone...
+								int hourColon = dcDateStr.indexOf(":");
+								if(hourColon != -1) {
+									int minuteColon = dcDateStr.indexOf(":", hourColon + 1);
+									if(minuteColon != -1) {
+										int timeZoneColon = dcDateStr.indexOf(":", minuteColon + 1);
+										if(timeZoneColon != -1) {
+											if(dcDateStr.length() > timeZoneColon) {
+												dcDateStr = dcDateStr.substring(0, timeZoneColon) +
+													dcDateStr.substring(timeZoneColon + 1);
+											}
+										}
+									}
+								}
+								
+								
+							}
+
 							SimpleDateFormat[] dcDateArray =
 								(SimpleDateFormat[]) dcDates.get();
 							for (int parseCount = 0;
@@ -337,7 +357,13 @@ public class RSSParser extends GenericParser {
 
 		if (!keepHistory) {
 			if(currentSignatures.size() > 0) {
-				channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+				if(channel.getExpiration() == 0) {
+					channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+				} else if(channel.getExpiration() > 0 &&
+					channel.getLastCleaned().before(new Date(System.currentTimeMillis() - Channel.CLEANING_INTERVAL))) {
+					channelDAO.deleteExpiredItems(channel, currentSignatures);
+					channel.setLastCleaned(new Date());	
+				}
 			}
 			channel.setTotalArticles(currentSignatures.size());
 		}
