@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.8 2004/09/04 19:43:15 aslom Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.9 2004/10/22 03:41:03 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -84,7 +84,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             if (rs != null) {
                 ps =
                     conn.prepareStatement(
-                        "SELECT MIN(articleNumber), COUNT(articleNumber) FROM "
+                        "SELECT MIN(articleNumber), COUNT(articleNumber), MAX(articleNumber) FROM "
                             + TABLE_CATEGORYITEM
                             + " WHERE category = ?");
                 while (rs.next()) {
@@ -107,6 +107,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                             }
 
                             category.setTotalArticles(rs2.getInt(2));
+							category.setLastArticleNumber(rs2.getInt(3));
                         }
                         rs2.close();
                     }
