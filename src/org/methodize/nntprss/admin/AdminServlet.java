@@ -55,13 +55,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.methodize.nntprss.nntp.NNTPServer;
-import org.methodize.nntprss.rss.Channel;
-import org.methodize.nntprss.rss.ChannelManager;
-import org.methodize.nntprss.rss.publish.BloggerPublisher;
-import org.methodize.nntprss.rss.publish.LiveJournalPublisher;
-import org.methodize.nntprss.rss.publish.MetaWeblogPublisher;
-import org.methodize.nntprss.rss.publish.Publisher;
-import org.methodize.nntprss.rss.publish.PublisherException;
+import org.methodize.nntprss.feed.Channel;
+import org.methodize.nntprss.feed.ChannelManager;
+import org.methodize.nntprss.feed.publish.BloggerPublisher;
+import org.methodize.nntprss.feed.publish.LiveJournalPublisher;
+import org.methodize.nntprss.feed.publish.MetaWeblogPublisher;
+import org.methodize.nntprss.feed.publish.Publisher;
+import org.methodize.nntprss.feed.publish.PublisherException;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.HTMLHelper;
 import org.methodize.nntprss.util.RSSHelper;
@@ -74,7 +74,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.7 2003/03/24 03:11:15 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.8 2003/07/19 00:03:06 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -127,11 +127,12 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<table width='100%' border='0' cellspacing='0' cellpadding='2'><tr><td class='bodyborder' bgcolor='#FFFFFF'>");
 
 		writer.write("<table width='100%' border='0' cellspacing='3' cellpadding='0'>");
-		writer.write("<tr><th colspan='5'>nntp//rss Administration</th></tr>");
+		writer.write("<tr><th colspan='6'>nntp//rss Administration</th></tr>");
 		writer.write("<tr>");
-		writer.write("<th class='subHead' width='50%'>&nbsp;</th>");
+		writer.write("<th class='subHead' width='50%' align='left'>&nbsp;<a class='head' href='?action=findfeeds'>Find Feeds</a></th>");
 		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='/'>View Channels</a>&nbsp;</td>");
 		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='?action=addform'>Add Channel</a>&nbsp;</td>");
+		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='?action=quickedit'>Quick Edit</a>&nbsp;</td>");
 		writer.write("<th class='subHead' nowrap='nowrap'>&nbsp;<a class='head' href='?action=showconfig'>System Configuration</a>&nbsp;</td>");
 		writer.write("<th class='subHead' width='50%' align='right'><a class='head' href='?action=help'>Help</a>&nbsp;</th>");
 		writer.write("</tr>");
@@ -178,6 +179,13 @@ public class AdminServlet extends HttpServlet {
 		}
 		writer.write("</select> minutes </td></tr>");
 
+		writer.write("<tr><td class='row1' align='right'>Use Proxy</td>");
+		writer.write("<td class='row2'><input type='checkbox' name='useProxy' value='true' ");
+		if(channelManager.isUseProxy()) {
+			writer.write("checked");
+		}
+		writer.write("></td></tr>");
+
 		writer.write("<tr><td class='row1' align='right'>Proxy Server Hostname</td><td class='row2'><input type='text' name='proxyServer' value='"
 			+ (channelManager.getProxyServer() == null? "" : channelManager.getProxyServer())
 			+ "'><br><i>Host name of your proxy server, leave blank if no proxy</i></td></tr>");
@@ -207,16 +215,21 @@ public class AdminServlet extends HttpServlet {
 		
 		writer.write("</select></td></tr>");
 
-		writer.write("<tr><td class='row1' align='right'>Secure NNTP</td>");
-		writer.write("<td class='row2'><select name='nntpSecure'>");
+		writer.write("<tr><td class='row1' align='right'>Text (text/plain) Footnote URLs</td>");
+		writer.write("<td class='row2'><input type='checkbox' name='footnoteUrls' value='true' ");
+		if(nntpServer.isFootnoteUrls()) {
+			writer.write("checked");
+		}
+		writer.write("></td></tr>");
+
+
+		writer.write("<tr><td class='row1' align='right'>Authenticated NNTP Access</td>");
+		writer.write("<td class='row2'><input type='checkbox' name='nntpSecure' value='true' ");
+		if(nntpServer.isSecure()) {
 		boolean nntpSecure = nntpServer.isSecure();
-		writer.write("<option value='true'"
-			+ (nntpSecure ? " selected" : "")
-			+ ">Yes");		
-		writer.write("<option value='false'"
-			+ ((!nntpSecure) ? " selected" : "")
-			+ ">No");		
-		writer.write("</select></td></tr>");
+			writer.write("checked");
+		}
+		writer.write("></td></tr>");
 
 				
 		writer.write("<tr><td class='row2' align='center' colspan='2'><input type='submit' name='update' value='Update'></td></tr>");
@@ -262,7 +275,14 @@ public class AdminServlet extends HttpServlet {
 				AdminServer.SERVLET_CTX_NNTP_SERVER);
 
 		nntpServer.setContentType(Integer.parseInt(request.getParameter("contentType")));
-		nntpServer.setSecure(request.getParameter("nntpSecure").equalsIgnoreCase("true"));
+
+
+		String secure = request.getParameter("nntpSecure");
+		nntpServer.setSecure((secure != null) && secure.equals("true"));
+
+		String footnoteUrls = request.getParameter("footnoteUrls");
+		nntpServer.setFootnoteUrls((footnoteUrls != null) && footnoteUrls.equals("true"));
+		
 		nntpServer.saveConfiguration();
 
 		channelManager.setPollingIntervalSeconds(Long.parseLong(request.getParameter("pollingInterval")));
@@ -284,6 +304,8 @@ public class AdminServlet extends HttpServlet {
         channelManager.setProxyUserID(request.getParameter("proxyUserID").trim());
         channelManager.setProxyPassword(request.getParameter("proxyPassword")
                                                .trim());
+		String useProxy = request.getParameter("useProxy");
+		channelManager.setUseProxy((useProxy != null) && useProxy.equals("true"));
 
 		if(validPort == true) {
 			channelManager.saveConfiguration();
@@ -297,6 +319,15 @@ public class AdminServlet extends HttpServlet {
 	}
 	
 
+	private boolean isChecked(HttpServletRequest request, String checkbox) {
+		String checkboxValue = request.getParameter(checkbox);
+		if(checkboxValue != null && checkboxValue.equals("true")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	private void writeChannel(Writer writer, Channel channel, HttpServletRequest request, boolean refresh) throws IOException {
 		if(channel == null) {
 			writer.write("<b>Channel " + channel.getName() + " not found!</b>");
@@ -304,9 +335,9 @@ public class AdminServlet extends HttpServlet {
 			DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
 
 			String url = ((!refresh) ? channel.getUrl() : request.getParameter("URL"));
-			boolean enabled = ((!refresh) ? channel.isEnabled() : request.getParameter("enabled").equals("true"));
-			boolean parseAtAllCost = ((!refresh) ? channel.isParseAtAllCost() : request.getParameter("parseAtAllCost").equals("true"));
-			boolean historical = ((!refresh) ? channel.isHistorical() : request.getParameter("historical").equals("true"));
+			boolean enabled = ((!refresh) ? channel.isEnabled() : isChecked(request, "enabled"));
+			boolean parseAtAllCost = ((!refresh) ? channel.isParseAtAllCost() : isChecked(request, "parseAtAllCost") );
+			boolean historical = ((!refresh) ? channel.isHistorical() : isChecked(request, "historical"));
 			boolean postingEnabled = ((!refresh) ? channel.isPostingEnabled() : (!request.getParameter("postingEnabled").equals("false")));
 			String publishAPI = ((!refresh) ? channel.getPublishAPI() : request.getParameter("publishAPI"));
 			long pollingIntervalSeconds = ((!refresh) ? channel.getPollingIntervalSeconds() : Long.parseLong(request.getParameter("pollingInterval")));
@@ -319,10 +350,10 @@ public class AdminServlet extends HttpServlet {
 
 			writer.write("<tr><td class='row1' align='right'>Name</td><td class='row2'>" + channel.getName() + "</td></tr>");
 			writer.write("<tr><td class='row1' align='right'>URL</td><td class='row2'><input type='text' name='URL' value='" + HTMLHelper.escapeString(url) + "' size='64'></td></tr>");
-			writer.write("<tr><td class='row1' align='right'>Polling</td><td class='row2'><select name='enabled'>"
-				+ "<option value='true' " + (enabled ? "selected" : "") + ">Enabled"
-				+ "<option value='false' " + (!enabled ? "selected" : "") + ">Disabled"
-				+ "</select></td></tr>");
+			writer.write("<tr><td class='row1' align='right'>Polling</td><td class='row2'>"
+				+ "<input name='enabled' type='checkbox' value='true' "
+							+ (enabled ? "checked>" : ">")
+				+ "</td></tr>");
 
 			writer.write("<tr><td class='row1' align='right'>Polling Interval</td>");
 			writer.write("<td class='row2'><select name='pollingInterval'>");
@@ -340,11 +371,8 @@ public class AdminServlet extends HttpServlet {
 			}
 			writer.write("</select></td></tr>");
 
-
-			writer.write("<tr><td class='row1' align='right'>Parse-at-all-cost</td><td class='row2'><select name='parseAtAllCost'>"
-				+ "<option value='true' " + (parseAtAllCost ? "selected" : "") + ">Enabled"
-				+ "<option value='false' " + (!parseAtAllCost ? "selected" : "") + ">Disabled"
-				+ "</select>"
+			writer.write("<tr><td class='row1' align='right'>Parse-at-all-cost</td><td class='row2'><input name='parseAtAllCost' type='checkbox' value='true' "
+				+ (parseAtAllCost ? "checked>" : ">")
 				+ "<br><i>This will enable the experimental parse-at-all-cost RSS parser.  This feature supports the parsing of badly-formatted RSS feeds.</i></td></tr>");
 
 			writer.write("<tr><td class='row1' align='right'>Status</td>");
@@ -391,6 +419,7 @@ public class AdminServlet extends HttpServlet {
 				writer.write(channel.getLastETag());
 			}
 			writer.write("</td></tr>");
+			
 			writer.write("<tr><td class='row1' align='right'>RSS Version</td><td class='row2'>");
 			if(channel.getRssVersion() == null) { 
 				writer.write("Unknown");
@@ -398,10 +427,11 @@ public class AdminServlet extends HttpServlet {
 				writer.write(channel.getRssVersion());
 			}
 			writer.write("</td></tr>");
-			writer.write("<tr><td class='row1' align='right'>Historical</td><td class='row2'><select name='historical'>"
-				+ "<option " + (historical? "selected" : "") + ">true"
-				+ "<option " + (!historical ? "selected" : "") + ">false"
-				+ "</select></td></tr>");
+
+			writer.write("<tr><td class='row1' align='right'>Historical</td><td class='row2'><input name='historical' type='checkbox' value='true' "
+				+ (historical ? "checked>" : ">")
+				+ "</td></tr>");
+
 			writer.write("<tr><td class='row1' align='right'>Managing Editor</td><td class='row2'>");
 			if(channel.getManagingEditor() != null) {
 				writer.write("<a href='mailto:"
@@ -679,10 +709,10 @@ public class AdminServlet extends HttpServlet {
 			List errors = new ArrayList();
 			if(urlString.length() == 0) {
 				errors.add("URL cannot be empty");
-			} else if(urlString.equals("http://")) {
+			} else if(urlString.equals("http://") || urlString.equals("https://")) {
 				errors.add("You must specify a URL");
-			} else if(!urlString.startsWith("http://")) {
-				errors.add("Only URLs starting http:// are supported");
+			} else if(!urlString.startsWith("http://") && !urlString.startsWith("https://")) {
+				errors.add("Only URLs starting http:// or https:// are supported");
 			} 
 			
 			boolean postingEnabled = request.getParameter("postingEnabled").equalsIgnoreCase("true");
@@ -783,8 +813,8 @@ public class AdminServlet extends HttpServlet {
 			
 			if(errors.size() == 0) {
 				try {
-					boolean parseAtAllCost = request.getParameter("parseAtAllCost").equalsIgnoreCase("true");
-					boolean enabled = request.getParameter("enabled").equalsIgnoreCase("true");
+					boolean parseAtAllCost = isChecked(request, "parseAtAllCost");
+					boolean enabled = isChecked(request, "enabled");
 					
 					URL url = new URL(urlString);
 					if((!parseAtAllCost) && (enabled && !Channel.isValid(url))) {
@@ -792,7 +822,7 @@ public class AdminServlet extends HttpServlet {
 						errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS Validator @ archive.org</a><br>");
 					} else {
 						channel.setUrl(url);
-						channel.setHistorical(request.getParameter("historical").equalsIgnoreCase("true"));
+						channel.setHistorical(isChecked(request, "historical"));
 
 						channel.setEnabled(enabled);
 						channel.setParseAtAllCost(parseAtAllCost);
@@ -853,13 +883,12 @@ public class AdminServlet extends HttpServlet {
 
 		writeFooter(writer);
 	}	
-	
-	private void cmdChannelAction(
+
+	private void channelDelete(
 		HttpServletRequest request,
 		HttpServletResponse response)
 		throws ServletException, IOException {
 
-// Delete channels currently the only multi-channel action supported
 		Enumeration paramEnum = request.getParameterNames();
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
@@ -876,8 +905,49 @@ public class AdminServlet extends HttpServlet {
 				}
 			}
 		}
-		
-		cmdShowCurrentChannels(request, response);
+	}		
+
+	private void channelRepoll(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Enumeration paramEnum = request.getParameterNames();
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+
+		while(paramEnum.hasMoreElements()) {
+			String channelName = (String)paramEnum.nextElement();
+			if(channelName.startsWith("chl")) {
+// Channel to repoll...
+				channelName = channelName.substring(3);
+				Channel channel = channelManager.channelByName(channelName);
+				if(channel != null) {
+// Reset last polled
+					channel.setLastPolled(null);
+					channel.setStatus(Channel.STATUS_OK);
+				}
+			}
+		}
+	}		
+
+	
+	private void cmdChannelAction(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		if(request.getParameter("delete") != null) {
+			channelDelete(request, response);
+		} else if(request.getParameter("repoll") != null) {
+			channelRepoll(request, response);
+		}
+
+// Redirect to main page after performing channel action - otherwise
+// user could hit refresh and resubmit the channel action
+		response.sendRedirect("/");
+//		cmdShowCurrentChannels(request, response);
 	}	
 
 	private void cmdShowCurrentChannels(
@@ -984,13 +1054,149 @@ public class AdminServlet extends HttpServlet {
 			}
 		}
 
-		writer.write("<tr><td class='row2' colspan='5'><input type='submit' onClick='return confirm(\"Are you sure you want to delete these channels?\");' name='delete' value='Delete Selected Channels'></td></tr>");
+		writer.write("<tr><td class='row2' colspan='5'>");
+		writer.write("<input type='submit' onClick='return confirm(\"Are you sure you want to delete these channels?\");' name='delete' value='Delete Selected Channels'>&nbsp;&nbsp;"
+			+ "<input type='submit' onClick='return confirm(\"Are you sure you want to repoll these channels?\");' name='repoll' value='Repoll Selected Channels'>"
+			+ "</td></tr>");
 
 		writer.write("</table><font size='-1'>[* = Channel configured for Parse-At-All-Cost parser]</font><p>");
 		writer.write("</form><p>");
 		writeFooter(writer);
 		writer.flush();
 
+	}
+
+
+	private void cmdQuickEditChannels(
+		HttpServletRequest request,
+		HttpServletResponse response,
+		boolean updated)
+		throws ServletException, IOException {
+
+		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+
+		Writer writer = response.getWriter();
+		writeHeader(writer);
+
+		writeCheckboxSelector(writer, "checkAllEnabled", "enabled", "channels");
+		writeCheckboxSelector(writer, "checkAllParse", "parseAtAllCost", "channels");
+		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
+
+		if(updated) {
+			writer.write("<b>Channels successfully updated!</b>");
+		}
+		
+		writer.write("<form name='channels' action='/?action=quickeditupdate' method='POST'>");
+		writer.write("<table class='tableborder' border='0'>");
+		writer.write("<tr><th colspan='5' class='tableHead'>Channels</td></th>");
+
+
+		writer.write("<tr><th class='subHead'>Newsgroup Name</th>" +			"<th class='subHead'><input type='checkbox' name='changeEnabled' onClick='checkAllEnabled(this);'>Enabled</th>" +			"<th class='subHead'>Polling Interval</th>" +			"<th class='subHead'><input type='checkbox' name='changeParse' onClick='checkAllParse(this);'>Parse-at-all-costs</th>" +			"<th class='subHead'><input type='checkbox' name='changeHistorical' onClick='checkAllHistorical(this);'>Historical</th></tr>");
+
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		Iterator channelIter = channelManager.channels();
+		
+		int chlCount = 0;			
+		while (channelIter.hasNext()) {
+			Channel channel = (Channel) channelIter.next();
+			writer.write("<tr>");
+
+			writer.write("<input type='hidden' name='chl" + chlCount
+				+ "' value='"
+				+ HTMLHelper.escapeString(channel.getName()) + "'>");
+
+// Channel name
+			writer.write("<td class='row1'>"
+				+ channel.getName()
+				+ "</td>");
+					
+// Enabled
+		   writer.write("<td class='row1'>"
+			   + "<input name='enabled" + chlCount + "' type='checkbox' value='true' "
+					   + (channel.isEnabled() ? "checked>" : ">")
+			   + "</td>");
+
+// Polling Interval
+			writer.write("<td class='row1'>"
+				+ "<select name='pollingInterval" + chlCount + "'>");
+
+			if(channel.getPollingIntervalSeconds() == Channel.DEFAULT_POLLING_INTERVAL) {
+				writer.write("<option selected value='" + 
+				Channel.DEFAULT_POLLING_INTERVAL + "'>Use Default Polling Interval\n");
+			} else {
+				writer.write("<option selected value='" + channel.getPollingIntervalSeconds() + "'>" + channel.getPollingIntervalSeconds() / 60 + " minutes\n");
+			}
+			
+			writer.write("<option value='" + Channel.DEFAULT_POLLING_INTERVAL + "'>Use Default Polling Interval\n");
+			for(int interval = 10; interval <= 120; interval+=10) {
+				writer.write("<option value='" + (interval * 60) + "'>" + interval + " minutes\n");
+			}
+			writer.write("</select></td>");
+
+// Parse-at-all-costs
+		   writer.write("<td class='row1'><input name='parseAtAllCost" + chlCount + "' type='checkbox' value='true' "
+			   + (channel.isParseAtAllCost() ? "checked>" : ">")
+	   			+ "</td>");
+
+// Historical
+			writer.write("<td class='row1'><input name='historical" + chlCount + "' type='checkbox' value='true' "
+				+ (channel.isHistorical() ? "checked>" : ">")
+				+ "</td>");
+					
+			writer.write("</tr>");
+			
+			chlCount++;				
+		}
+		
+		writer.write("<tr><td class='row2' colspan='5'>");
+		writer.write("<input type='submit' onClick='return confirm(\"Are you sure you want to update the configuration?\");' name='update' value='Update Channels'>"
+			+ "</td></tr>");
+
+		writer.write("</table><p>");
+		writer.write("</form><p>");
+		writeFooter(writer);
+		writer.flush();
+	}
+
+	private void cmdQuickEditChannelsUpdate(HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		int chlCount = 0;
+		
+		String channelName;
+		ChannelManager channelManager =
+			(ChannelManager) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		
+		while((channelName = request.getParameter("chl" + chlCount)) != null) {
+			Channel channel = channelManager.channelByName(channelName);
+			if(channel != null) {
+				boolean enabled = isChecked(request, "enabled" + chlCount);
+				boolean historical = isChecked(request, "historical" + chlCount);
+				long pollingInterval = Long.parseLong(request.getParameter("pollingInterval" + chlCount));
+				boolean parseAtAllCost = isChecked(request, "parseAtAllCost" + chlCount);
+				
+				if(channel.isEnabled() != enabled ||
+					channel.isHistorical() != historical ||
+					channel.getPollingIntervalSeconds() != pollingInterval ||
+					channel.isParseAtAllCost() != parseAtAllCost) {
+// Something changed, so update the channel
+					channel.setEnabled(enabled);
+					channel.setHistorical(historical);
+					channel.setPollingIntervalSeconds(pollingInterval);
+					channel.setParseAtAllCost(parseAtAllCost);
+
+					channel.save();
+				}						
+			}
+
+			chlCount ++;
+		}
+		
+		cmdQuickEditChannels(request, response, true);
 	}
 
 	private void writeCheckboxSelector(Writer writer, String functionName, String checkPrefix, String formName) throws IOException {
@@ -1070,12 +1276,12 @@ public class AdminServlet extends HttpServlet {
 				"<tr><td class='row1' align='right'>RSS URL:</td><td class='row2' ><input type='text' name='url' size='64' value='http://'></td></tr>");
 		}
 
-		writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><select name='historical'>"
-			+ "<option " + (historical ? "selected" : "") + ">true"
-			+ "<option " + (!historical ? "selected" : "") + ">false"
-			+ "</select><br><i>(True = Keep items removed from the original RSS document)</i></td></tr>");
+		writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
+			+ (historical ? "checked" : "")
+			+ ">"
+			+ "<br><i>(Checked = Keep items removed from the original RSS document)</i></td></tr>");
 
-		writer.write("<tr><td class='row1' align='right' valign='top'>Validate</td><td class='row2'><input type='checkbox' name='validate' "
+		writer.write("<tr><td class='row1' align='right' valign='top'>Validate</td><td class='row2'><input type='checkbox' value='true' name='validate' "
 			+ (validate ? "checked" : "")
 			+ ">"
 			+ "<br><i>(Checked = Ensure URL points to a valid RSS document)</i></td></tr>");
@@ -1106,14 +1312,8 @@ public class AdminServlet extends HttpServlet {
 
 		String name = request.getParameter("name").trim();
 		String urlString = request.getParameter("url").trim();
-		boolean historical = request.getParameter("historical").equalsIgnoreCase("true");
-		String validateStr = request.getParameter("validate");
-		boolean validate = false;
-		if(validateStr == null) {
-			validate = false;
-		} else if(validateStr.equalsIgnoreCase("on")) {
-			validate = true;
-		} 
+		boolean historical = isChecked(request, "historical");
+		boolean validate = isChecked(request, "validate");
 
 		List errors = new ArrayList();
 		if(name.length() == 0) {
@@ -1127,10 +1327,10 @@ public class AdminServlet extends HttpServlet {
 
 		if(urlString.length() == 0) {
 			errors.add("URL cannot be empty");
-		} else if(urlString.equals("http://")) {
+		} else if(urlString.equals("http://") || urlString.equals("https://")) {
 			errors.add("You must specify a URL");
-		} else if(!urlString.startsWith("http://")) {
-			errors.add("Only URLs starting http:// are supported");
+		} else if(!urlString.startsWith("http://") && !urlString.startsWith("https://")) {
+			errors.add("Only URLs starting http:// or https:// are supported");
 		} 
 		
 		Channel newChannel = null;
@@ -1144,7 +1344,7 @@ public class AdminServlet extends HttpServlet {
 					newChannel = null;
 				}
 			}catch(MalformedURLException me) {
-				errors.add("URL is malformed");
+				errors.add("URL is malformed (" + me.getLocalizedMessage() + ")");
 			}
 		}
 
@@ -1156,22 +1356,25 @@ public class AdminServlet extends HttpServlet {
 			writeErrors(writer, errors);
 			writer.write("<p>");
 			writer.write("<form action='/?action=add' method='post'>");
-			writer.write("<table>");
-			writer.write("<tr><td align='right'>Newsgroup Name:</td><td><input type='text' name='name' size='64' value='" + HTMLHelper.escapeString(name) + "'></td></tr>");
-			writer.write(
-				"<tr><td align='right'>RSS URL:</td><td><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'></td></tr>");
-			writer.write("<tr><td align='right'>Historical</td><td><select name='historical'>"
-				+ "<option " + (historical ? "selected" : "") + ">true"
-				+ "<option " + (historical ? "selected" : "") + ">false"
-				+ "</select></td></tr>");
+			writer.write("<table class='tableborder'>");
 
-			writer.write("<tr><td align='right' valign='top'>Validate</td><td><input type='checkbox' name='validate' "
+			writer.write("<tr><th colspan='2'>Add RSS Channel</th></tr>");
+			writer.write("<tr><td class='row1' align='right'>Newsgroup Name:</td><td class='row2'><input type='text' name='name' size='64' value='" + HTMLHelper.escapeString(name) + "'></td></tr>");
+			writer.write(
+				"<tr><td class='row1' align='right'>RSS URL:</td><td class='row2'><input type='text' name='url' size='64' value='" + HTMLHelper.escapeString(urlString) + "'></td></tr>");
+
+			writer.write("<tr><td class='row1' align='right' valign='top'>Historical</td><td class='row2'><input type='checkbox' value='true' name='historical' "
+				+ (historical ? "checked" : "")
+				+ ">"
+				+ "<br><i>(Checked = Keep items removed from the original RSS document)</i></td></tr>");
+
+			writer.write("<tr><td class='row1' align='right' valign='top'>Validate</td><td class='row2'><input type='checkbox'  value='true' name='validate' "
 				+ (validate ? "checked" : "")
 				+ ">"
 				+ "<br><i>(Checked = Ensure URL points to a valid RSS document)</i></td></tr>");
 
 			writer.write(
-				"<tr><td align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
+				"<tr><td class='row2' align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
 			writer.write("</form>");
 		} else {
 			channelManager.addChannel(newChannel);
@@ -1322,10 +1525,10 @@ public class AdminServlet extends HttpServlet {
 
 				if(urlString.length() == 0) {
 					currentErrors.add("URL cannot be empty, channel name=" + name);
-				} else if(urlString.equals("http://")) {
+				} else if(urlString.equals("http://") || urlString.equals("https://")) {
 					currentErrors.add("You must specify a URL, channel name=" + name);
-				} else if(!urlString.startsWith("http://")) {
-					currentErrors.add("Only URLs starting http:// are supported, channel name=" + name
+				} else if(!urlString.startsWith("http://") && !urlString.startsWith("https://")) {
+					currentErrors.add("Only URLs starting http:// or https:// are supported, channel name=" + name
 						+ ", url=" + urlString);
 				} 
 
@@ -1496,6 +1699,9 @@ public class AdminServlet extends HttpServlet {
 	
 					String name = fixChannelName(chanElm.getAttribute("title"));
 					String urlString = chanElm.getAttribute("xmlUrl");
+					if(urlString == null || urlString.length() == 0) {
+						urlString = chanElm.getAttribute("xmlurl");
+					}
 	
 					if(name.length() == 0) {
 						name = createChannelName(urlString);
@@ -1601,13 +1807,13 @@ public class AdminServlet extends HttpServlet {
 	
 				if(urlString.length() == 0) {
 					currentErrors.add("URL cannot be empty, channel name=" + name);
-				} else if(urlString.equals("http://")) {
+				} else if(urlString.equals("http://") || urlString.equals("https://")) {
 					currentErrors.add("You must specify a URL, channel name=" + name);
-				} else if(!urlString.startsWith("http://")) {
-					currentErrors.add("Only URLs starting http:// are supported, channel name=" + name
+				} else if(!urlString.startsWith("http://") && !urlString.startsWith("https://")) {
+					currentErrors.add("Only URLs starting http:// or https:// are supported, channel name=" + name
 						+ ", url=" + urlString);
 				} 
-	
+
 				if(existingChannel == null) {
 	
 					Channel newChannel = null;
@@ -1744,13 +1950,13 @@ public class AdminServlet extends HttpServlet {
 			+ "<p><b>Posting</b><p>"
 			+ "nntp//rss supports the <a href='http://plant.blogger.com/api/index.html'>Blogger</a>, <a href='http://www.xmlrpc.com/metaWeblogApi'>MetaWeblog</a> and <a href='http://www.livejournal.com/doc/server/ljp.csp.xml-rpc.protocol.html'>LiveJournal</a> APIs, allow you to publish directly to your blog from within your NNTP newsreader.  Just configure your blog's nntp//rss channel for posting, then use your newsreader's native posting capability to post to the group.  Your post will be immediately sent to your blog's host for publication.<p>"
 			+ "Posting is configured within the channel's configuration screen.  Enabling posting on a channel will display an additional set of configuration fields.  With these fields you provide the information required by your blog's publishing API.<p>"
-			+ "<b>Note: It is recommended that you enable <a href='#SecureNNTP'>Secure NNTP</a> if you enable posting.  This will ensure that only an authenticated newsreader will be able to post to the blog.</b>"
+			+ "<b>Note: It is recommended that you enable <a href='#SecureNNTP'>Authenticated NNTP Access</a> if you enable posting.  This will ensure that only an authenticated newsreader will be able to post to the blog.</b>"
 			+ "<p><b>System Configuration</b><p>"
 			+ "System wide configuration is managed on this screen.<p>"
 			+ "<i>Channel Polling Interval</i> - this determines how often nntp//rss will check RSS feeds for updates.  This can be set as low as ten minutes, but sixty minutes should be sufficient for most feeds.<p>"
 			+ "<i>Content Type</i> - By default, nntp//rss serves messages to newsreaders in a combined (multipart/alternative) plain text and HTML MIME format.  This means that each message contains both a plain text and an HTML version of the item.  If you a using an older newsreader that does not support this mode, you may want to change the content type to Text (text/plain).<p>"
 			+ "<i>Proxy</i> - If you are running nntp//rss behind a proxy, you may need to configure your proxy settings here.  Proxy host name, port and an optional username and password can be specified.  Leave these fields blank if you are not behind a proxy.<p>"
-			+ "<i><a name='SecureNNTP'>Secure NNTP</a></i>, when enabled, will require NNTP newsreaders to authenticate themselves before being allowed to read or post.  This uses the same user information as used for securing the web interface.<p>"
+			+ "<i><a name='SecureNNTP'>Authenticated NNTP Access</a></i>, when enabled, will require NNTP newsreaders to authenticate themselves before being allowed to read or post.  This uses the same user information as used for securing the web interface.<p>"
 			+ "Import and Export of Channel Lists<p>"
 			+ "nntp//rss supports the import and export of channel lists.  For import, both nntp//rss and OPML (mySubscription.opml) format lists are supported.  Click on <i>Import Channel List</i>, select the file containing the subscription list, ensuring the correct type of file is checked, then click on the <i>Import</i> button.  For OPML files, nntp//rss will automatically generate a newsgroup name.  You will be able to modify these names, and also select the subset of channels to import, before the process is finalized.<p>");
 
@@ -1778,6 +1984,20 @@ public class AdminServlet extends HttpServlet {
 		writeFooter(writer);
 		writer.flush();
 	}
+
+	private void cmdFindFeeds(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
+
+		Writer writer = response.getWriter();
+		writeHeader(writer);
+
+		writer.write("<a href='http://www.feedster.com/'><img  title='Feedster Logo' height='66'  width='336' alt='Feedster' src='http://www.feedster.com/i/logo_feedster_big.gif' border='0' /></a>");
+		writeFooter(writer);
+		writer.flush();
+	}
+
 
 
 	private void processRequest(
@@ -1814,8 +2034,14 @@ public class AdminServlet extends HttpServlet {
 			cmdChannelAction(request, response);
 		} else if (action.equals("editchlrefresh")) {
 			cmdEditChannelRefresh(request, response);
+		} else if (action.equals("quickedit")) {
+			cmdQuickEditChannels(request, response, false);
+		} else if (action.equals("quickeditupdate")) {
+			cmdQuickEditChannelsUpdate(request, response);
 		} else if (action.equals("help")) {
 			cmdHelp(request, response);
+		} else if (action.equals("findfeeds")) {
+			cmdFindFeeds(request, response);
 		} else {
 			cmdShowCurrentChannels(request, response);
 		}
