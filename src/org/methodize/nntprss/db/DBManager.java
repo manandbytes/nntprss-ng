@@ -41,13 +41,13 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDriver;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.methodize.nntprss.rss.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DBManager.java,v 1.3 2003/01/22 05:05:27 jasonbrome Exp $
+ * @version $Id: DBManager.java,v 1.4 2003/07/19 00:03:43 jasonbrome Exp $
  */
 public class DBManager {
 
@@ -93,7 +93,13 @@ public class DBManager {
 
 		ObjectPool connectionPool = new GenericObjectPool(null);
 
-		Class.forName("org.hsqldb.jdbcDriver");
+		String dbDriver = dbConfig.getAttribute("driverClass");
+		if(dbDriver != null && dbDriver.length() > 0) {
+			Class.forName(dbDriver);
+		} else {
+// Default to HSSQLDB
+			Class.forName("org.hsqldb.jdbcDriver");
+		}
 
 		ConnectionFactory connectionFactory =
 			new DriverManagerConnectionFactory(connectString, "sa", "");
