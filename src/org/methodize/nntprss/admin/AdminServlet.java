@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -48,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.rss.Channel;
 import org.methodize.nntprss.rss.ChannelManager;
 import org.methodize.nntprss.util.AppConstants;
@@ -60,7 +61,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: AdminServlet.java,v 1.2 2003/01/22 05:04:45 jasonbrome Exp $
  */
 public class AdminServlet extends HttpServlet {
 
@@ -81,7 +82,8 @@ public class AdminServlet extends HttpServlet {
 		writer.write("</td></tr></table></body></html>");
 	}
 	
-	private void writeConfig(Writer writer, ChannelManager channelManager) throws IOException {
+	private void writeConfig(Writer writer, ChannelManager channelManager,
+		NNTPServer nntpServer) throws IOException {
 		writer.write("<b>System Configuration</b><p>");
 		writer.write("<form action='?action=updateconfig' method='POST'>");
 		writer.write("<table border='1'>");
@@ -99,6 +101,22 @@ public class AdminServlet extends HttpServlet {
 		writer.write("<tr><th>Proxy Server Port</th><td><input type='text' name='proxyPort' value='"
 			+ (channelManager.getProxyPort() == 0 ? "" : Integer.toString(channelManager.getProxyPort()))
 			+ "'><br><i>Proxy server listener port, leave blank if no proxy</i></td></tr>");
+
+		writer.write("<tr><th>Content Type</th>");
+		writer.write("<td><select name='contentType'>");
+		int contentType = nntpServer.getContentType();
+		writer.write("<option value='" + AppConstants.CONTENT_TYPE_MIXED + "'"
+			+ (contentType == AppConstants.CONTENT_TYPE_MIXED ? " selected" : "")
+			+ ">Text & HTML (multipart/alternative)");		
+		writer.write("<option value='" + AppConstants.CONTENT_TYPE_TEXT + "'"
+			+ (contentType == AppConstants.CONTENT_TYPE_TEXT ? " selected" : "")
+			+ ">Text (text/plain)");		
+		writer.write("<option value='" + AppConstants.CONTENT_TYPE_HTML + "'"
+			+ (contentType == AppConstants.CONTENT_TYPE_HTML ? " selected" : "")
+			+ ">HTML (text/html)");		
+		
+		writer.write("</select></td></tr>");
+				
 		writer.write("<tr><td align='center' colspan='2'><input type='submit' name='update' value='Update'></td></tr>");
 		writer.write("</table>");
 		writer.write("</form>");
@@ -118,8 +136,11 @@ public class AdminServlet extends HttpServlet {
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
 				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		NNTPServer nntpServer =
+			(NNTPServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_NNTP_SERVER);
 
-		writeConfig(writer, channelManager);
+		writeConfig(writer, channelManager, nntpServer);
 		writeFooter(writer);
 	}
 
@@ -134,6 +155,13 @@ public class AdminServlet extends HttpServlet {
 		ChannelManager channelManager =
 			(ChannelManager) getServletContext().getAttribute(
 				AdminServer.SERVLET_CTX_RSS_MANAGER);
+		NNTPServer nntpServer =
+			(NNTPServer) getServletContext().getAttribute(
+				AdminServer.SERVLET_CTX_NNTP_SERVER);
+
+		nntpServer.setContentType(Integer.parseInt(request.getParameter("contentType")));
+		nntpServer.saveConfiguration();
+
 
 		channelManager.setPollingIntervalSeconds(Long.parseLong(request.getParameter("pollingInterval")));
 		channelManager.setProxyServer(request.getParameter("proxyServer").trim());
@@ -158,7 +186,7 @@ public class AdminServlet extends HttpServlet {
 			writer.write("<b>Proxy port must either be blank or a numeric value!</b><p>");
 		}
 
-		writeConfig(writer, channelManager);
+		writeConfig(writer, channelManager, nntpServer);
 		writeFooter(writer);
 	}
 	
@@ -178,7 +206,7 @@ public class AdminServlet extends HttpServlet {
 
 			switch(channel.getStatus()) {
 				case Channel.STATUS_NOT_FOUND:
-					writer.write("<td bgcolor='#FF0000'><font color='#FFFFFF'>RSS web server is returning File Not Found, ");
+					writer.write("<td bgcolor='#FF0000'><font color='#FFFFFF'>RSS web server is returning File Not Found.</font>");
 					break;
 				case Channel.STATUS_INVALID_CONTENT:
 					writer.write("<td bgcolor='#FF0000'><font color='#FFFFFF'>Last RSS document retrieved could not be parsed, check URL.</font>");
@@ -420,6 +448,13 @@ public class AdminServlet extends HttpServlet {
 			historical = historicalStr.equalsIgnoreCase("true");
 		}
 
+		String validateStr = request.getParameter("validate");
+		boolean validate = true;
+		if(validateStr != null) {
+			validate = validateStr.equalsIgnoreCase("true");
+		}
+
+
 		Writer writer = response.getWriter();
 		writeHeader(writer);
 		writer.write("<b>Add New RSS Channel</b><p>");
@@ -444,6 +479,11 @@ public class AdminServlet extends HttpServlet {
 			+ "<option " + (historical ? "selected" : "") + ">true"
 			+ "<option " + (!historical ? "selected" : "") + ">false"
 			+ "</select><br><i>(True = Keep items removed from the original RSS document)</i></td></tr>");
+
+		writer.write("<tr><td align='right' valign='top'>Validate</td><td><input type='checkbox' name='validate' "
+			+ (validate ? "checked" : "")
+			+ ">"
+			+ "<br><i>(Checked = Ensure URL points to a valid RSS document)</i></td></tr>");
 
 		writer.write(
 			"<tr><td align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
@@ -472,6 +512,13 @@ public class AdminServlet extends HttpServlet {
 		String name = request.getParameter("name").trim();
 		String urlString = request.getParameter("url").trim();
 		boolean historical = request.getParameter("historical").equalsIgnoreCase("true");
+		String validateStr = request.getParameter("validate");
+		boolean validate = false;
+		if(validateStr == null) {
+			validate = false;
+		} else if(validateStr.equalsIgnoreCase("on")) {
+			validate = true;
+		} 
 
 		List errors = new ArrayList();
 		if(name.length() == 0) {
@@ -496,7 +543,7 @@ public class AdminServlet extends HttpServlet {
 			try {
 				newChannel = new Channel(name, urlString);
 				newChannel.setHistorical(historical);
-				if(!newChannel.isValid()) {
+				if(validate && !newChannel.isValid()) {
 					errors.add("URL does not point to valid RSS document");
 					errors.add("<a target='validate' href='http://feeds.archive.org/validator/check?url=" + urlString + "'>Check the URL with the RSS Validator @ archive.org</a>");
 					newChannel = null;
@@ -518,10 +565,15 @@ public class AdminServlet extends HttpServlet {
 			writer.write("<tr><td align='right'>Newsgroup Name:</td><td><input type='text' name='name' size='64' value='" + name + "'></td></tr>");
 			writer.write(
 				"<tr><td align='right'>RSS URL:</td><td><input type='text' name='url' size='64' value='" + urlString + "'></td></tr>");
-			writer.write("<tr><th>Historical</th><td><select name='historical'>"
+			writer.write("<tr><td align='right'>Historical</td><td><select name='historical'>"
 				+ "<option " + (historical ? "selected" : "") + ">true"
 				+ "<option " + (historical ? "selected" : "") + ">false"
 				+ "</select></td></tr>");
+
+			writer.write("<tr><td align='right' valign='top'>Validate</td><td><input type='checkbox' name='validate' "
+				+ (validate ? "checked" : "")
+				+ ">"
+				+ "<br><i>(Checked = Ensure URL points to a valid RSS document)</i></td></tr>");
 
 			writer.write(
 				"<tr><td align='center' colspan='2'><input type='submit' value='Add'> <input type='reset'></td></tr></table>");
@@ -664,27 +716,45 @@ public class AdminServlet extends HttpServlet {
 				} 
 
 				if(existingChannel == null) {
+
+					Channel newChannel = null;
+					if(currentErrors.size() == 0) {
+						try {
+							newChannel = new Channel(name, urlString);
+							newChannel.setHistorical(historical);
+							channelManager.addChannel(newChannel);
+							channelsAdded++;
+						} catch(MalformedURLException me) {
+							errors.add("Channel " + name + " - URL (" 
+								+ urlString + ") is malformed");
+						}
+					}				
+
+
+// Removed channel validation... channels will be validated
+// on next iteration of channel poller - will be highlighted
+// in channel list if invalid
 // Validate channel...
-					if(Channel.isValid(new URL(urlString))) {
-// Add channel...
-						Channel newChannel = null;
-						if(currentErrors.size() == 0) {
-							try {
-								newChannel = new Channel(name, urlString);
-								newChannel.setHistorical(historical);
-								channelManager.addChannel(newChannel);
-								channelsAdded++;
-							} catch(MalformedURLException me) {
-								errors.add("Channel " + name + " - URL (" 
-									+ urlString + ") is malformed");
-							}
-						}				
-						
-					} else {
-// URL points to invalid document
-						errors.add("Channel " + name + "'s URL (" + urlString + ") "
-							+ "points to an invalid document");
-					}
+//					if(Channel.isValid(new URL(urlString))) {
+//// Add channel...
+//						Channel newChannel = null;
+//						if(currentErrors.size() == 0) {
+//							try {
+//								newChannel = new Channel(name, urlString);
+//								newChannel.setHistorical(historical);
+//								channelManager.addChannel(newChannel);
+//								channelsAdded++;
+//							} catch(MalformedURLException me) {
+//								errors.add("Channel " + name + " - URL (" 
+//									+ urlString + ") is malformed");
+//							}
+//						}				
+//						
+//					} else {
+//// URL points to invalid document
+//						errors.add("Channel " + name + "'s URL (" + urlString + ") "
+//							+ "points to an invalid document");
+//					}
 				} 
 
 				errors.addAll(currentErrors);
