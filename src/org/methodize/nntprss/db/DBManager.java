@@ -50,11 +50,6 @@ import org.w3c.dom.Element;
  */
 public class DBManager {
 
-	//	private static final String DB_CONNECT_STRING = 
-	//		"jdbc:hsqldb:nntprssdb";
-//	private static final String DB_CONNECT_STRING =
-//		"jdbc:hsqldb:hsql://localhost";
-
 	private String connectString;
 
 	public static final String POOL_CONNECT_STRING =
@@ -125,11 +120,6 @@ public class DBManager {
 		// ...and register our pool with it.
 		//
 		driver.registerPool("nntprss", connectionPool);
-
-		//
-		// Now we can just use the connect string "jdbc:apache:commons:dbcp:example"
-		// to access our pool of Connections.
-		//
 
 	}
 
