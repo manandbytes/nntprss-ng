@@ -38,6 +38,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,7 +60,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.4 2003/01/27 22:41:13 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.5 2003/01/28 03:07:12 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -67,6 +68,7 @@ public class Channel implements Runnable {
 	public static final int STATUS_NOT_FOUND = 1;
 	public static final int STATUS_INVALID_CONTENT = 2;
 	public static final int STATUS_CONNECTION_TIMEOUT = 3;
+	public static final int STATUS_UNKNOWN_HOST = 4;
 
 	private Logger log = Logger.getLogger(Channel.class);
 
@@ -170,6 +172,17 @@ public class Channel implements Runnable {
 				is = httpCon.getInputStream();
 				connected = true;
 			} catch(ConnectException ce) {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Channel=" + name + " - Connection Timeout, skipping");
+				}
+				status = STATUS_CONNECTION_TIMEOUT;				
+			} catch(UnknownHostException ue) {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Channel=" + name + " - Unknown Host Exception, skipping");
+				}
+				status = STATUS_UNKNOWN_HOST;
 			}
 
 			// Only process if ok - if not ok (e.g. not modified), don't do anything
@@ -339,13 +352,7 @@ public class Channel implements Runnable {
 					log.debug(
 						"Channel=" + name + " - HTTP_NOT_MODIFIED, skipping");
 				}
-			} else if(!connected) {
-				if (log.isDebugEnabled()) {
-					log.debug(
-						"Channel=" + name + " - Connection Timeout, skipping");
-				}
-				status = STATUS_CONNECTION_TIMEOUT;				
-			}
+			} 
 
 			// Update channel in database...
 			channelManagerDAO.updateChannel(this);
