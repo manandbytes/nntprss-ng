@@ -77,5 +77,49 @@
   <target name="all" depends="prepare,jars"
    description="Build everything"/>
 
+  <!-- ==================================================================== -->
+  <target name="package" depends="all" description="Build archives for distribution">
+    <zip destfile="${basedir}/../nntprss.zip">
+      <zipfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
+      <zipfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
+      <zipfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
+      <zipfileset dir="." prefix="nntprss">
+        <include name="build.xml"/>
+        <include name="CHANGELOG"/>
+        <include name="LICENSE.TXT"/>
+        <include name="log4j.properties"/>
+        <include name="nntprss.jar"/>
+        <include name="nntprss-config.xml"/>
+        <include name="nntprss-start.jar"/>
+        <include name="README.TXT"/>
+        <include name="users.properties.sample"/>
+        <include name="WINDOWS-SERVICE.TXT"/>
+      </zipfileset>
+    </zip>
+
+    <tar destfile="${basedir}/../nntprss.tar">
+      <tarfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
+      <tarfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
+      <tarfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
+      <tarfileset dir="." prefix="nntprss">
+        <include name="build.xml"/>
+        <include name="CHANGELOG"/>
+        <include name="LICENSE.TXT"/>
+        <include name="log4j.properties"/>
+        <include name="nntprss.jar"/>
+        <include name="nntprss-config.xml"/>
+        <include name="nntprss-start.jar"/>
+        <include name="README.TXT"/>
+        <include name="users.properties.sample"/>
+        <include name="WINDOWS-SERVICE.TXT"/>
+      </tarfileset>
+    </tar>
+
+    <gzip src="${basedir}/../nntprss.tar" zipfile="${basedir}/../nntprss.tar.gz"/>
+
+    <delete file="${basedir}/../nntprss.tar"/>
+
+  </target>
+
 </project>
 
