@@ -5,6 +5,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,7 +72,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.1 2003/09/28 20:01:53 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.2 2003/09/28 20:50:37 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
@@ -801,12 +802,22 @@ public class JdbmChannelDAO extends ChannelDAO {
 				log.info("Migrating hsqldb to JDBM");
 			}
 
+			stmt = hsqlConn.createStatement();
+
+			try {
+				rs = stmt.executeQuery("SELECT * FROM config");
+			} catch(SQLException e) {
+// Assume that hsqldb is not found...
+				   if (log.isEnabledFor(Priority.WARN)) {
+					   log.warn("Exising hsqldb database not found, skipping migration");
+				   }
+				return hsqlFound;
+			}
+
 			if(log.isInfoEnabled()) {
 				log.info("Migrating system configuration...");
 			}
 
-			stmt = hsqlConn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM config");
 			if (rs.next()) {
 				ChannelManager channelManager = ChannelManager.getChannelManager();
 				channelManager.setPollingIntervalSeconds(rs.getLong("pollingInterval"));
