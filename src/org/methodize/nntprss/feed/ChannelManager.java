@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.8 2004/12/15 04:10:40 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.9 2005/02/13 21:57:04 jasonbrome Exp $
  */
 public class ChannelManager implements Externalizable {
 
@@ -113,10 +113,6 @@ public class ChannelManager implements Externalizable {
         channelDAO.loadConfiguration(this);
 
         updateProxyConfig();
-
-        // Load feeds...
-        categories = channelDAO.loadCategories();
-        channels = channelDAO.loadChannels(this);
 
         //		// Start feed poller...
         //		startPoller();
@@ -175,7 +171,10 @@ public class ChannelManager implements Externalizable {
 				}
 			}
 		}
-					
+
+		// Load feeds...
+		categories = channelDAO.loadCategories();
+		channels = channelDAO.loadChannels(this);
     }
 
     public void addChannel(Channel channel) {
