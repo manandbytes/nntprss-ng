@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.10 2004/10/26 01:14:58 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.11 2004/12/15 04:13:30 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -209,7 +209,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
         Connection conn = null;
         PreparedStatement ps = null;
 
-        if (!migrateHsql()) {
+		if (!migrateJdbm() && !migrateHsql()) {
 
             if (log.isInfoEnabled()) {
                 log.info("Loading channels");

@@ -57,24 +57,24 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.10 2004/03/28 22:27:13 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.11 2004/12/15 04:13:31 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
-    private static final String DATABASE = "nntprss";
-    private static final String RECORD_CHANNEL_CONFIG = "ChannelConfig";
-    private static final String RECORD_NNTP_CONFIG = "NNTPConfig";
-    private static final String RECORD_CATEGORIES_BTREE = "Categories";
-    private static final String RECORD_CHANNELS_BTREE = "Channels";
-    private static final String RECORD_ITEMS_BY_ID_BTREE = "ItemsById.";
-    private static final String RECORD_ITEMS_BY_SIGNATURE_HTREE =
+    static final String DATABASE = "nntprss";
+    static final String RECORD_CHANNEL_CONFIG = "ChannelConfig";
+    static final String RECORD_NNTP_CONFIG = "NNTPConfig";
+    static final String RECORD_CATEGORIES_BTREE = "Categories";
+    static final String RECORD_CHANNELS_BTREE = "Channels";
+    static final String RECORD_ITEMS_BY_ID_BTREE = "ItemsById.";
+    static final String RECORD_ITEMS_BY_SIGNATURE_HTREE =
         "ItemsBySignature.";
 
-    private static final String RECORD_CATEGORY_ITEMS_BY_ID_BTREE =
+    static final String RECORD_CATEGORY_ITEMS_BY_ID_BTREE =
         "CategoryItemsById.";
 
-    private static final String RECORD_LAST_CHANNEL_ID = "LastChannelID";
-    private static final String RECORD_LAST_CATEGORY_ID = "LastCategoryID";
+    static final String RECORD_LAST_CHANNEL_ID = "LastChannelID";
+    static final String RECORD_LAST_CATEGORY_ID = "LastCategoryID";
 
     private BTree btCategories = null;
     private BTree btChannels = null;

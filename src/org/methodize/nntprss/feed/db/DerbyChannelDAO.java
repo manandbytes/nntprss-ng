@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DerbyChannelDAO.java,v 1.2 2004/10/26 01:14:38 jasonbrome Exp $
+ * @version $Id: DerbyChannelDAO.java,v 1.3 2004/12/15 04:13:30 jasonbrome Exp $
  */
 
 public class DerbyChannelDAO extends JdbcChannelDAO {
@@ -211,7 +211,7 @@ public class DerbyChannelDAO extends JdbcChannelDAO {
         Connection conn = null;
         PreparedStatement ps = null;
 
-        if (!migrateHsql()) {
+        if (!migrateJdbm() && !migrateHsql()) {
 
             if (log.isInfoEnabled()) {
                 log.info("Loading channels");
