@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServer.java,v 1.3 2003/03/22 16:26:48 jasonbrome Exp $
+ * @version $Id: AdminServer.java,v 1.4 2003/03/24 03:10:12 jasonbrome Exp $
  */
 public class AdminServer {
 
@@ -63,6 +63,9 @@ public class AdminServer {
 
 	public static final String REALM_NAME = "nntprss-realm";
 
+	/**
+	 * Constructor for AdminServer.
+	 */
 
 	public AdminServer(ChannelManager channelManager, NNTPServer nntpServer) {
 		this.channelManager = channelManager;
@@ -72,42 +75,42 @@ public class AdminServer {
 	public void configure(Document config) throws Exception {
 
 		Element rootElm = config.getDocumentElement();
-		Element adminConfig = (Element)rootElm.getElementsByTagName("admin").item(0);
+		Element adminConfig =
+			(Element) rootElm.getElementsByTagName("admin").item(0);
 		port = Integer.parseInt(adminConfig.getAttribute("port"));
 
 		httpServer = new HttpServer();
 
-// Check for user realm properties file
-// If it exists, use security.
-		InputStream userRealmConfig = this.getClass().getResourceAsStream("/" + AppConstants.USERS_CONFIG);
+		// Check for user realm properties file
+		// If it exists, use security.
+		InputStream userRealmConfig =
+			this.getClass().getResourceAsStream(
+				"/" + AppConstants.USERS_CONFIG);
 		boolean useSecurity = false;
-		if(userRealmConfig != null) {
+		if (userRealmConfig != null) {
 			useSecurity = true;
 			HashUserRealm userRealm = new HashUserRealm(REALM_NAME);
 			userRealm.load(AppConstants.USERS_CONFIG);
 			httpServer.addRealm(userRealm);
 		}
 
-		
 		HttpContext context = httpServer.getContext("/");
 		WebApplicationHandler handler = new WebApplicationHandler();
 
-		if(useSecurity) {
+		if (useSecurity) {
 			context.setRealmName(REALM_NAME);
-			context.setAuthenticator(
-				new BasicAuthenticator());
+			context.setAuthenticator(new BasicAuthenticator());
 			context.addHandler(new SecurityHandler());
-			context.addSecurityConstraint("/",
-				new SecurityConstraint("Admin",
-					"*"));
+			context.addSecurityConstraint(
+				"/",
+				new SecurityConstraint("Admin", "*"));
 		}
-		
+
 		context.setAttribute(SERVLET_CTX_RSS_MANAGER, channelManager);
 		context.setAttribute(SERVLET_CTX_NNTP_SERVER, nntpServer);
 
 		handler.addServlet("/", AdminServlet.class.getName());
 		context.addHandler(handler);
-
 
 		httpServer.addContext(context);
 
@@ -128,4 +131,12 @@ public class AdminServer {
 			// FIXME log
 		}
 	}
+	/**
+	 * Returns the port.
+	 * @return int
+	 */
+	public int getPort() {
+		return port;
+	}
+
 }
