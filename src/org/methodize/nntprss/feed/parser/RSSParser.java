@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.5 2004/01/04 21:21:25 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.6 2004/02/28 23:56:35 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
@@ -73,7 +73,8 @@ public class RSSParser extends GenericParser {
 				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
 				new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
 				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
-				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'")};
+				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'"),
+				new SimpleDateFormat("yyyy-MM-dd")};
 
 			TimeZone gmt = TimeZone.getTimeZone("GMT");
 			for (int tz = 0; tz < dcDateArray.length; tz++) {
