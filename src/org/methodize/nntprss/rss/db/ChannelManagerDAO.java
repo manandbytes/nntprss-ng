@@ -61,9 +61,11 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.3 2003/01/22 05:10:15 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.4 2003/01/27 23:05:51 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
+
+	private static final int DBVERSION = 2;
 
 	private Logger log = Logger.getLogger(ChannelManagerDAO.class);
 
@@ -113,6 +115,7 @@ public class ChannelManagerDAO {
 					+ "title varchar, "
 					+ "link varchar, "
 					+ "description varchar, "
+					+ "comments varchar(500), "
 					+ "dtStamp timestamp, "
 					+ "signature varchar(32))");
 			stmt.executeUpdate(
@@ -121,13 +124,13 @@ public class ChannelManagerDAO {
 					+ "proxyServer varchar(256), "
 					+ "proxyPort int, "
 					+ "contentType int, "
-					+ "version varchar(256))");
+					+ "dbVersion int)");
 			stmt.executeUpdate(
-				"INSERT INTO config(pollingInterval, contentType, version) VALUES(60*60, "
+				"INSERT INTO config(pollingInterval, contentType, dbVersion) VALUES(60*60, "
 					+ AppConstants.CONTENT_TYPE_MIXED 
-					+ ", '"
-					+ AppConstants.VERSION
-					+ "')");
+					+ ", "
+					+ DBVERSION
+					+ ")");
 
 			NodeList channelsList =
 				config.getDocumentElement().getElementsByTagName("channels");
@@ -206,25 +209,45 @@ public class ChannelManagerDAO {
 
 	}
 
-	private void upgradeDatabase() {
+	private void upgradeDatabase(int dbVersion) {
 		Connection conn = null;
 		Statement stmt = null;
+
+		if(log.isInfoEnabled()) {
+			log.info("Upgrading database from db v" + dbVersion
+				+ " to db v" + DBVERSION);
+		}
+
 		try {
 			conn = DriverManager.getConnection(DBManager.POOL_CONNECT_STRING);
-			stmt = conn.createStatement();
-			stmt.executeUpdate("ALTER TABLE config ADD COLUMN contentType int");
-			stmt.executeUpdate("UPDATE config SET contentType = " 
-				+ AppConstants.CONTENT_TYPE_MIXED);
-			stmt.executeUpdate("ALTER TABLE config ADD COLUMN version varchar(256)");
-			stmt.executeUpdate("UPDATE config SET version = '" 
-				+ AppConstants.VERSION
-				+ "'");
 
+			switch(dbVersion) {
+// v0.1 updates
+				case 0:
+					stmt = conn.createStatement();
+					stmt.executeUpdate("ALTER TABLE config ADD COLUMN contentType int");
+					stmt.executeUpdate("UPDATE config SET contentType = " 
+						+ AppConstants.CONTENT_TYPE_MIXED);
+					stmt.executeUpdate("ALTER TABLE config ADD COLUMN dbVersion int");
+					stmt.executeUpdate("UPDATE config SET dbVersion = " 
+						+ DBVERSION);
+		
 // Channel
-			stmt.executeUpdate("ALTER TABLE channels ADD COLUMN title varchar(256)");
-			stmt.executeUpdate("ALTER TABLE channels ADD COLUMN link varchar(500)");
-			stmt.executeUpdate("ALTER TABLE channels ADD COLUMN description varchar(500)");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN title varchar(256)");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN link varchar(500)");
+					stmt.executeUpdate("ALTER TABLE channels ADD COLUMN description varchar(500)");
+		
+// Items
+					stmt.executeUpdate("ALTER TABLE items ADD COLUMN comments varchar(500)");					
+				default:
+// Force re-poll of all channels after DB upgrade...
+					stmt.executeUpdate("UPDATE channels SET lastPolled = null");
+			}
 
+
+			if(log.isInfoEnabled()) {
+				log.info("Successfully upgraded database.");
+			}
 
 		} catch (SQLException se) {
 			throw new RuntimeException("Problem upgrading database"
@@ -259,16 +282,16 @@ public class ChannelManagerDAO {
 //						rssManager.setPollingIntervalSeconds(rs.getLong("pollingInterval"));
 //						rssManager.setProxyServer(rs.getString("proxyServer"));
 //						rssManager.setProxyPort(rs.getInt("proxyPort"));
-						String version = rs.getString("version");
-						if(!version.equalsIgnoreCase(AppConstants.VERSION)) {
-							upgradeDatabase();
+						int dbVersion = rs.getInt("dbVersion");
+						if(dbVersion < DBVERSION) {
+							upgradeDatabase(dbVersion);
 						}
 					}
 				}
 			} catch (SQLException e) {
 				if(e.getErrorCode() == -org.hsqldb.Trace.COLUMN_NOT_FOUND) {
 // Pre-version db, upgrade database
-					upgradeDatabase();
+					upgradeDatabase(0);
 				} else {
 			// Our tables don't exist, so let's create them...
 					createTables = true;
@@ -686,6 +709,7 @@ public class ChannelManagerDAO {
 		item.setDate(rs.getTimestamp("dtStamp"));
 		item.setTitle(rs.getString("title"));
 		item.setDescription(rs.getString("description"));
+		item.setComments(rs.getString("comments"));
 		item.setLink(rs.getString("link"));
 		
 		return item;
@@ -900,6 +924,7 @@ public class ChannelManagerDAO {
 					if (!onlyHeaders) {
 						item.setDescription(rs.getString("description"));
 						item.setLink(rs.getString("link"));
+						item.setComments(rs.getString("comments"));
 					}
 					items.add(item);
 				}
@@ -936,8 +961,8 @@ public class ChannelManagerDAO {
 			ps =
 				conn.prepareStatement(
 					"INSERT INTO items "
-						+ "(articlenumber, channel, title, link, description, dtstamp, signature) "
-						+ "VALUES(?,?,?,?,?,?,?)");
+						+ "(articlenumber, channel, title, link, description, comments, dtstamp, signature) "
+						+ "VALUES(?,?,?,?,?,?,?,?)");
 
 			int paramCount = 1;
 			ps.setInt(paramCount++, item.getArticleNumber());
@@ -945,6 +970,7 @@ public class ChannelManagerDAO {
 			ps.setString(paramCount++, item.getTitle());
 			ps.setString(paramCount++, item.getLink());
 			ps.setString(paramCount++, item.getDescription());
+			ps.setString(paramCount++, item.getComments());
 			ps.setTimestamp(
 				paramCount++,
 				new Timestamp(item.getDate().getTime()));
