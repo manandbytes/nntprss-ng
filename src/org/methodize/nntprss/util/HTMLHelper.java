@@ -43,7 +43,7 @@ import java.util.Map;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: HTMLHelper.java,v 1.1 2003/03/24 03:13:03 jasonbrome Exp $
+ * @version $Id: HTMLHelper.java,v 1.2 2003/07/19 00:07:35 jasonbrome Exp $
  */
 
 public class HTMLHelper {
@@ -345,8 +345,10 @@ public class HTMLHelper {
 		for (int pos = 0; pos < value.length(); pos++) {
 			char c = value.charAt(pos);
 
-			if (c == '&') { // Process reference...
+			if (c == '&' && (pos < value.length() - 3)) { // Process reference...
+				// if less than three characters left, discard
 				c = value.charAt(++pos);
+			
 				boolean numeric = false;
 				if (c == '#') {
 					numeric = true;
@@ -384,7 +386,10 @@ public class HTMLHelper {
 							';');
 					}
 				}
-
+			} else if(c == '&' && (pos >= value.length() - 3)) {
+// If we're at the end of the string, and there's 3 or less characters,
+// then assume that this string has been truncated
+				break;
 			} else {
 				unescapedString.append(c);
 			}
