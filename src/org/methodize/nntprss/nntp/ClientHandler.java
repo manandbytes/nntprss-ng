@@ -60,7 +60,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.5 2003/02/01 02:45:12 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.6 2003/02/08 06:37:56 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -332,6 +332,13 @@ public class ClientHandler implements Runnable {
 		if(nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED ||
 			nntpServer.getContentType() == AppConstants.CONTENT_TYPE_HTML) {
 			pw.println("<html>");
+
+// Handle relative links by inserting base
+			if(channel.getLink() != null && channel.getLink().length() > 0) {
+				pw.println("<head><base href='"
+					+ channel.getLink()
+					+ "'>");
+			}
 			pw.println("<body>");
 
 			pw.println(item.getDescription());
