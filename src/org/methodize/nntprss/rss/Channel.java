@@ -42,36 +42,55 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
 
+import javax.mail.internet.MailDateFormat;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnection;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpRecoverableException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.methodize.nntprss.rss.db.ChannelManagerDAO;
 import org.methodize.nntprss.rss.parser.LooseParser;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.Base64;
+import org.methodize.nntprss.util.RSSHelper;
 import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
-import sun.net.www.http.HttpClient;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.9 2003/03/22 17:21:27 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.10 2003/05/18 22:32:54 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -85,9 +104,6 @@ public class Channel implements Runnable {
 
 	private static final int PUSHBACK_BUFFER_SIZE = 4;
 
-	private static final int HTTP_CONNECTION_TIMEOUT = 
-		1000 * 60 * 5;
-
 	private Logger log = Logger.getLogger(Channel.class);
 
 	private String author;
@@ -98,7 +114,7 @@ public class Channel implements Runnable {
 	private String title;
 	private String link;
 	private String description;
-	
+
 	private Date lastPolled;
 	private long lastModified;
 	private String lastETag;
@@ -108,17 +124,16 @@ public class Channel implements Runnable {
 	private int firstArticleNumber = 1;
 	private int lastArticleNumber = 0;
 	private int totalArticles = 0;
-	
+
 	private String rssVersion;
-	
+
 	private String managingEditor;
-	
+
 	private boolean historical = true;
 	private boolean enabled = true;
 	private boolean parseAtAllCost = false;
 
-
-// Publishing related
+	// Publishing related
 	private boolean postingEnabled = false;
 	private String publishAPI = null;
 	private Map publishConfig = null;
@@ -132,11 +147,24 @@ public class Channel implements Runnable {
 	private transient boolean connected = false;
 
 	public static final long DEFAULT_POLLING_INTERVAL = 0;
+	private static final int HTTP_CONNECTION_TIMEOUT = 1000 * 60 * 5;
 
 	private long pollingIntervalSeconds = DEFAULT_POLLING_INTERVAL;
 
-	
-	private HttpURLConnection httpCon = null;
+	//	private HttpURLConnection httpCon = null;
+
+	private HttpClient httpClient = null;
+	private SimpleDateFormat httpDate =
+		new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+
+	private SimpleDateFormat[] dcDates =
+		{
+			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
+			new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
+			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+			new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'")};
+
+	private MailDateFormat date822Parser = null;
 
 	public Channel(String name, String urlString)
 		throws MalformedURLException {
@@ -145,6 +173,27 @@ public class Channel implements Runnable {
 
 		channelManager = ChannelManager.getChannelManager();
 		channelManagerDAO = channelManager.getChannelManagerDAO();
+		//		httpClient = channelManager.getHttpClient();
+		//		httpClient = new HttpClient();
+
+		httpClient = new HttpClient(channelManager.getHttpConMgr());
+		httpClient.setConnectionTimeout(HTTP_CONNECTION_TIMEOUT);
+		httpClient.setTimeout(HTTP_CONNECTION_TIMEOUT);
+
+		// Initialize user id / password for protected feeds
+		if (url.getUserInfo() != null) {
+			httpClient.getState().setCredentials(
+				null,
+				new UsernamePasswordCredentials(url.getUserInfo()));
+		}
+
+		TimeZone gmt = TimeZone.getTimeZone("GMT");
+		httpDate.setTimeZone(gmt);
+
+		for (int tz = 0; tz < dcDates.length; tz++) {
+			dcDates[tz].setTimeZone(gmt);
+		}
+
 	}
 
 	/**
@@ -165,315 +214,486 @@ public class Channel implements Runnable {
 
 	private String stripControlChars(String string) {
 		StringBuffer strippedString = new StringBuffer();
-		for(int charCount = 0; charCount < string.length();
-			charCount++) {
+		for (int charCount = 0; charCount < string.length(); charCount++) {
 			char c = string.charAt(charCount);
-			if(c >= 32) {
+			if (c >= 32) {
 				strippedString.append(c);
 			}
 		}
 		return strippedString.toString();
 	}
 
+	private HttpClient getHttpClient() {
+		HttpClient httpClient = new HttpClient();
+		httpClient.setConnectionTimeout(HTTP_CONNECTION_TIMEOUT);
+		httpClient.setTimeout(HTTP_CONNECTION_TIMEOUT);
+
+		// Initialize user id / password for protected feeds
+		if (url.getUserInfo() != null) {
+			httpClient.getState().setCredentials(
+				null,
+				new UsernamePasswordCredentials(url.getUserInfo()));
+		}
+		return httpClient;
+
+	}
+
 	/**
 	 * Retrieves the latest RSS doc from the remote site
 	 */
 	public synchronized void poll() {
-// Use method-level variable
-// Guard against change in history mid-poll
+		// Use method-level variable
+		// Guard against change in history mid-poll
 		polling = true;
-		
+
 		boolean keepHistory = historical;
 
 		lastPolled = new Date();
 
+		int statusCode = -1;
+		HttpMethod method = null;
+		String urlString = url.toString();
 		try {
-//			HttpURLConnection httpCon =
-			httpCon =
-				(HttpURLConnection) url.openConnection();
-			httpCon.setDoInput(true);
-			httpCon.setDoOutput(false);
-			httpCon.setRequestMethod("GET");
-			httpCon.setRequestProperty("User-Agent", AppConstants.getUserAgent());
-			httpCon.setRequestProperty("Accept-Encoding", "gzip");
+			HttpClient httpClient = getHttpClient();
+			channelManager.configureHttpClient(httpClient);
+			HttpResult result = null;
 
-
-			// ETag
-			if (lastETag != null) {
-				httpCon.setRequestProperty("If-None-Match", lastETag);
-			}
-
-			// Last Modified
-			if (lastModified != 0) {
-				httpCon.setIfModifiedSince(lastModified);
-			}
-
-			InputStream is = null;
 			try {
-				httpCon.connect();
+
 				connected = true;
-				is = httpCon.getInputStream();
-			} catch(ConnectException ce) {
+				boolean redirected = false;
+				int count = 0;
+				do {
+					URL url = new URL(urlString);
+					method = new GetMethod(urlString.toString());
+					method.setRequestHeader(
+						"User-agent",
+						AppConstants.getUserAgent());
+					method.setRequestHeader("Accept-Encoding", "gzip");
+					method.setFollowRedirects(false);
+					method.setDoAuthentication(true);
+
+					// ETag
+					if (lastETag != null) {
+						method.setRequestHeader("If-None-Match", lastETag);
+					}
+
+					// Last Modified
+					if (lastModified != 0) {
+						method.setRequestHeader(
+							"If-Modified-Since",
+							httpDate.format(new Date(lastModified)));
+					}
+
+					method.setFollowRedirects(false);
+					method.setDoAuthentication(true);
+
+					HostConfiguration hostConfig = new HostConfiguration();
+					hostConfig.setHost(
+						url.getHost(),
+						url.getPort(),
+						url.getProtocol());
+
+					result = executeHttpRequest(httpClient, hostConfig, method);
+					statusCode = result.getStatusCode();
+					if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY
+						|| statusCode == HttpStatus.SC_MOVED_TEMPORARILY
+						|| statusCode == HttpStatus.SC_SEE_OTHER
+						|| statusCode == HttpStatus.SC_TEMPORARY_REDIRECT) {
+						redirected = true;
+						urlString = result.getLocation();
+					} else {
+						redirected = false;
+					}
+
+					//					method.getResponseBody();
+					//					method.releaseConnection();
+					count++;
+				} while (count < 5 && redirected);
+
+			} catch (HttpRecoverableException hre) {
 				if (log.isDebugEnabled()) {
 					log.debug(
-						"Channel=" + name + " - Connection Timeout, skipping");
+						"Channel="
+							+ name
+							+ " - Temporary Http Problem - "
+							+ hre.getMessage());
 				}
-				status = STATUS_CONNECTION_TIMEOUT;				
-			} catch(UnknownHostException ue) {
+				status = STATUS_CONNECTION_TIMEOUT;
+				statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+			} catch (ConnectException ce) {
+				// @TODO Might also be a connection refused - not only a timeout...
 				if (log.isDebugEnabled()) {
 					log.debug(
-						"Channel=" + name + " - Unknown Host Exception, skipping");
+						"Channel="
+							+ name
+							+ " - Connection Timeout, skipping - "
+							+ ce.getMessage());
+				}
+				status = STATUS_CONNECTION_TIMEOUT;
+				statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+			} catch (UnknownHostException ue) {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Channel="
+							+ name
+							+ " - Unknown Host Exception, skipping");
 				}
 				status = STATUS_UNKNOWN_HOST;
-			} catch(NoRouteToHostException re) {
+				statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+			} catch (NoRouteToHostException re) {
 				if (log.isDebugEnabled()) {
 					log.debug(
-						"Channel=" + name + " - No Route To Host Exception, skipping");
+						"Channel="
+							+ name
+							+ " - No Route To Host Exception, skipping");
 				}
 				status = STATUS_NO_ROUTE_TO_HOST;
-			} catch(SocketException se) {
+				statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+			} catch (SocketException se) {
+				// e.g. Network is unreachable				
 				if (log.isDebugEnabled()) {
 					log.debug(
 						"Channel=" + name + " - Socket Exception, skipping");
 				}
 				status = STATUS_SOCKET_EXCEPTION;
+				statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 			}
 
 			// Only process if ok - if not ok (e.g. not modified), don't do anything
-			if (connected && httpCon.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				String contentEncoding = httpCon.getContentEncoding();
-				if(contentEncoding != null && contentEncoding.equals("gzip")) {
-					is = new GZIPInputStream(is);
-				}
+			if (connected && statusCode == HttpStatus.SC_OK) {
 
-				PushbackInputStream pbis = new PushbackInputStream(is, 
-					PUSHBACK_BUFFER_SIZE);
+				PushbackInputStream pbis =
+					new PushbackInputStream(
+						new ByteArrayInputStream(result.getResponse()),
+						PUSHBACK_BUFFER_SIZE);
 				skipBOM(pbis);
 				BufferedInputStream bis = new BufferedInputStream(pbis);
 				DocumentBuilder db = AppConstants.newDocumentBuilder();
 
 				try {
 					Document rssDoc = null;
-					if(!parseAtAllCost) {
+					if (!parseAtAllCost) {
 						rssDoc = db.parse(bis);
 					} else {
-// Parse-at-all-costs selected
-// Read in document to local array - may need to parse twice
+						// Parse-at-all-costs selected
+						// Read in document to local array - may need to parse twice
 						ByteArrayOutputStream bos = new ByteArrayOutputStream();
 						byte[] buf = new byte[1024];
 						int bytesRead = bis.read(buf);
-						while(bytesRead > -1) {
-							if(bytesRead > 0) {
+						while (bytesRead > -1) {
+							if (bytesRead > 0) {
 								bos.write(buf, 0, bytesRead);
 							}
 							bytesRead = bis.read(buf);
 						}
 						bos.flush();
 						bos.close();
-						
-						byte[] rssDocBytes = bos.toByteArray();						
-						
+
+						byte[] rssDocBytes = bos.toByteArray();
+
 						try {
-// Try the XML document parser first - just in case
-// the doc is well-formed
-							rssDoc = db.parse(new ByteArrayInputStream(rssDocBytes));
-						} catch(SAXParseException spe) {
-							if(log.isDebugEnabled()) {
+							// Try the XML document parser first - just in case
+							// the doc is well-formed
+							rssDoc =
+								db.parse(new ByteArrayInputStream(rssDocBytes));
+						} catch (SAXParseException spe) {
+							if (log.isDebugEnabled()) {
 								log.debug("XML parse failed, trying tidy");
 							}
-// Fallback to parse-at-all-costs parser
-							rssDoc = LooseParser.parse(new ByteArrayInputStream(rssDocBytes));
-						}
-					}
-					
-					Element rootElm = rssDoc.getDocumentElement();
-
-					if(rootElm.getNodeName().equals("rss")) {
-						rssVersion = rootElm.getAttribute("version");
-					} else if(rootElm.getNodeName().equals("rdf:RDF")) {
-						rssVersion = "RDF";
-					}
-
-					Element rssDocElm =
-						(Element) rootElm.getElementsByTagName(
-							"channel").item(
-							0);
-	
-					// Read header...
-					title =
-						XMLHelper.getChildElementValue(rssDocElm, "title");
-					// XXX Currently assign channelTitle to author
-					author = title;
-
-					link =
-						XMLHelper.getChildElementValue(rssDocElm, "link");
-					description =
-						XMLHelper.getChildElementValue(rssDocElm, "description");
-					managingEditor = 
-						XMLHelper.getChildElementValue(rssDocElm, "managingEditor");
-					
-						
-					// Check for items within channel element and outside 
-					// channel element
-					NodeList itemList = rssDocElm.getElementsByTagName("item");
-					
-					if(itemList.getLength() == 0) {
-						itemList = rootElm.getElementsByTagName("item");
-					}
-	
-					Calendar retrievalDate = Calendar.getInstance();
-					retrievalDate.add(Calendar.SECOND, -itemList.getLength());
-	
-					// Get current item signatures
-					Set currentSignatures =
-						channelManagerDAO.getItemSignatures(this.id);
-
-					Set newSignatures = null;
-					if(!keepHistory) {
-						newSignatures = new HashSet();
-					}
-
-					// Calculate signature
-					MessageDigest md = MessageDigest.getInstance("MD5");
-	
-					for (int itemCount = itemList.getLength() - 1;
-						itemCount >= 0;
-						itemCount--) {
-						Element itemElm = (Element) itemList.item(itemCount);
-						String title =
-							XMLHelper.getChildElementValue(itemElm, "title", "");
-						String link =
-							XMLHelper.getChildElementValue(itemElm, "link", "");
-						String comments =
-							XMLHelper.getChildElementValue(itemElm, "comments", "");
-
-						// Fix for content:encoded section of RSS 1.0/2.0
-						String description =
-						    XMLHelper.getChildElementValue(
-						        itemElm,
-						        "content:encoded");
-
-						if ((description == null) || (description.length() == 0)) {
-						        description =
-						            XMLHelper.getChildElementValue(
-						                itemElm,
-						                "description",
-						                "");
-						}
-	
-						String signatureStr = null;
-						ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-						// Used trimmed forms of content, ignore whitespace changes
-						bos.write(title.trim().getBytes());
-						bos.write(link.trim().getBytes());
-						bos.write(description.trim().getBytes());
-						bos.flush();
-						bos.close();
-	
-						byte[] signatureSource = bos.toByteArray();
-	
-						md.reset();
-						byte[] signature = md.digest(signatureSource);
-	
-						signatureStr = Base64.encodeBytes(signature);
-
-						if(!keepHistory) {
-							newSignatures.add(signatureStr);
-						}
-	
-						if (!currentSignatures.contains(signatureStr)) {
-							// New item, lets add...
-							currentSignatures.add(signatureStr);
-	
-							Item item = new Item(++lastArticleNumber, signatureStr);
-							item.setChannel(this);
-	
-							if (title.length() > 0) {
-								item.setTitle(title);
-							} else {
-								// We need to create a initial title from the description, because
-								// we do have a description, don't we???
-								String strippedDesc =
-									stripControlChars(XMLHelper.stripTags(description));
-								int length =
-									strippedDesc.length() > 64
-										? 64
-										: strippedDesc.length();
-								item.setTitle(strippedDesc.substring(0, length));
-							}
-							item.setDescription(description);
-							item.setLink(link);
-							item.setComments(comments);
-	
-							// FIXME what to do about date?
-							item.setDate(retrievalDate.getTime());
-							// Add 1 second - to introduce some distinction date-wise
-							// between items
-							retrievalDate.add(Calendar.SECOND, 1);
-		
-							// persist to database...
-							channelManagerDAO.saveItem(item);
-							totalArticles++;
+							// Fallback to parse-at-all-costs parser
+							rssDoc =
+								LooseParser.parse(
+									new ByteArrayInputStream(rssDocBytes));
 						}
 					}
 
-					if(!keepHistory) {
-						currentSignatures.removeAll(newSignatures);
-// We're left with the old items that have to be purged...
-						if(currentSignatures.size() > 0) {
-							channelManagerDAO.deleteItemsBySignature(this, currentSignatures);
-							totalArticles -= currentSignatures.size();
-						}
-					}
-	
+					processChannelDocument(keepHistory, rssDoc);
+
 					// Update last modified / etag from headers
-					lastETag = httpCon.getHeaderField("ETag");
-					lastModified = httpCon.getHeaderFieldDate("Last-Modified", 0);
+					//					lastETag = httpCon.getHeaderField("ETag");
+					//					lastModified = httpCon.getHeaderFieldDate("Last-Modified", 0);
+
+					Header hdrETag = method.getResponseHeader("ETag");
+					lastETag = hdrETag != null ? hdrETag.getValue() : null;
+
+					Header hdrLastModified =
+						method.getResponseHeader("Last-Modified");
+					lastModified =
+						hdrLastModified != null
+							? parseHttpDate(hdrLastModified.getValue())
+							: 0;
 
 					status = STATUS_OK;
-				} catch(SAXParseException spe) {
-					if(log.isEnabledFor(Priority.WARN)) {
-						log.warn("Channel=" + name + " - Error parsing RSS document - check feed");
+				} catch (SAXParseException spe) {
+					if (log.isEnabledFor(Priority.WARN)) {
+						log.warn(
+							"Channel="
+								+ name
+								+ " - Error parsing RSS document - check feed");
 					}
 					status = STATUS_INVALID_CONTENT;
 				}
-				
+
 				bis.close();
 
 				// end if response code == HTTP_OK
-			} else if(connected &&
-				httpCon.getResponseCode()
-					== HttpURLConnection.HTTP_NOT_MODIFIED) {
+			} else if (
+				connected
+					&& statusCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
 				if (log.isDebugEnabled()) {
 					log.debug(
 						"Channel=" + name + " - HTTP_NOT_MODIFIED, skipping");
 				}
-			} 
+				status = STATUS_OK;
+			}
 
 			// Update channel in database...
 			channelManagerDAO.updateChannel(this);
 
-			httpCon.disconnect();
-
 		} catch (FileNotFoundException fnfe) {
-			if(log.isEnabledFor(Priority.WARN)) {
-				log.warn("Channel=" + name + " - File not found returned by web server - check feed");
+			if (log.isEnabledFor(Priority.WARN)) {
+				log.warn(
+					"Channel="
+						+ name
+						+ " - File not found returned by web server - check feed");
 			}
 			status = STATUS_NOT_FOUND;
 		} catch (Exception e) {
-			if(log.isEnabledFor(Priority.WARN)) {
-				log.warn("Channel=" + name + " - Exception while polling channel", e);
+			if (log.isEnabledFor(Priority.WARN)) {
+				log.warn(
+					"Channel=" + name + " - Exception while polling channel",
+					e);
+			}
+		} catch (NoClassDefFoundError ncdf) {
+			// Throw if SSL / redirection to HTTPS
+			if (log.isEnabledFor(Priority.WARN)) {
+				log.warn("Channel=" + name + " - NoClassDefFound", ncdf);
 			}
 		} finally {
 			connected = false;
-			httpCon = null;
 			polling = false;
 		}
 
-
 	}
 
+	private void processChannelDocument(boolean keepHistory, Document rssDoc)
+		throws NoSuchAlgorithmException, IOException {
+		Element rootElm = rssDoc.getDocumentElement();
+
+		if (rootElm.getNodeName().equals("rss")) {
+			rssVersion = rootElm.getAttribute("version");
+		} else if (rootElm.getNodeName().equals("rdf:RDF")) {
+			rssVersion = "RDF";
+		}
+
+		Element rssDocElm =
+			(Element) rootElm.getElementsByTagName("channel").item(0);
+
+		// Read header...
+		title = XMLHelper.getChildElementValue(rssDocElm, "title");
+		// XXX Currently assign channelTitle to author
+		author = title;
+
+		link = XMLHelper.getChildElementValue(rssDocElm, "link");
+		description = XMLHelper.getChildElementValue(rssDocElm, "description");
+		managingEditor =
+			XMLHelper.getChildElementValue(rssDocElm, "managingEditor");
+
+		// Check for items within channel element and outside 
+		// channel element
+		NodeList itemList = rssDocElm.getElementsByTagName("item");
+
+		if (itemList.getLength() == 0) {
+			itemList = rootElm.getElementsByTagName("item");
+		}
+
+		Calendar retrievalDate = Calendar.getInstance();
+		retrievalDate.add(Calendar.SECOND, -itemList.getLength());
+
+		// Get current item signatures
+		// @TODO change to check against DB for specific sigs, rather than
+		// retrieving all signatures 
+		Set currentSignatures = channelManagerDAO.getItemSignatures(this.id);
+
+		Set newSignatures = null;
+		if (!keepHistory) {
+			newSignatures = new HashSet();
+		}
+
+		// Calculate signature
+		MessageDigest md = MessageDigest.getInstance("MD5");
+
+		for (int itemCount = itemList.getLength() - 1;
+			itemCount >= 0;
+			itemCount--) {
+			Element itemElm = (Element) itemList.item(itemCount);
+			String title = XMLHelper.getChildElementValue(itemElm, "title", "");
+			String link = XMLHelper.getChildElementValue(itemElm, "link", "");
+			String comments =
+				XMLHelper.getChildElementValue(itemElm, "comments", "");
+
+			Date pubDate = null;
+			String pubDateStr =
+				XMLHelper.getChildElementValue(itemElm, "pubDate");
+			if (pubDateStr != null && pubDateStr.length() > 0) {
+				// Parse Date...
+				log.info("pubDate == " + pubDateStr);
+				if (date822Parser == null) {
+					date822Parser = new MailDateFormat();
+				}
+				try {
+					pubDate = date822Parser.parse(pubDateStr);
+					log.debug("processed pubDate == " + pubDate);
+				} catch (ParseException pe) {
+					log.debug("Invalid pubDate format - " + pubDateStr);
+				}
+			}
+
+			if (pubDate == null) {
+				// Try for Dublin Core Date
+				String dcDateStr =
+					XMLHelper.getChildElementValueNS(
+						itemElm,
+						RSSHelper.XMLNS_DC,
+						"date");
+				if (dcDateStr != null && dcDateStr.length() > 0) {
+					log.info("dc:date == " + dcDateStr);
+					for (int parseCount = 0;
+						parseCount < dcDates.length;
+						parseCount++) {
+						try {
+							pubDate = dcDates[parseCount].parse(dcDateStr);
+						} catch (ParseException pe) {
+						}
+						if (pubDate != null)
+							break;
+					}
+					if (pubDate != null) {
+						log.debug("processed dc:date == " + pubDate);
+					} else {
+						log.debug("Invalid dc:date format - " + dcDateStr);
+					}
+				}
+			}
+
+			// Handle xhtml:body / content:encoded / description
+			String description = processContent(itemElm);
+
+			String signatureStr = null;
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+			// Used trimmed forms of content, ignore whitespace changes
+			bos.write(title.trim().getBytes());
+			bos.write(link.trim().getBytes());
+			bos.write(description.trim().getBytes());
+			bos.flush();
+			bos.close();
+
+			byte[] signatureSource = bos.toByteArray();
+
+			md.reset();
+			byte[] signature = md.digest(signatureSource);
+
+			signatureStr = Base64.encodeBytes(signature);
+
+			if (!keepHistory) {
+				newSignatures.add(signatureStr);
+			}
+
+			// @TODO Change to look for specific sigs in database, rather than
+			// retrieval all signatures 
+			if (!currentSignatures.contains(signatureStr)) {
+				// New item, lets add...
+				currentSignatures.add(signatureStr);
+
+				Item item = new Item(++lastArticleNumber, signatureStr);
+				item.setChannel(this);
+
+				if (title.length() > 0) {
+					item.setTitle(title);
+				} else {
+					// We need to create a initial title from the description, because
+					// we do have a description, don't we???
+					String strippedDesc =
+						stripControlChars(XMLHelper.stripTags(description));
+					int length =
+						strippedDesc.length() > 64 ? 64 : strippedDesc.length();
+					item.setTitle(strippedDesc.substring(0, length));
+				}
+				item.setDescription(description);
+				item.setLink(link);
+				item.setComments(comments);
+
+				// FIXME what to do about date?
+				if (pubDate == null) {
+					item.setDate(retrievalDate.getTime());
+					// Add 1 second - to introduce some distinction date-wise
+					// between items
+					retrievalDate.add(Calendar.SECOND, 1);
+				} else {
+					item.setDate(pubDate);
+				}
+
+				// persist to database...
+				channelManagerDAO.saveItem(item);
+				totalArticles++;
+			}
+		}
+
+		// @todo Change DB logic - delete where *not* in set...
+		if (!keepHistory) {
+			currentSignatures.removeAll(newSignatures);
+			// We're left with the old items that have to be purged...
+			if (currentSignatures.size() > 0) {
+				channelManagerDAO.deleteItemsBySignature(
+					this,
+					currentSignatures);
+				totalArticles -= currentSignatures.size();
+			}
+		}
+	}
+
+	private long parseHttpDate(String dateString) {
+		long time = 0;
+		try {
+			time = httpDate.parse(dateString).getTime();
+		} catch (ParseException pe) {
+			// Ignore date if parse error
+		}
+		return time;
+	}
+
+	public String processContent(Element itemElm) {
+		// Check for xhtml:body
+		String description = null;
+
+		NodeList bodyList =
+			itemElm.getElementsByTagNameNS(RSSHelper.XMLNS_XHTML, "body");
+		if (bodyList.getLength() > 0) {
+			Node bodyElm = bodyList.item(0);
+			NodeList children = bodyElm.getChildNodes();
+			StringBuffer content = new StringBuffer();
+			for (int childCount = 0;
+				childCount < children.getLength();
+				childCount++) {
+				content.append(children.item(childCount).toString());
+			}
+			description = content.toString();
+		}
+
+		// Fix for content:encoded section of RSS 1.0/2.0
+		if ((description == null) || (description.length() == 0)) {
+			description =
+				XMLHelper.getChildElementValue(itemElm, "content:encoded");
+		}
+
+		if ((description == null) || (description.length() == 0)) {
+			description =
+				XMLHelper.getChildElementValue(itemElm, "description", "");
+		}
+		return description;
+	}
 
 	/**
 	 * Simple channel validation - ensures URL
@@ -484,25 +704,59 @@ public class Channel implements Runnable {
 	public static boolean isValid(URL url) {
 		boolean valid = false;
 		try {
-			HttpURLConnection httpCon =
-				(HttpURLConnection) url.openConnection();
-			httpCon.setDoInput(true);
-			httpCon.setDoOutput(false);
-			httpCon.setRequestMethod("GET");
-			httpCon.setRequestProperty("User-Agent", AppConstants.getUserAgent());
-			httpCon.setRequestProperty("Accept-Encoding", "gzip");
-			httpCon.connect();
-			InputStream is = httpCon.getInputStream();
+			//			System.setProperty("networkaddress.cache.ttl", "0");
 
-			// Only process if ok - if not ok (e.g. not modified), don't do anything
-			if (httpCon.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				String contentEncoding = httpCon.getContentEncoding();
-				if(contentEncoding != null && contentEncoding.equals("gzip")) {
-					is = new GZIPInputStream(is);
+			HttpClient client = new HttpClient();
+			ChannelManager.getChannelManager().configureHttpClient(client);
+			if (url.getUserInfo() != null) {
+				client.getState().setCredentials(
+					null,
+					new UsernamePasswordCredentials(url.getUserInfo()));
+			}
+
+			String urlString = url.toString();
+			HttpMethod method = null;
+
+			int count = 0;
+			HttpResult result = null;
+			int statusCode = HttpStatus.SC_OK;
+			boolean redirected = false;
+			do {
+				method = new GetMethod(urlString);
+				method.setRequestHeader(
+					"User-agent",
+					AppConstants.getUserAgent());
+				method.setRequestHeader("Accept-Encoding", "gzip");
+				method.setFollowRedirects(false);
+				method.setDoAuthentication(true);
+
+				HostConfiguration hostConfiguration =
+					client.getHostConfiguration();
+				hostConfiguration.setHost(new URI(urlString));
+
+				result = executeHttpRequest(client, hostConfiguration, method);
+				statusCode = result.getStatusCode();
+				if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY
+					|| statusCode == HttpStatus.SC_MOVED_TEMPORARILY
+					|| statusCode == HttpStatus.SC_SEE_OTHER
+					|| statusCode == HttpStatus.SC_TEMPORARY_REDIRECT) {
+					redirected = true;
+					urlString = result.getLocation();
+				} else {
+					redirected = false;
 				}
 
+				//				method.getResponseBody();
+				//				method.releaseConnection();
+				count++;
+			} while (count < 5 && redirected);
 
-				PushbackInputStream pbis = new PushbackInputStream(is, PUSHBACK_BUFFER_SIZE);
+			// Only process if ok - if not ok (e.g. not modified), don't do anything
+			if (statusCode == HttpStatus.SC_OK) {
+				PushbackInputStream pbis =
+					new PushbackInputStream(
+						new ByteArrayInputStream(result.getResponse()),
+						PUSHBACK_BUFFER_SIZE);
 				skipBOM(pbis);
 
 				BufferedInputStream bis = new BufferedInputStream(pbis);
@@ -510,57 +764,53 @@ public class Channel implements Runnable {
 				Document rssDoc = db.parse(bis);
 				Element rootElm = rssDoc.getDocumentElement();
 				String rssVersion = rootElm.getAttribute("version");
-				if((rootElm.getNodeName().equals("rss") && rssVersion != null) ||
-					rootElm.getNodeName().equals("rdf:RDF") ) {
+				if ((rootElm.getNodeName().equals("rss") && rssVersion != null)
+					|| rootElm.getNodeName().equals("rdf:RDF")) {
 					valid = true;
 				}
-			} 
-			
-			httpCon.disconnect();
+			}
 
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 		return valid;
 	}
 
-
 	private static void skipBOM(PushbackInputStream is) throws IOException {
 		byte[] header = new byte[PUSHBACK_BUFFER_SIZE];
 		int bytesRead = is.read(header);
-		if(header[0] == 0 &&
-			header[1] == 0 &&
-			(header[2]&0xff) == 0xFE &&
-			(header[3]&0xff) == 0xFF) {
-	// UTF-32, big-endian
-		} else if((header[0]&0xff) == 0xFF &&
-			(header[1]&0xff) == 0xFE &&
-			header[2] == 0 &&
-			header[3] == 0) {
-	// UTF-32, little-endian
-		} else if((header[0]&0xff) == 0xFE &&
-			(header[1]&0xff) == 0xFF) {
+		if (header[0] == 0
+			&& header[1] == 0
+			&& (header[2] & 0xff) == 0xFE
+			&& (header[3] & 0xff) == 0xFF) {
+			// UTF-32, big-endian
+		} else if (
+			(header[0] & 0xff) == 0xFF
+				&& (header[1] & 0xff) == 0xFE
+				&& header[2] == 0
+				&& header[3] == 0) {
+			// UTF-32, little-endian
+		} else if ((header[0] & 0xff) == 0xFE && (header[1] & 0xff) == 0xFF) {
 			is.unread(header, 2, 2);
-	// UTF-16, big-endian
-		} else if((header[0]&0xff) == 0xFF &&
-			(header[1]&0xff) == 0xFE) {
+			// UTF-16, big-endian
+		} else if ((header[0] & 0xff) == 0xFF && (header[1] & 0xff) == 0xFE) {
 			is.unread(header, 2, 2);
-	// UTF-16, little-endian
-		} else if((header[0]&0xff) == 0xEF &&
-			(header[1]&0xff) == 0xBB &&
-			(header[2]&0xff) == 0xBF) {
-	// UTF-8
+			// UTF-16, little-endian
+		} else if (
+			(header[0] & 0xff) == 0xEF
+				&& (header[1] & 0xff) == 0xBB
+				&& (header[2] & 0xff) == 0xBF) {
+			// UTF-8
 			is.unread(header, 3, 1);
 		} else {
 			is.unread(header, 0, PUSHBACK_BUFFER_SIZE);
 		}
 	}
-	
 
 	public void save() {
 		// Update channel in database...
 		channelManagerDAO.updateChannel(this);
-	}	
+	}
 
 	/**
 	 * Validates the channel
@@ -568,7 +818,6 @@ public class Channel implements Runnable {
 	public boolean isValid() {
 		return isValid(url);
 	}
-
 
 	/**
 	 * Returns the firstArticleNumber.
@@ -659,18 +908,19 @@ public class Channel implements Runnable {
 			long currentTimeMillis = System.currentTimeMillis();
 
 			long pollingInterval = this.pollingIntervalSeconds;
-			if(pollingInterval == DEFAULT_POLLING_INTERVAL) {
+			if (pollingInterval == DEFAULT_POLLING_INTERVAL) {
 				pollingInterval = channelManager.getPollingIntervalSeconds();
 			}
 
-			if ((currentTimeMillis - lastPolled.getTime()) > (pollingInterval * 1000)) {
+			if ((currentTimeMillis - lastPolled.getTime())
+				> (pollingInterval * 1000)) {
 				awaitingPoll = true;
 			}
-			
+
 		} else {
 			awaitingPoll = true;
 		}
-				
+
 		return awaitingPoll;
 	}
 
@@ -759,11 +1009,11 @@ public class Channel implements Runnable {
 	 * @param url The url to set
 	 */
 	public void setUrl(URL url) {
-		if(!this.url.equals(url)) {
+		if (!this.url.equals(url)) {
 			this.url = url;
 
-// If we change the URL, then reset the 
-// polling characteristics associated with the channel
+			// If we change the URL, then reset the 
+			// polling characteristics associated with the channel
 			this.lastModified = 0;
 			this.lastETag = null;
 			this.lastPolled = null;
@@ -954,42 +1204,6 @@ public class Channel implements Runnable {
 	public boolean isPolling() {
 		return polling;
 	}
-	
-	/**
-	 * Checks any current http connection.
-	 * 
-	 * Called from the Channel Poller's thread - will invoke
-	 * disconnect on the HttpUrlConnection is the poll has
-	 * exceeded 5 minutes.  This'll cause an exception to
-	 * be thrown in the polling thread, within the poll method.
-	 * 
-	 * It'd be preferable to use the timeout setting feature
-	 * within HttpUrlConnection, but this is only a parameter
-	 * in the 1.4 release of the JRE.
-	 */
-	
-	public void checkConnection() {
-		if(polling && httpCon != null && connected &&
-			((lastPolled == null) ||
-			((System.currentTimeMillis() - lastPolled.getTime()) >
-				HTTP_CONNECTION_TIMEOUT)
-			)) {
-			try {
-				if(log.isDebugEnabled()) {
-					log.debug("Timeout exceeded, attempting to disconnect HttpUrlConnection");
-				}
-
-				httpCon.disconnect();
-				connected = false;
-			} catch(Exception e) {
-				if(log.isDebugEnabled()) {
-					log.debug("Error disconnecting HttpUrlConnection in checkConnection");
-				}
-			} finally {
-//				httpCon = null;
-			}
-		}
-	}
 
 	/**
 	 * Returns the publishConfig.
@@ -1021,6 +1235,119 @@ public class Channel implements Runnable {
 	 */
 	public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
 		this.pollingIntervalSeconds = pollingIntervalSeconds;
+	}
+
+	/**
+	 * Executes HTTP request
+	 * @param client
+	 * @param config
+	 * @param method
+	 */
+
+	private static HttpResult executeHttpRequest(
+		HttpClient client,
+		HostConfiguration config,
+		HttpMethod method)
+		throws HttpException, IOException {
+
+		HttpResult result;
+		int statusCode = -1;
+		int attempt = 0;
+
+		try {
+			statusCode = client.executeMethod(config, method);
+
+			//		while (statusCode == -1 && attempt < 3) {
+			//			try {
+			//				// execute the method.
+			//				statusCode = client.executeMethod(config, method);
+			//			} catch (HttpRecoverableException e) {
+			//				log.(
+			//					"A recoverable exception occurred, retrying."
+			//						+ e.getMessage());
+			//				method.releaseConnection();
+			//				method.recycle();
+			//				try {
+			//					Thread.sleep(250);
+			//				} catch(InterruptedException ie) {
+			//				}
+			//			} 
+			//		}
+
+			result = new HttpResult(statusCode);
+			Header locationHeader = method.getResponseHeader("location");
+			if (locationHeader != null) {
+				result.setLocation(locationHeader.getValue());
+			}
+
+			if (statusCode == HttpStatus.SC_OK) {
+				Header contentEncoding =
+					method.getResponseHeader("Content-Encoding");
+				if (contentEncoding != null
+					&& contentEncoding.getValue().equals("gzip")) {
+					InputStream is = method.getResponseBodyAsStream();
+					is = new GZIPInputStream(is);
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					byte[] buf = new byte[1024];
+					int bytesRead;
+					while ((bytesRead = is.read(buf)) > -1) {
+						if (bytesRead > 0) {
+							baos.write(buf, 0, bytesRead);
+						}
+					}
+					baos.flush();
+					baos.close();
+					is.close();
+					result.setResponse(baos.toByteArray());
+				} else {
+					result.setResponse(method.getResponseBody());
+				}
+			} else {
+				// Process response
+				InputStream is = method.getResponseBodyAsStream();
+				if (is != null) {
+					byte[] buf = new byte[1024];
+					while (is.read(buf) != -1);
+					is.close();
+				}
+				//	result.setResponse(method.getResponseBody());		
+			}
+
+			return result;
+		} finally {
+			method.releaseConnection();
+		}
+	}
+
+	private static class HttpResult {
+
+		private int statusCode;
+		private byte[] response;
+		private String location;
+
+		public HttpResult(int statusCode) {
+			this.statusCode = statusCode;
+		}
+
+		public int getStatusCode() {
+			return statusCode;
+		}
+
+		public byte[] getResponse() {
+			return response;
+		}
+
+		public void setResponse(byte[] response) {
+			this.response = response;
+		}
+
+		public String getLocation() {
+			return location;
+		}
+
+		public void setLocation(String location) {
+			this.location = location;
+		}
 	}
 
 }
