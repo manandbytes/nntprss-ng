@@ -1,5 +1,5 @@
 <!-- nntp//rss - Ant Build Script -->
-<!-- Copyright (c) 2002 Jason Brome.  All Rights Reserved -->
+<!-- Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved -->
 <!-- Email: nntprss@methodize.org -->
 
 <project name="nntp//rss" default="all" basedir=".">
