@@ -57,10 +57,12 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.5 2004/01/04 21:19:49 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.6 2004/02/09 06:05:44 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
+
+	public static final String XMLNS_ATOM = "http://purl.org/atom/ns#";
 
 	private static ThreadLocal dateParsers = new ThreadLocal() {
 		public Object initialValue() {
@@ -118,7 +120,7 @@ public class AtomParser extends GenericParser {
 		channel.setTitle(XMLHelper.getChildElementValue(docRootElement, "title"));
 		// XXX Currently assign channelTitle to author
 		channel.setAuthor(channel.getTitle());
-		channel.setLink(XMLHelper.getChildElementValue(docRootElement, "link"));
+		channel.setLink(extractLink(docRootElement, "alternate"));
 
 // @TODO: Summary or Subtitle?
 		String description;
@@ -225,8 +227,10 @@ public class AtomParser extends GenericParser {
 
 					String title =
 						XMLHelper.getChildElementValue(entryElm, "title", "");
-					String link =
-						XMLHelper.getChildElementValue(entryElm, "link", "");
+//					String link =
+//						XMLHelper.getChildElementValue(entryElm, "link", "");
+					String link = 
+						extractLink(entryElm, "alternate");
 
 					String guid =
 						XMLHelper.getChildElementValue(entryElm, "id");
@@ -382,6 +386,23 @@ public class AtomParser extends GenericParser {
 				XMLHelper.getChildElementValue(itemElm, "summary", "");
 		}
 		return description;
+	}
+
+	private String extractLink(Element itemElm, String rel) {
+		String link = null;
+		NodeList elemList = itemElm.getChildNodes();
+		for(int i = 0; i < elemList.getLength(); i++) {
+			if(elemList.item(i).getNodeName().equals("link")
+				&& elemList.item(i).getNamespaceURI().equals(XMLNS_ATOM)) {
+				Element linkElm = (Element)elemList.item(i);
+				String linkRel = linkElm.getAttribute("rel");
+				if(linkRel.equals(rel)) {
+					link = linkElm.getAttribute("href");
+					break;
+				}
+			}
+		}
+		return link;
 	}
 
 	private String generateEntrySignature(MessageDigest md, Element itemElm)
