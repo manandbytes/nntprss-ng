@@ -34,6 +34,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,13 +59,14 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.3 2003/01/22 05:08:18 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.4 2003/01/27 22:41:13 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
 	public static final int STATUS_OK = 0;
 	public static final int STATUS_NOT_FOUND = 1;
 	public static final int STATUS_INVALID_CONTENT = 2;
+	public static final int STATUS_CONNECTION_TIMEOUT = 3;
 
 	private Logger log = Logger.getLogger(Channel.class);
 
@@ -161,11 +163,17 @@ public class Channel implements Runnable {
 				httpCon.setIfModifiedSince(lastModified);
 			}
 
-			httpCon.connect();
-			InputStream is = httpCon.getInputStream();
+			InputStream is = null;
+			boolean connected = false;
+			try {
+				httpCon.connect();
+				is = httpCon.getInputStream();
+				connected = true;
+			} catch(ConnectException ce) {
+			}
 
 			// Only process if ok - if not ok (e.g. not modified), don't do anything
-			if (httpCon.getResponseCode() == HttpURLConnection.HTTP_OK) {
+			if (connected && httpCon.getResponseCode() == HttpURLConnection.HTTP_OK) {
 				BufferedInputStream bis = new BufferedInputStream(is);
 				DocumentBuilder db = AppConstants.newDocumentBuilder();
 
@@ -226,6 +234,8 @@ public class Channel implements Runnable {
 							XMLHelper.getChildElementValue(itemElm, "title", "");
 						String link =
 							XMLHelper.getChildElementValue(itemElm, "link", "");
+						String comments =
+							XMLHelper.getChildElementValue(itemElm, "comments", "");
 
 						// Fix for content:encoded section of RSS 1.0/2.0
 						String description =
@@ -284,6 +294,7 @@ public class Channel implements Runnable {
 							}
 							item.setDescription(description);
 							item.setLink(link);
+							item.setComments(comments);
 	
 							// FIXME what to do about date?
 							item.setDate(retrievalDate.getTime());
@@ -321,13 +332,19 @@ public class Channel implements Runnable {
 				bis.close();
 
 				// end if response code == HTTP_OK
-			} else if (
+			} else if(connected &&
 				httpCon.getResponseCode()
 					== HttpURLConnection.HTTP_NOT_MODIFIED) {
 				if (log.isDebugEnabled()) {
 					log.debug(
 						"Channel=" + name + " - HTTP_NOT_MODIFIED, skipping");
 				}
+			} else if(!connected) {
+				if (log.isDebugEnabled()) {
+					log.debug(
+						"Channel=" + name + " - Connection Timeout, skipping");
+				}
+				status = STATUS_CONNECTION_TIMEOUT;				
 			}
 
 			// Update channel in database...
