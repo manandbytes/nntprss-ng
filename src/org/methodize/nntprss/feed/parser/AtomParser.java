@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.7 2004/03/27 02:11:00 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.8 2004/12/15 04:12:08 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
@@ -327,6 +327,9 @@ public class AtomParser extends GenericParser {
                     } else {
                         item.setDate(pubDate);
                     }
+
+					// Invoke ItemProcessor
+					invokeProcessors(item);
 
                     // persist to database...
                     channelDAO.saveItem(item);

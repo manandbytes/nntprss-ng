@@ -22,6 +22,15 @@
 <!-- Poller configuration - number of threads -->
   <poller threads='5'/>
 
+<!-- Item Processor Plug-in configuration -->
+<!-- Item processors are invoked in the order listed below -->
+<!--
+  <itemProcessors>
+    <processor class="org.methodize.nntprss.plugin.sample.MyItemProcessor"/>
+    <processor class="org.methodize.nntprss.plugin.sample.MyItemProcessor2"/>
+  </itemProcessors>
+-->
+
 <!-- Subscription listeners -->
 <!--  <subscribe name='AmphetaDesk' port='8888' path='/index.html' param='add_url' />
   <subscribe name='Radio Userland' port='5335' path='/system/pages/subscriptions' param='url' /> 

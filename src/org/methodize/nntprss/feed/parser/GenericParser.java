@@ -34,14 +34,19 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import org.methodize.nntprss.feed.Channel;
+import org.methodize.nntprss.feed.ChannelManager;
+import org.methodize.nntprss.feed.Item;
 import org.methodize.nntprss.feed.db.ChannelDAO;
+import org.methodize.nntprss.plugin.ItemProcessor;
 import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: GenericParser.java,v 1.4 2004/03/27 02:11:00 jasonbrome Exp $
+ * @version $Id: GenericParser.java,v 1.5 2004/12/15 04:12:08 jasonbrome Exp $
  */
 public abstract class GenericParser {
+
+	protected ItemProcessor[] itemProcessors;
 
     public abstract boolean isParsable(Element docRootElement);
     public abstract String getFormatVersion(Element docRootElement);
@@ -55,6 +60,10 @@ public abstract class GenericParser {
         boolean keepHistory)
         throws NoSuchAlgorithmException, IOException;
 
+	protected GenericParser() {
+		itemProcessors = ChannelManager.getChannelManager().getItemProcessors();
+	}
+
     String stripControlChars(String string) {
         StringBuffer strippedString = new StringBuffer();
         for (int charCount = 0; charCount < string.length(); charCount++) {
@@ -64,5 +73,14 @@ public abstract class GenericParser {
             }
         }
         return strippedString.toString();
+    }
+    
+    protected void invokeProcessors(Item item)
+    {
+		if(this.itemProcessors != null) {
+			for(int i = 0; i < itemProcessors.length; i++) {
+				itemProcessors[i].onItem(item);
+			}
+		}
     }
 }
