@@ -82,7 +82,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.12 2004/02/08 18:02:30 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.13 2004/02/09 06:06:34 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -267,10 +267,10 @@ public class ClientHandler implements Runnable {
 		pw.println("Date: " + df.format(item.getDate()));
 		pw.println(
 			"Subject: "
-				+ MimeUtility.encodeText(
+				+ stripTabsLineBreaks(MimeUtility.encodeText(
 					processSubject(item.getTitle()),
 					"UTF-8",
-					"Q"));
+					"Q")));
 
 		pw.println(
 			"Message-ID: "
@@ -1137,10 +1137,10 @@ public class ClientHandler implements Runnable {
 										break;
 									case NNTP_HEADER_SUBJECT :
 										pw.println(
-											MimeUtility.encodeText(
+											stripTabsLineBreaks(MimeUtility.encodeText(
 												processSubject(item.getTitle()),
 												"UTF-8",
-												"Q"));
+												"Q")));
 										break;
 									case NNTP_HEADER_MESSAGE_ID :
 										pw.println(
@@ -1266,10 +1266,10 @@ public class ClientHandler implements Runnable {
 								.println(
 									item.getArticleNumber()
 									+ "\t"
-									+ MimeUtility.encodeText(
+									+ stripTabsLineBreaks(MimeUtility.encodeText(
 											processSubject(item.getTitle()),
 											"UTF-8",
-											"Q")
+											"Q"))
 									+ "\t"
 									+ processAuthor(item.getChannel(), item)
 							//											+ author
