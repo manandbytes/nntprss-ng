@@ -8,12 +8,15 @@
 <!-- hsqldb (now deprecated) -->
 <!-- <db connect='jdbc:hsqldb:nntprssdb' driverClass='org.hsqldb.jdbcDriver' daoClass='org.methodize.nntprss.feed.db.HSqlDbChannelDAO'/>  -->
 
+<!-- Derby -->
+<!-- <db connect='jdbc:derby:nntprssdb;create=true' driverClass='org.apache.derby.jdbc.EmbeddedDriver' daoClass='org.methodize.nntprss.feed.db.DerbyChannelDAO'/> -->
+
 <!-- JDBM -->
- <db daoClass='org.methodize.nntprss.feed.db.JdbmChannelDAO'/> 
+  <db daoClass='org.methodize.nntprss.feed.db.JdbmChannelDAO'/>
 
 <!-- MySQL -->
 <!-- MySQL
-  <db connect='jdbc:mysql://127.0.0.1/nntprssdb?user=blah&password=blah&autoReconnect=true' driverClass='com.mysql.jdbc.Driver' daoClass='org.methodize.nntprss.feed.db.MySQLChannelDAO'/>
+  <db connect='jdbc:mysql://127.0.0.1/nntprssdb?user=blah&amp;password=blah&amp;autoReconnect=true' driverClass='com.mysql.jdbc.Driver' daoClass='org.methodize.nntprss.feed.db.MySQLChannelDAO'/>
 -->
 
 <!-- Listener port for NNTP server -->
