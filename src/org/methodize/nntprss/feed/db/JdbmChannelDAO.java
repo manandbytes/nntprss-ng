@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.7 2004/03/24 04:26:40 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.8 2004/03/26 02:00:37 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
@@ -995,6 +995,10 @@ public class JdbmChannelDAO extends ChannelDAO {
 			int channelCount = 0;
 			long recID = recMan.insert(new Integer(channelCount));
 			recMan.setNamedObject(RECORD_LAST_CHANNEL_ID, recID);
+
+			// Establish LAST_CATEGORY_ID entry within persistent store
+			recMan.setNamedObject(RECORD_LAST_CATEGORY_ID, 
+				recMan.insert(new Integer(0)));
 
 			while (rs.next()) {
 				int origId = rs.getInt("id");
