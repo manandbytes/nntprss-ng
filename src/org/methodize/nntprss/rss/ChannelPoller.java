@@ -41,7 +41,7 @@ import org.methodize.nntprss.util.SimpleThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.4 2003/02/20 23:34:02 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.5 2003/03/22 16:29:46 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
@@ -86,9 +86,14 @@ public class ChannelPoller extends Thread {
 
 				while (channelIter.hasNext() && active) {
 					Channel channel = (Channel) channelIter.next();
-					if (channel.isAwaitingPoll()) {
-	//					simpleThreadPool.run(channel);
-						fixedThreadPool.run(channel);
+					if (channel.isEnabled()) {
+						if(channel.isPolling()) {
+							channel.checkConnection();
+						}
+
+						if(channel.isAwaitingPoll()) {
+							fixedThreadPool.run(channel);
+						}
 					}
 				}
 			} catch(ConcurrentModificationException cme) {
