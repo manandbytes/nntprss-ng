@@ -2,7 +2,7 @@ package org.methodize.nntprss.rss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -58,7 +58,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: Channel.java,v 1.3 2003/01/22 05:08:18 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -72,8 +72,12 @@ public class Channel implements Runnable {
 	private String name;
 	private URL url;
 	private int id;
-	private Date lastPolled;
 
+	private String title;
+	private String link;
+	private String description;
+	
+	private Date lastPolled;
 	private long lastModified;
 	private String lastETag;
 
@@ -181,11 +185,16 @@ public class Channel implements Runnable {
 							0);
 	
 					// Read header...
-					String channelTitle =
+					title =
 						XMLHelper.getChildElementValue(rssDocElm, "title");
 					// XXX Currently assign channelTitle to author
-					author = channelTitle;
-	
+					author = title;
+
+					link =
+						XMLHelper.getChildElementValue(rssDocElm, "link");
+					description =
+						XMLHelper.getChildElementValue(rssDocElm, "description");
+						
 					// Check for items within channel element and outside 
 					// channel element
 					NodeList itemList = rssDocElm.getElementsByTagName("item");
@@ -217,11 +226,20 @@ public class Channel implements Runnable {
 							XMLHelper.getChildElementValue(itemElm, "title", "");
 						String link =
 							XMLHelper.getChildElementValue(itemElm, "link", "");
+
+						// Fix for content:encoded section of RSS 1.0/2.0
 						String description =
-							XMLHelper.getChildElementValue(
-								itemElm,
-								"description",
-								"");
+						    XMLHelper.getChildElementValue(
+						        itemElm,
+						        "content:encoded");
+
+						if ((description == null) || (description.length() == 0)) {
+						        description =
+						            XMLHelper.getChildElementValue(
+						                itemElm,
+						                "description",
+						                "");
+						}
 	
 						String signatureStr = null;
 						ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -615,6 +633,54 @@ public class Channel implements Runnable {
 	 */
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	/**
+	 * Returns the description.
+	 * @return String
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * Returns the link.
+	 * @return String
+	 */
+	public String getLink() {
+		return link;
+	}
+
+	/**
+	 * Returns the title.
+	 * @return String
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/**
+	 * Sets the description.
+	 * @param description The description to set
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	/**
+	 * Sets the link.
+	 * @param link The link to set
+	 */
+	public void setLink(String link) {
+		this.link = link;
+	}
+
+	/**
+	 * Sets the title.
+	 * @param title The title to set
+	 */
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 }
