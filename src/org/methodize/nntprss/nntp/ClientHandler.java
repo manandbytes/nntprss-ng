@@ -38,7 +38,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,19 +56,21 @@ import java.util.TimeZone;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.methodize.nntprss.rss.Channel;
-import org.methodize.nntprss.rss.ChannelManager;
-import org.methodize.nntprss.rss.Item;
-import org.methodize.nntprss.rss.publish.BloggerPublisher;
-import org.methodize.nntprss.rss.publish.LiveJournalPublisher;
-import org.methodize.nntprss.rss.publish.MetaWeblogPublisher;
-import org.methodize.nntprss.rss.publish.Publisher;
-import org.methodize.nntprss.rss.publish.PublisherException;
+import org.methodize.nntprss.feed.Channel;
+import org.methodize.nntprss.feed.ChannelManager;
+import org.methodize.nntprss.feed.Item;
+import org.methodize.nntprss.feed.publish.BloggerPublisher;
+import org.methodize.nntprss.feed.publish.LiveJournalPublisher;
+import org.methodize.nntprss.feed.publish.MetaWeblogPublisher;
+import org.methodize.nntprss.feed.publish.Publisher;
+import org.methodize.nntprss.feed.publish.PublisherException;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.CRLFPrintWriter;
 import org.methodize.nntprss.util.HTMLHelper;
@@ -75,7 +79,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.7 2003/03/22 16:28:52 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.8 2003/07/19 00:04:46 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -244,18 +248,19 @@ public class ClientHandler implements Runnable {
 		String boundary = "----=_Part_" + item.getDate().getTime();
 
 		pw.print("From: ");
-		if (channel.getManagingEditor() == null) {
-			pw.println(channel.getAuthor());
-		} else {
-			pw.print(channel.getAuthor());
-			pw.print(" <");
-			pw.print(RSSHelper.parseEmail(channel.getManagingEditor()));
-			pw.println(">");
-		}
+		pw.println(processAuthor(channel, item));
+//		if (channel.getManagingEditor() == null) {
+//			pw.println(
+//				stripTabsLineBreaks(processAuthor(channel.getAuthor(), "")));
+//		} else {
+//			pw.println(
+//				processAuthor(channel.getAuthor(), RSSHelper.parseEmail(channel.getManagingEditor())));
+//		}
 
 		pw.println("Newsgroups: " + channel.getName());
 		pw.println("Date: " + df.format(item.getDate()));
-		pw.println("Subject: " + processSubject(item.getTitle()));
+		pw.println("Subject: " + MimeUtility.encodeText(processSubject(item.getTitle()), "UTF-8", "Q"));
+
 		pw.println(
 			"Message-ID: "
 				+ "<"
@@ -302,7 +307,7 @@ public class ClientHandler implements Runnable {
 
 			String description =
 				HTMLHelper.unescapeString(
-					XMLHelper.stripHtmlTags(item.getDescription()));
+					XMLHelper.stripHtmlTags(item.getDescription(), true));
 
 			if (description.length() > 0) {
 				pw.println(description);
@@ -315,9 +320,17 @@ public class ClientHandler implements Runnable {
 				pw.println(item.getLink());
 			}
 
+			if (item.getGuid() != null && item.isGuidIsPermaLink() && item.getGuid().length() > 0) {
+				pw.print("PermaLink: ");
+				pw.println(item.getGuid());
+			}
+
 			if (item.getLink() != null && item.getLink().length() > 0) {
-				pw.print("Link: ");
-				pw.println(item.getLink());
+// Do not display link if same as PermaLink
+				if(item.getGuid() == null || !item.getGuid().equals(item.getLink())) {
+					pw.print("Link: ");
+					pw.println(item.getLink());
+				}
 			}
 
 			pw.println();
@@ -390,20 +403,38 @@ public class ClientHandler implements Runnable {
 				hasLinks = true;
 			}
 
+			boolean hasPermaLink = false;
 			// Output link
-			if (item.getLink() != null && item.getLink().length() > 0) {
+			if (item.getGuid() != null && item.isGuidIsPermaLink() && item.getGuid().length() > 0) {
 				if (hasLinks) {
 					pw.println("|&nbsp;&nbsp;");
 				}
-				pw.print("Link: <a href=\"");
-				pw.print(item.getLink());
+				pw.print("PermaLink: <a href=\"");
+				pw.print(item.getGuid());
 				pw.print("\">");
-				pw.print(item.getLink());
+				pw.print(item.getGuid());
 				pw.println("</a>");
-				hasLinks = true;
+				hasPermaLink = true;
 			}
 
-			if (hasLinks) {
+			if (item.getLink() != null && item.getLink().length() > 0) {
+// Do not display link if same as PermaLink
+			   if(item.getGuid() == null || !item.getGuid().equals(item.getLink())) {
+					if (hasPermaLink) {
+						pw.println("<br>");
+					} else if (hasLinks) {
+						pw.println("|&nbsp;&nbsp;");
+					}
+					pw.print("Link: <a href=\"");
+					pw.print(item.getLink());
+					pw.print("\">");
+					pw.print(item.getLink());
+					pw.println("</a>");
+					hasLinks = true;
+				}
+			}
+
+			if (hasLinks || hasPermaLink) {
 				pw.println("<br>");
 			}
 
@@ -515,7 +546,8 @@ public class ClientHandler implements Runnable {
 				if (nntpServer.isSecure()
 					&& !userAuthenticated
 					&& (!command.equalsIgnoreCase("AUTHINFO")
-						&& !command.equalsIgnoreCase("QUIT"))) {
+						&& !command.equalsIgnoreCase("QUIT")
+						&& !command.equalsIgnoreCase("MODE"))) {
 					pw.println("480 Authentication Required");
 				} else if (
 					command.equalsIgnoreCase("ARTICLE")
@@ -526,7 +558,8 @@ public class ClientHandler implements Runnable {
 					Item item = null;
 					Channel channel = null;
 
-					// TODO resolve no current group scenario
+					// ***************************
+					//TODO: resolve no current group scenario
 
 					if (parameters.length == 1
 						&& currentArticle != NO_CURRENT_ARTICLE) {
@@ -600,6 +633,7 @@ public class ClientHandler implements Runnable {
 									+ "> article retrieved - head and body follow");
 
 							writeArticle(pw, bodyPw, channel, item);
+							pw.println(".");
 						} else if (command.equalsIgnoreCase("HEAD")) {
 							pw.println(
 								"221 "
@@ -611,6 +645,7 @@ public class ClientHandler implements Runnable {
 									+ "> article retrieved - head follows");
 
 							writeHead(pw, channel, item);
+							pw.println(".");
 						} else if (command.equalsIgnoreCase("BODY")) {
 							pw.println(
 								"222 "
@@ -620,7 +655,10 @@ public class ClientHandler implements Runnable {
 									+ "@"
 									+ channel.getName()
 									+ "> article retrieved - body follows");
+									
+							pw.flush();
 							writeBody(bodyPw, channel, item);
+							pw.println(".");
 						} else if (command.equalsIgnoreCase("STAT")) {
 							pw.println(
 								"223 "
@@ -633,8 +671,6 @@ public class ClientHandler implements Runnable {
 						}
 
 						currentArticle = item.getArticleNumber();
-
-						pw.println(".");
 					}
 				} else if (command.equalsIgnoreCase("GROUP")) {
 					currentGroupName = parameters[1];
@@ -711,6 +747,8 @@ public class ClientHandler implements Runnable {
 							while (channelIter.hasNext()) {
 								Channel channel = (Channel) channelIter.next();
 								pw.println(channel.getName() + " ");
+// @TODO think about description
+//									+ channel.getDescription());
 							}
 							pw.println(".");
 						} else if (
@@ -783,7 +821,8 @@ public class ClientHandler implements Runnable {
 						pw.println("412 Not currently in newsgroup");
 					}
 				} else if (command.equalsIgnoreCase("MODE")) {
-					pw.println("201 Hello, you can't post");
+//					pw.println("201 Hello, you can't post");
+					pw.println("200 Hello, you can post");
 				} else if (command.equalsIgnoreCase("NEWGROUPS")) {
 					if (parameters.length < 3) {
 						pw.println("500 command not recognized");
@@ -876,9 +915,10 @@ public class ClientHandler implements Runnable {
 					List items = null;
 					int header = NNTP_HEADER_UNKNOWN;
 					boolean useMessageId = false;
+					Channel channel = null;
 					if (parameters.length == 2) {
 						header = parseHeaderName(parameters[1]);
-						Channel channel =
+						channel =
 							channelManager.channelByName(currentGroupName);
 						Item item =
 							channelManager.getChannelManagerDAO().loadItem(
@@ -903,7 +943,7 @@ public class ClientHandler implements Runnable {
 										sepPos + 1,
 										parameters[2].length() - 1);
 
-								Channel channel =
+								channel =
 									channelManager.channelByName(
 										artChannelName);
 								if (channel != null) {
@@ -925,7 +965,7 @@ public class ClientHandler implements Runnable {
 
 						} else {
 							int[] range = getIntRange(parameters[2]);
-							Channel channel =
+							channel =
 								channelManager.channelByName(currentGroupName);
 							items =
 								channelManager
@@ -978,8 +1018,21 @@ public class ClientHandler implements Runnable {
 
 								switch (header) {
 									case NNTP_HEADER_FROM :
-										pw.println(
-											item.getChannel().getAuthor());
+
+										pw.println(processAuthor(channel, item));
+//
+//										String email;
+//										if(channel.getManagingEditor() != null) {
+//											email = RSSHelper.parseEmail(channel.getManagingEditor());	
+//										} else {
+//											email = "";
+//										}
+//										String author = processAuthor(channel.getAuthor(), email);
+
+//										pw.println(
+//											stripTabsLineBreaks(MimeUtility.encodeText(author, "UTF-8", "Q"))  );
+//										pw.println(stripTabsLineBreaks(author));
+
 										break;
 									case NNTP_HEADER_DATE :
 										pw.println(df.format(item.getDate()));
@@ -988,8 +1041,14 @@ public class ClientHandler implements Runnable {
 										pw.println(item.getChannel().getName());
 										break;
 									case NNTP_HEADER_SUBJECT :
+//										pw.println(
+//											processSubject(item.getTitle()));
 										pw.println(
-											processSubject(item.getTitle()));
+											processSubject(
+												MimeUtility.encodeText(item.getTitle(), "UTF-8", "Q")
+											)
+										);
+
 										break;
 									case NNTP_HEADER_MESSAGE_ID :
 										pw.println(
@@ -1036,6 +1095,16 @@ public class ClientHandler implements Runnable {
 							pw.println("420 No article(s) selected");
 						} else {
 							Iterator itemIter = items.iterator();
+//							String email;
+//							if(channel.getManagingEditor() != null) {
+//								email = RSSHelper.parseEmail(channel.getManagingEditor());	
+//							} else {
+//								email = "";
+//							}
+//							String author = processAuthor(channel.getAuthor(), email);
+// Handle escaping international characters
+//							author = stripTabsLineBreaks(author);
+
 							while (itemIter.hasNext()) {
 								Item item = (Item) itemIter.next();
 								try {
@@ -1043,9 +1112,10 @@ public class ClientHandler implements Runnable {
 										.println(
 											item.getArticleNumber()
 											+ "\t"
-											+ processSubject(item.getTitle())
+											+ processSubject(MimeUtility.encodeText(item.getTitle(), "UTF-8", "Q")) 
 											+ "\t"
-											+ channel.getAuthor()
+											+ processAuthor(channel, item)
+//											+ author
 											+ "\t"
 											+ df.format(item.getDate())
 											+ "\t"
@@ -1268,6 +1338,10 @@ public class ClientHandler implements Runnable {
 				if (log.isEnabledFor(Priority.WARN)) {
 					log.warn("Unexpected exception thrown", e);
 				}
+			} else if(e instanceof SocketTimeoutException) {
+				if(log.isDebugEnabled()) {
+					log.debug("NNTP Client socket timed out");
+				}
 			}
 		} finally {
 			if (log.isInfoEnabled()) {
@@ -1276,11 +1350,77 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
-	private String processSubject(String subject) {
+	private String processAuthor(Channel channel, Item item) {
+		String authorEmail = null;
+
+		if(item.getCreator() != null && item.getCreator().length() > 0) {
+			String creator = item.getCreator().trim();
+			String author;
+			String email = null;
+			
+			int atPos = creator.indexOf('@');
+			if(atPos > 0) {
+// We have found an @ sign after the first character - indicative 
+// of the creator containing an email address...
+				int spacePos = creator.substring(0, atPos).lastIndexOf(' ');
+				if(spacePos == -1) {
+// Let's assume that it is just an email...
+					author = creator;
+					email = creator;
+				} else {
+					author = creator.substring(0, spacePos);
+					email = creator.substring(spacePos+1);
+					if(email.charAt(0) == '(' && email.charAt(email.length() -1) == ')') {
+						email = email.substring(1, email.length() -1);
+					}
+					if(email.startsWith("mailto:") && email.length() > "mailto:".length()) {
+						email = email.substring("mailto:".length());
+					}											
+				}
+			}
+			else {
+// No email address provided
+				author = creator;
+			}
+
+			authorEmail =
+				stripTabsLineBreaks(processAuthor(author, email));
+		} 
+		
+		if ((authorEmail == null || authorEmail.length() == 0)) {
+			if(channel.getManagingEditor() == null) {
+				authorEmail =
+					stripTabsLineBreaks(processAuthor(channel.getAuthor(), ""));
+			} else {
+				authorEmail = 
+					stripTabsLineBreaks(processAuthor(channel.getAuthor(), RSSHelper.parseEmail(channel.getManagingEditor())));
+			}
+		}
+		
+		return authorEmail;
+	}
+	
+	private String processAuthor(String author, String email) {
+		String authorEmail;
+		if(email == null || email.length() == 0) {
+			email = "unknown@email";
+		}
+		
+		try {
+			InternetAddress inetAddress = new InternetAddress(
+				email, author, "UTF-8");
+			authorEmail = inetAddress.toString();	
+		} catch(UnsupportedEncodingException uee) {
+			authorEmail = "";
+		}
+		return authorEmail;
+	}
+
+	private String stripTabsLineBreaks(String value) {
 		StringBuffer strippedString = new StringBuffer();
 		boolean lastCharBreak = false;
-		for (int i = 0; i < subject.length(); i++) {
-			char c = subject.charAt(i);
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
 			if (c == '\n' || c == '\t') {
 				if (!lastCharBreak) {
 					strippedString.append(' ');
@@ -1291,7 +1431,12 @@ public class ClientHandler implements Runnable {
 				lastCharBreak = false;
 			}
 		}
-		return HTMLHelper.unescapeString(strippedString.toString());
+		return strippedString.toString();
+	}
+
+	private String processSubject(String subject) {
+		String strippedString = stripTabsLineBreaks(subject);
+		return HTMLHelper.unescapeString(strippedString);
 	}
 
 }
