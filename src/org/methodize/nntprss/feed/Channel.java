@@ -33,9 +33,12 @@ package org.methodize.nntprss.feed;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.PushbackInputStream;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
@@ -68,13 +71,14 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.methodize.nntprss.feed.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.feed.parser.AtomParser;
 import org.methodize.nntprss.feed.parser.GenericParser;
 import org.methodize.nntprss.feed.parser.LooseParser;
 import org.methodize.nntprss.feed.parser.RSSParser;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.HttpUserException;
+import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -82,9 +86,11 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.2 2003/07/20 02:46:53 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.3 2003/09/28 20:17:39 jasonbrome Exp $
  */
-public class Channel implements Runnable {
+public class Channel implements Runnable, Externalizable {
+
+	public static final int EXTERNAL_VERSION = 1;  
 
 	public static final int STATUS_OK = 0;
 	public static final int STATUS_NOT_FOUND = 1;
@@ -104,15 +110,12 @@ public class Channel implements Runnable {
 	private String name;
 	private URL url;
 	private int id;
-
 	private String title;
 	private String link;
 	private String description;
-
 	private Date lastPolled;
 	private long lastModified;
 	private String lastETag;
-
 	private Date created;
 
 	private int firstArticleNumber = 1;
@@ -120,7 +123,6 @@ public class Channel implements Runnable {
 	private int totalArticles = 0;
 
 	private String rssVersion;
-
 	private String managingEditor;
 
 	private boolean historical = true;
@@ -133,9 +135,11 @@ public class Channel implements Runnable {
 	private Map publishConfig = null;
 
 	private int status = STATUS_OK;
+	private long pollingIntervalSeconds = DEFAULT_POLLING_INTERVAL;
+
 
 	private ChannelManager channelManager;
-	private ChannelManagerDAO channelManagerDAO;
+	private ChannelDAO channelDAO;
 
 	private transient boolean polling = false;
 	private transient boolean connected = false;
@@ -143,7 +147,6 @@ public class Channel implements Runnable {
 	public static final long DEFAULT_POLLING_INTERVAL = 0;
 	private static final int HTTP_CONNECTION_TIMEOUT = 1000 * 60 * 5;
 
-	private long pollingIntervalSeconds = DEFAULT_POLLING_INTERVAL;
 
 	//	private HttpURLConnection httpCon = null;
 
@@ -157,13 +160,19 @@ public class Channel implements Runnable {
 		AtomParser.getParser()
 	};
 
+	public Channel() {
+	}
+
 	public Channel(String name, String urlString)
 		throws MalformedURLException {
 		this.name = name;
 		this.url = new URL(urlString);
-
+		initialize();
+	}
+	
+	private void initialize() {
 		channelManager = ChannelManager.getChannelManager();
-		channelManagerDAO = channelManager.getChannelManagerDAO();
+		channelDAO = channelManager.getChannelDAO();
 		//		httpClient = channelManager.getHttpClient();
 		//		httpClient = new HttpClient();
 
@@ -449,7 +458,7 @@ public class Channel implements Runnable {
 			}
 
 			// Update channel in database...
-			channelManagerDAO.updateChannel(this);
+			channelDAO.updateChannel(this);
 
 		} catch (FileNotFoundException fnfe) {
 			if (log.isEnabledFor(Priority.WARN)) {
@@ -492,7 +501,7 @@ public class Channel implements Runnable {
 		if(docParser != null) {
 			rssVersion = docParser.getFormatVersion(rootElm);
 			docParser.extractFeedInfo(rootElm, this);	
-			docParser.processFeedItems(rootElm, this, channelManagerDAO,
+			docParser.processFeedItems(rootElm, this, channelDAO,
 				keepHistory);
 		} // end if docParser != null
 
@@ -636,7 +645,7 @@ public class Channel implements Runnable {
 
 	public void save() {
 		// Update channel in database...
-		channelManagerDAO.updateChannel(this);
+		channelDAO.updateChannel(this);
 	}
 
 	/**
@@ -841,7 +850,7 @@ public class Channel implements Runnable {
 	 * @param url The url to set
 	 */
 	public void setUrl(URL url) {
-		if (!this.url.equals(url)) {
+		if (this.url == null || !this.url.equals(url)) {
 			this.url = url;
 
 			// If we change the URL, then reset the 
@@ -1180,6 +1189,75 @@ public class Channel implements Runnable {
 		public void setLocation(String location) {
 			this.location = location;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	public void readExternal(ObjectInput in)
+		throws IOException, ClassNotFoundException {
+			in.readInt();
+			author = in.readUTF();
+			name = in.readUTF();
+			url = new URL(in.readUTF());
+			id = in.readInt();
+			title = in.readUTF();
+			link = in.readUTF();
+			description = in.readUTF();
+			lastPolled = new Date(in.readLong());
+			lastModified = in.readLong();
+			lastETag = in.readUTF();
+			created = new Date(in.readLong());
+			firstArticleNumber = in.readInt();
+			lastArticleNumber = in.readInt();
+			totalArticles = in.readInt();
+			rssVersion = in.readUTF();
+			managingEditor = in.readUTF();
+
+			historical = in.readBoolean();
+			enabled = in.readBoolean();
+			parseAtAllCost = in.readBoolean();
+
+			postingEnabled = in.readBoolean();
+			publishAPI = in.readUTF();
+			publishConfig = XMLHelper.xmlToStringHashMap(in.readUTF());
+			status = in.readInt();
+			pollingIntervalSeconds = in.readLong();
+
+			initialize();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(EXTERNAL_VERSION);
+		out.writeUTF(author != null ? author : "");
+		out.writeUTF(name != null ? name : "");
+		out.writeUTF(url.toString());
+		out.writeInt(id);
+		out.writeUTF(title != null ? title : "");
+		out.writeUTF(link != null ? link : "");
+		out.writeUTF(description != null ? description : "");
+		out.writeLong(lastPolled != null ? lastPolled.getTime() : 0);
+		out.writeLong(lastModified);
+		out.writeUTF(lastETag != null ? lastETag : "");
+		out.writeLong(created != null ? created.getTime() : 0);
+		out.writeInt(firstArticleNumber);
+		out.writeInt(lastArticleNumber);
+		out.writeInt(totalArticles);
+		out.writeUTF(rssVersion != null ? rssVersion : "");
+		out.writeUTF(managingEditor != null ? managingEditor : "");
+
+		out.writeBoolean(historical);
+		out.writeBoolean(enabled);
+		out.writeBoolean(parseAtAllCost);
+
+		out.writeBoolean(postingEnabled);
+		out.writeUTF(publishAPI != null ? publishAPI : "");
+		out.writeUTF(XMLHelper.stringMapToXML(publishConfig));
+		out.writeInt(status);
+		out.writeLong(pollingIntervalSeconds);
 	}
 
 }

@@ -30,13 +30,19 @@ package org.methodize.nntprss.feed;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Date;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Item.java,v 1.1 2003/07/18 23:57:36 jasonbrome Exp $
+ * @version $Id: Item.java,v 1.2 2003/09/28 20:19:00 jasonbrome Exp $
  */
-public class Item {
+public class Item implements Externalizable {
+
+	public static final int EXTERNAL_VERSION = 1;  
 
 	private int articleNumber;
 	private String signature;
@@ -225,6 +231,50 @@ public class Item {
 	 */
 	public void setGuidIsPermaLink(boolean b) {
 		guidIsPermaLink = b;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	public void readExternal(ObjectInput in)
+		throws IOException, ClassNotFoundException {
+
+// Version
+		in.readInt();
+		
+		articleNumber = in.readInt();
+		signature = in.readUTF();
+		title = in.readUTF();
+		description = in.readUTF();
+		link = in.readUTF();
+		date = new Date(in.readLong());
+		comments = in.readUTF();
+		creator = in.readUTF();
+
+// skip channel...
+		in.readInt();
+
+		guid = in.readUTF();
+		guidIsPermaLink = in.readBoolean();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput out) throws IOException {
+//		Version
+				out.writeInt(EXTERNAL_VERSION);
+			out.writeInt(articleNumber);		
+			out.writeUTF(signature != null ? signature : "");
+			out.writeUTF(title != null ? title : "");
+			out.writeUTF(description != null ? description : "");
+			out.writeUTF(link != null ? link : "");
+			out.writeLong(date != null ? date.getTime() : 0);
+			out.writeUTF(comments != null ? comments : "");
+			out.writeUTF(creator != null ? creator : "");
+			out.writeInt(channel.getId());
+			out.writeUTF(guid != null ? guid : "");
+			out.writeBoolean(guidIsPermaLink);
 	}
 
 }

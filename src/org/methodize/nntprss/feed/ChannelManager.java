@@ -30,6 +30,10 @@ package org.methodize.nntprss.feed;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Iterator;
@@ -40,35 +44,38 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.methodize.nntprss.feed.db.ChannelManagerDAO;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.2 2003/07/20 02:39:44 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.3 2003/09/28 20:18:40 jasonbrome Exp $
  */
-public class ChannelManager {
+public class ChannelManager implements Externalizable {
+
+	public static final int EXTERNAL_VERSION = 1;
 
 	private long pollingIntervalSeconds = 60 * 60;
-	
+
 	private String proxyServer = null;
 	private int proxyPort = 0;
-    private String proxyUserID = null;
-    private transient String proxyPassword = null;
+	private String proxyUserID = null;
+	private String proxyPassword = null;
 	private boolean useProxy = false;
 	private boolean observeHttp301 = false;
-   
+
 	private Map channels;
 	private static ChannelManager channelManager = new ChannelManager();
-	private ChannelManagerDAO channelManagerDAO;
+	private ChannelDAO channelDAO;
 	private ChannelPoller channelPoller;
 
 	private HostConfiguration hostConfig = null;
-//	private HttpState httpState = null;
+	//	private HttpState httpState = null;
 	private MultiThreadedHttpConnectionManager httpConMgr;
 
 	private ChannelManager() {
 		// Private constructor - singleton class
-		channelManagerDAO = ChannelManagerDAO.getChannelManagerDAO();
+		channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
 		hostConfig = new HostConfiguration();
 		httpConMgr = new MultiThreadedHttpConnectionManager();
 	}
@@ -90,29 +97,28 @@ public class ChannelManager {
 
 	public void configure(Document config) {
 
-		channelManagerDAO.loadConfiguration(this);
+		channelDAO.loadConfiguration(this);
 
 		updateProxyConfig();
 
 		// Load feeds...
-		channels = channelManagerDAO.loadChannels();
+		channels = channelDAO.loadChannels();
 
-//		// Start feed poller...
-//		startPoller();
+		//		// Start feed poller...
+		//		startPoller();
 
 	}
 
 	public void addChannel(Channel channel) {
 		channel.setCreated(new Date());
-		channelManagerDAO.addChannel(channel);
+		channelDAO.addChannel(channel);
 		channels.put(channel.getName(), channel);
 	}
 
 	public void deleteChannel(Channel channel) {
 		channels.remove(channel.getName());
-		channelManagerDAO.deleteChannel(channel);
+		channelDAO.deleteChannel(channel);
 	}
-
 
 	public void start() {
 		startPoller();
@@ -142,89 +148,90 @@ public class ChannelManager {
 	public synchronized void repollAllChannels() {
 		try {
 			Iterator channelIter = channels.values().iterator();
-	
+
 			while (channelIter.hasNext()) {
 				Channel channel = (Channel) channelIter.next();
 				channel.setLastPolled(null);
 				channel.setStatus(Channel.STATUS_OK);
 			}
-			
-		} catch(ConcurrentModificationException cme) {
-// Just in case something else is modifying the channel structure...
+
+		} catch (ConcurrentModificationException cme) {
+			// Just in case something else is modifying the channel structure...
 		}
 	}
 
 	public void configureHttpClient(HttpClient client) {
 		client.setHostConfiguration(hostConfig);
 
-	    if ((proxyUserID != null && proxyUserID.length() > 0) ||
-	    	(proxyPassword != null && proxyPassword.length() > 0)) {
-			client.getState().setProxyCredentials(null, null,
-				new UsernamePasswordCredentials(proxyUserID,
-	                        (proxyPassword == null) ? ""
-	                                : proxyPassword));
-    	} else {
-            client.getState().setProxyCredentials(null, null, null);
-    	}
+		if ((proxyUserID != null && proxyUserID.length() > 0)
+			|| (proxyPassword != null && proxyPassword.length() > 0)) {
+			client.getState().setProxyCredentials(
+				null,
+				null,
+				new UsernamePasswordCredentials(
+					proxyUserID,
+					(proxyPassword == null) ? "" : proxyPassword));
+		} else {
+			client.getState().setProxyCredentials(null, null, null);
+		}
 	}
-	
+
 	private void updateProxyConfig() {
-// Set proxy configuration, if necessary.
-        if (useProxy && (proxyServer != null) && (proxyServer.length() > 0)) {
-//			System.setProperty("http.proxyHost", proxyServer);
-//			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
-//			System.setProperty("http.proxySet", "true");
+		// Set proxy configuration, if necessary.
+		if (useProxy && (proxyServer != null) && (proxyServer.length() > 0)) {
+			//			System.setProperty("http.proxyHost", proxyServer);
+			//			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
+			//			System.setProperty("http.proxySet", "true");
 
-// Set HttpClient proxy configuration
-			hostConfig.setProxy(proxyServer,
-				proxyPort);
+			// Set HttpClient proxy configuration
+			hostConfig.setProxy(proxyServer, proxyPort);
 
-//            if ((proxyUserID != null && proxyUserID.length() > 0) ||
-//            	(proxyPassword != null && proxyPassword.length() > 0)) {
-//                Authenticator.setDefault(new Authenticator() {
-//                        protected PasswordAuthentication getPasswordAuthentication() {
-//                            return new PasswordAuthentication(proxyUserID,
-//                                (proxyPassword == null) ? new char[0]
-//                                                        : proxyPassword.toCharArray());
-//                        }
-//                    });
-//
-//				httpClient.getState().setProxyCredentials(null,
-//					new UsernamePasswordCredentials(proxyUserID,
-//                                (proxyPassword == null) ? ""
-//                                                        : proxyPassword));
-//
-//            } else {
-//            	Authenticator.setDefault(null);
-//            	
-//            	httpClient.getState().setProxyCredentials(null, null);
-//            }
-        } else {
-//            System.setProperty("http.proxyHost", "");
-//            System.setProperty("http.proxyPort", "");
-//            System.setProperty("http.proxySet", "false");
-//            Authenticator.setDefault(null);
+			//            if ((proxyUserID != null && proxyUserID.length() > 0) ||
+			//            	(proxyPassword != null && proxyPassword.length() > 0)) {
+			//                Authenticator.setDefault(new Authenticator() {
+			//                        protected PasswordAuthentication getPasswordAuthentication() {
+			//                            return new PasswordAuthentication(proxyUserID,
+			//                                (proxyPassword == null) ? new char[0]
+			//                                                        : proxyPassword.toCharArray());
+			//                        }
+			//                    });
+			//
+			//				httpClient.getState().setProxyCredentials(null,
+			//					new UsernamePasswordCredentials(proxyUserID,
+			//                                (proxyPassword == null) ? ""
+			//                                                        : proxyPassword));
+			//
+			//            } else {
+			//            	Authenticator.setDefault(null);
+			//            	
+			//            	httpClient.getState().setProxyCredentials(null, null);
+			//            }
+		} else {
+			//            System.setProperty("http.proxyHost", "");
+			//            System.setProperty("http.proxyPort", "");
+			//            System.setProperty("http.proxySet", "false");
+			//            Authenticator.setDefault(null);
 
 			hostConfig = new HostConfiguration();
-//           	httpClient.getState().setProxyCredentials(null, null);
+			//           	httpClient.getState().setProxyCredentials(null, null);
 
 		}
 	}
 
 	public void saveConfiguration() {
-		channelManagerDAO.saveConfiguration(this);
+		channelDAO.saveConfiguration(this);
 
-// Update proxy configuration, if necessary.
+		// Update proxy configuration, if necessary.
 		updateProxyConfig();
 
 	}
 
 	/**
-	 * Returns the channelManagerDAO.
+	 * Returns the channelDAO.
 	 * @return ChannelManagerDAO
 	 */
-	public ChannelManagerDAO getChannelManagerDAO() {
-		return channelManagerDAO;
+	public ChannelDAO getChannelDAO() {
+		return channelDAO;
 	}
 
 	/**
@@ -307,12 +314,12 @@ public class ChannelManager {
 		this.proxyUserID = proxyUserID;
 	}
 
-/**
- * @return
- */
-public MultiThreadedHttpConnectionManager getHttpConMgr() {
-	return httpConMgr;
-}
+	/**
+	 * @return
+	 */
+	public MultiThreadedHttpConnectionManager getHttpConMgr() {
+		return httpConMgr;
+	}
 
 	/**
 	 * @return
@@ -340,6 +347,35 @@ public MultiThreadedHttpConnectionManager getHttpConMgr() {
 	 */
 	public void setObserveHttp301(boolean b) {
 		observeHttp301 = b;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	public void readExternal(ObjectInput in)
+		throws IOException, ClassNotFoundException {
+		in.readInt();
+		pollingIntervalSeconds = in.readLong();
+		proxyServer = in.readUTF();
+		proxyPort = in.readInt();
+		proxyUserID = in.readUTF();
+		proxyPassword = in.readUTF();
+		useProxy = in.readBoolean();
+		observeHttp301 = in.readBoolean();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(EXTERNAL_VERSION);
+		out.writeLong(pollingIntervalSeconds);
+		out.writeUTF(proxyServer != null ? proxyServer : "");
+		out.writeInt(proxyPort);
+		out.writeUTF(proxyUserID != null ? proxyUserID : "");
+		out.writeUTF(proxyPassword != null ? proxyPassword : "");
+		out.writeBoolean(useProxy);
+		out.writeBoolean(observeHttp301);
 	}
 
 }
