@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -41,7 +41,7 @@ import jdbm.helper.Serializer;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: InstanceJdbmSerializer.java,v 1.1 2003/09/28 20:14:18 jasonbrome Exp $
+ * @version $Id: InstanceJdbmSerializer.java,v 1.2 2004/01/04 21:15:17 jasonbrome Exp $
  */
 
 public class InstanceJdbmSerializer implements Serializer {
