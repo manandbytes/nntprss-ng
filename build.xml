@@ -1,17 +1,22 @@
 <!-- nntp//rss - Ant Build Script -->
-<!-- Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved -->
+<!-- Copyright (c) 2002-2004 Jason Brome.  All Rights Reserved -->
 <!-- Email: nntprss@methodize.org -->
 
 <project name="nntp//rss" default="all" basedir=".">
 
   <property environment="env"/>
-  <property name="bin"        value="${basedir}/bin"/>
-  <property name="etc"            value="${basedir}/etc"/>
-  <property name="ext"            value="${basedir}/ext"/>
-  <property name="src"            value="${basedir}/src" />
+  <property name="bin" value="${basedir}/bin"/>
+  <property name="etc" value="${basedir}/etc"/>
+  <property name="ext" value="${basedir}/ext"/>
+  <property name="src" value="${basedir}/src" />
+  <property name="debug" value="true" />
+  <property name="optimize" value="true" />
+  <property name="deprecation" value="true" />
 
-  <property name="nntprss-start.jar"              value="${basedir}/nntprss-start.jar"/>
-  <property name="nntprss.jar"           value="${basedir}/nntprss.jar"/>
+  <property name="nntprss-start.jar" value="${basedir}/nntprss-start.jar"/>
+  <property name="nntprss.jar" value="${basedir}/nntprss.jar"/>
+
+  <property file="build.properties" />
 
   <!-- ==================================================================== -->
   <target name="classpath">
@@ -34,6 +39,7 @@
   
   <!-- ==================================================================== -->
   <target name="clean" description="Remove generated files">
+    <delete dir="${bin}" quiet="true"/>
     <delete file="${nntprss-start.jar}" quiet="true"/>
     <delete file="${nntprss.jar}" quiet="true"/>
   </target>
@@ -42,9 +48,9 @@
   <target name="classes" depends="prepare" description="Compile the java classes" >
     <javac srcdir="${src}"
            destdir="${bin}"
-           debug="false"
-           optimize="true"
-           deprecation="true"
+           debug="${debug}"
+           optimize="${optimize}"
+           deprecation="${deprecation}"
            target="1.2"
            >
        <classpath refid="extpath" />
@@ -82,12 +88,13 @@
 
 
   <target name="package-bin" depends="all" description="Build archives for distribution">
-    <zip destfile="${basedir}/../nntprss.zip">
+    <zip destfile="${basedir}/../nntprss-${version}.zip">
       <zipfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
       <zipfileset dir="." prefix="nntprss">
         <include name="CHANGELOG"/>
         <include name="LICENSE.TXT"/>
         <include name="log4j.properties"/>
+        <include name="nntprss.exe"/>
         <include name="nntprss.jar"/>
         <include name="nntprss-config.xml"/>
         <include name="nntprss-start.jar"/>
@@ -99,7 +106,7 @@
       </zipfileset>
     </zip>
 
-    <tar destfile="${basedir}/../nntprss.tar">
+    <tar destfile="${basedir}/../nntprss-${version}.tar">
       <tarfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
       <tarfileset dir="." prefix="nntprss">
         <include name="CHANGELOG"/>
@@ -116,37 +123,39 @@
       </tarfileset>
     </tar>
 
-    <gzip src="${basedir}/../nntprss.tar" zipfile="${basedir}/../nntprss.tar.gz"/>
-    <delete file="${basedir}/../nntprss.tar"/>
+    <gzip src="${basedir}/../nntprss-${version}.tar" zipfile="${basedir}/../nntprss-${version}.tar.gz"/>
+    <delete file="${basedir}/../nntprss-${version}.tar"/>
 
   </target>
 
   <target name="package-src" depends="all" description="Build archives for distribution">
-    <zip destfile="${basedir}/../nntprss-src.zip">
+    <zip destfile="${basedir}/../nntprss-src-${version}.zip">
       <zipfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
       <zipfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
       <zipfileset dir="." prefix="nntprss">
         <include name="build.xml"/>
+        <include name="build.properties"/>
         <include name="CHANGELOG"/>
         <include name="LICENSE.TXT"/>
         <include name="README.TXT"/>
       </zipfileset>
     </zip>
 
-    <tar destfile="${basedir}/../nntprss-src.tar">
+    <tar destfile="${basedir}/../nntprss-src-${version}.tar">
       <tarfileset dir="src" includes="**/*.java" prefix="nntprss/src"/>
       <tarfileset dir="etc" includes="MANIFEST.MF" prefix="nntprss/etc" />
       <tarfileset dir="." prefix="nntprss">
         <include name="build.xml"/>
+        <include name="build.properties"/>
         <include name="CHANGELOG"/>
         <include name="LICENSE.TXT"/>
         <include name="README.TXT"/>
       </tarfileset>
     </tar>
 
-    <gzip src="${basedir}/../nntprss-src.tar" zipfile="${basedir}/../nntprss-src.tar.gz"/>
+    <gzip src="${basedir}/../nntprss-src-${version}.tar" zipfile="${basedir}/../nntprss-src-${version}.tar.gz"/>
 
-    <delete file="${basedir}/../nntprss-src.tar"/>
+    <delete file="${basedir}/../nntprss-src-${version}.tar"/>
   </target>
 
   <target name="package" depends="package-bin, package-src" description="Build archives for distribution">
