@@ -66,6 +66,7 @@ import org.apache.log4j.Priority;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.feed.Item;
+import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.feed.publish.BloggerPublisher;
 import org.methodize.nntprss.feed.publish.LiveJournalPublisher;
 import org.methodize.nntprss.feed.publish.MetaWeblogPublisher;
@@ -79,10 +80,11 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.8 2003/07/19 00:04:46 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.9 2003/09/28 20:22:50 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
+	private static final int RETRIEVE_LIMIT = 1000;
 	private Logger log = Logger.getLogger(ClientHandler.class);
 
 	private Socket client = null;
@@ -249,17 +251,22 @@ public class ClientHandler implements Runnable {
 
 		pw.print("From: ");
 		pw.println(processAuthor(channel, item));
-//		if (channel.getManagingEditor() == null) {
-//			pw.println(
-//				stripTabsLineBreaks(processAuthor(channel.getAuthor(), "")));
-//		} else {
-//			pw.println(
-//				processAuthor(channel.getAuthor(), RSSHelper.parseEmail(channel.getManagingEditor())));
-//		}
+		//		if (channel.getManagingEditor() == null) {
+		//			pw.println(
+		//				stripTabsLineBreaks(processAuthor(channel.getAuthor(), "")));
+		//		} else {
+		//			pw.println(
+		//				processAuthor(channel.getAuthor(), RSSHelper.parseEmail(channel.getManagingEditor())));
+		//		}
 
 		pw.println("Newsgroups: " + channel.getName());
 		pw.println("Date: " + df.format(item.getDate()));
-		pw.println("Subject: " + MimeUtility.encodeText(processSubject(item.getTitle()), "UTF-8", "Q"));
+		pw.println(
+			"Subject: "
+				+ MimeUtility.encodeText(
+					processSubject(item.getTitle()),
+					"UTF-8",
+					"Q"));
 
 		pw.println(
 			"Message-ID: "
@@ -307,7 +314,9 @@ public class ClientHandler implements Runnable {
 
 			String description =
 				HTMLHelper.unescapeString(
-					XMLHelper.stripHtmlTags(item.getDescription(), true));
+					XMLHelper.stripHtmlTags(
+						item.getDescription(),
+						nntpServer.isFootnoteUrls()));
 
 			if (description.length() > 0) {
 				pw.println(description);
@@ -320,14 +329,18 @@ public class ClientHandler implements Runnable {
 				pw.println(item.getLink());
 			}
 
-			if (item.getGuid() != null && item.isGuidIsPermaLink() && item.getGuid().length() > 0) {
+			if (item.getGuid() != null
+				&& item.isGuidIsPermaLink()
+				&& item.getGuid().length() > 0) {
 				pw.print("PermaLink: ");
 				pw.println(item.getGuid());
 			}
 
 			if (item.getLink() != null && item.getLink().length() > 0) {
-// Do not display link if same as PermaLink
-				if(item.getGuid() == null || !item.getGuid().equals(item.getLink())) {
+				// Do not display link if same as PermaLink
+				if (!item.isGuidIsPermaLink()
+					|| (item.getGuid() == null
+						|| !item.getGuid().equals(item.getLink()))) {
 					pw.print("Link: ");
 					pw.println(item.getLink());
 				}
@@ -405,7 +418,9 @@ public class ClientHandler implements Runnable {
 
 			boolean hasPermaLink = false;
 			// Output link
-			if (item.getGuid() != null && item.isGuidIsPermaLink() && item.getGuid().length() > 0) {
+			if (item.getGuid() != null
+				&& item.isGuidIsPermaLink()
+				&& item.getGuid().length() > 0) {
 				if (hasLinks) {
 					pw.println("|&nbsp;&nbsp;");
 				}
@@ -418,8 +433,10 @@ public class ClientHandler implements Runnable {
 			}
 
 			if (item.getLink() != null && item.getLink().length() > 0) {
-// Do not display link if same as PermaLink
-			   if(item.getGuid() == null || !item.getGuid().equals(item.getLink())) {
+				// Do not display link if same as PermaLink
+				if (!item.isGuidIsPermaLink()
+					|| item.getGuid() == null
+					|| !item.getGuid().equals(item.getLink())) {
 					if (hasPermaLink) {
 						pw.println("<br>");
 					} else if (hasLinks) {
@@ -568,7 +585,7 @@ public class ClientHandler implements Runnable {
 							channelManager.channelByName(currentGroupName);
 
 						item =
-							channelManager.getChannelManagerDAO().loadItem(
+							channelManager.getChannelDAO().loadItem(
 								channel,
 								currentArticle);
 
@@ -582,7 +599,7 @@ public class ClientHandler implements Runnable {
 								channelManager.channelByName(currentGroupName);
 
 							item =
-								channelManager.getChannelManagerDAO().loadItem(
+								channelManager.getChannelDAO().loadItem(
 									channel,
 									Integer.parseInt(artNumOrMsgId));
 						} else {
@@ -603,7 +620,7 @@ public class ClientHandler implements Runnable {
 								if (channel != null) {
 									item =
 										channelManager
-											.getChannelManagerDAO()
+											.getChannelDAO()
 											.loadItem(
 											channel,
 											itemSignature);
@@ -655,7 +672,7 @@ public class ClientHandler implements Runnable {
 									+ "@"
 									+ channel.getName()
 									+ "> article retrieved - body follows");
-									
+
 							pw.flush();
 							writeBody(bodyPw, channel, item);
 							pw.println(".");
@@ -708,7 +725,7 @@ public class ClientHandler implements Runnable {
 							currentArticle > channel.getFirstArticleNumber()) {
 							Item item =
 								channelManager
-									.getChannelManagerDAO()
+									.getChannelDAO()
 									.loadPreviousItem(
 									channel,
 									currentArticle);
@@ -747,8 +764,8 @@ public class ClientHandler implements Runnable {
 							while (channelIter.hasNext()) {
 								Channel channel = (Channel) channelIter.next();
 								pw.println(channel.getName() + " ");
-// @TODO think about description
-//									+ channel.getDescription());
+								// @TODO think about description
+								//									+ channel.getDescription());
 							}
 							pw.println(".");
 						} else if (
@@ -806,9 +823,7 @@ public class ClientHandler implements Runnable {
 						pw.println("211 list of article numbers follow");
 
 						List items =
-							channelManager
-								.getChannelManagerDAO()
-								.loadArticleNumbers(
+							channelManager.getChannelDAO().loadArticleNumbers(
 								channel);
 
 						Iterator itemIter = items.iterator();
@@ -821,7 +836,7 @@ public class ClientHandler implements Runnable {
 						pw.println("412 Not currently in newsgroup");
 					}
 				} else if (command.equalsIgnoreCase("MODE")) {
-//					pw.println("201 Hello, you can't post");
+					//					pw.println("201 Hello, you can't post");
 					pw.println("200 Hello, you can post");
 				} else if (command.equalsIgnoreCase("NEWGROUPS")) {
 					if (parameters.length < 3) {
@@ -887,9 +902,7 @@ public class ClientHandler implements Runnable {
 						} else if (
 							currentArticle < channel.getLastArticleNumber()) {
 							Item item =
-								channelManager
-									.getChannelManagerDAO()
-									.loadNextItem(
+								channelManager.getChannelDAO().loadNextItem(
 									channel,
 									currentArticle);
 							currentArticle = item.getArticleNumber();
@@ -915,18 +928,23 @@ public class ClientHandler implements Runnable {
 					List items = null;
 					int header = NNTP_HEADER_UNKNOWN;
 					boolean useMessageId = false;
+					boolean groupSelected = true;
 					Channel channel = null;
 					if (parameters.length == 2) {
-						header = parseHeaderName(parameters[1]);
-						channel =
-							channelManager.channelByName(currentGroupName);
-						Item item =
-							channelManager.getChannelManagerDAO().loadItem(
-								channel,
-								currentArticle);
-						if (item != null) {
-							items = new ArrayList();
-							items.add(item);
+						if (currentGroupName == null) {
+							groupSelected = false;
+						} else {
+							header = parseHeaderName(parameters[1]);
+							channel =
+								channelManager.channelByName(currentGroupName);
+							Item item =
+								channelManager.getChannelDAO().loadItem(
+									channel,
+									currentArticle);
+							if (item != null) {
+								items = new ArrayList();
+								items.add(item);
+							}
 						}
 					} else if (parameters.length == 3) {
 						header = parseHeaderName(parameters[1]);
@@ -949,7 +967,7 @@ public class ClientHandler implements Runnable {
 								if (channel != null) {
 									Item item =
 										channelManager
-											.getChannelManagerDAO()
+											.getChannelDAO()
 											.loadItem(
 											channel,
 											itemSignature);
@@ -964,22 +982,28 @@ public class ClientHandler implements Runnable {
 							}
 
 						} else {
-							int[] range = getIntRange(parameters[2]);
-							channel =
-								channelManager.channelByName(currentGroupName);
-							items =
-								channelManager
-									.getChannelManagerDAO()
-									.loadItems(
-									channel,
-									range,
-									false);
+							if (currentGroupName == null) {
+								groupSelected = false;
+							} else {
+								int[] range = getIntRange(parameters[2]);
+								channel =
+									channelManager.channelByName(
+										currentGroupName);
+								items =
+									channelManager.getChannelDAO().loadItems(
+										channel,
+										range,
+										false,
+										ChannelDAO.LIMIT_NONE);
+							}
 						}
 					} else {
 						// Invalid request...
 					}
 
-					if (header == NNTP_HEADER_UNKNOWN) {
+					if (groupSelected == false) {
+						pw.println("412 No news group currently selected");
+					} else if (header == NNTP_HEADER_UNKNOWN) {
 						pw.println(
 							"500 command not recognized (unknown header name="
 								+ parameters[1]
@@ -1019,19 +1043,20 @@ public class ClientHandler implements Runnable {
 								switch (header) {
 									case NNTP_HEADER_FROM :
 
-										pw.println(processAuthor(channel, item));
-//
-//										String email;
-//										if(channel.getManagingEditor() != null) {
-//											email = RSSHelper.parseEmail(channel.getManagingEditor());	
-//										} else {
-//											email = "";
-//										}
-//										String author = processAuthor(channel.getAuthor(), email);
+										pw.println(
+											processAuthor(channel, item));
+										//
+										//										String email;
+										//										if(channel.getManagingEditor() != null) {
+										//											email = RSSHelper.parseEmail(channel.getManagingEditor());	
+										//										} else {
+										//											email = "";
+										//										}
+										//										String author = processAuthor(channel.getAuthor(), email);
 
-//										pw.println(
-//											stripTabsLineBreaks(MimeUtility.encodeText(author, "UTF-8", "Q"))  );
-//										pw.println(stripTabsLineBreaks(author));
+										//										pw.println(
+										//											stripTabsLineBreaks(MimeUtility.encodeText(author, "UTF-8", "Q"))  );
+										//										pw.println(stripTabsLineBreaks(author));
 
 										break;
 									case NNTP_HEADER_DATE :
@@ -1041,13 +1066,14 @@ public class ClientHandler implements Runnable {
 										pw.println(item.getChannel().getName());
 										break;
 									case NNTP_HEADER_SUBJECT :
-//										pw.println(
-//											processSubject(item.getTitle()));
+										//										pw.println(
+										//											processSubject(item.getTitle()));
 										pw.println(
 											processSubject(
-												MimeUtility.encodeText(item.getTitle(), "UTF-8", "Q")
-											)
-										);
+												MimeUtility.encodeText(
+													item.getTitle(),
+													"UTF-8",
+													"Q")));
 
 										break;
 									case NNTP_HEADER_MESSAGE_ID :
@@ -1077,77 +1103,7 @@ public class ClientHandler implements Runnable {
 						pw.println(".");
 					}
 				} else if (command.equalsIgnoreCase("XOVER")) {
-					if (currentGroupName == null) {
-						pw.println("412 No news group currently selected");
-					} else {
-						pw.println("224 Overview information follows");
-						// Interpret parameters and restrict return
-						Channel channel =
-							channelManager.channelByName(currentGroupName);
-						int[] range = getIntRange(parameters[1]);
-						List items =
-							channelManager.getChannelManagerDAO().loadItems(
-								channel,
-								range,
-								false);
-
-						if (items.size() == 0) {
-							pw.println("420 No article(s) selected");
-						} else {
-							Iterator itemIter = items.iterator();
-//							String email;
-//							if(channel.getManagingEditor() != null) {
-//								email = RSSHelper.parseEmail(channel.getManagingEditor());	
-//							} else {
-//								email = "";
-//							}
-//							String author = processAuthor(channel.getAuthor(), email);
-// Handle escaping international characters
-//							author = stripTabsLineBreaks(author);
-
-							while (itemIter.hasNext()) {
-								Item item = (Item) itemIter.next();
-								try {
-									pw
-										.println(
-											item.getArticleNumber()
-											+ "\t"
-											+ processSubject(MimeUtility.encodeText(item.getTitle(), "UTF-8", "Q")) 
-											+ "\t"
-											+ processAuthor(channel, item)
-//											+ author
-											+ "\t"
-											+ df.format(item.getDate())
-											+ "\t"
-											+ "<"
-											+ item.getSignature()
-											+ "@"
-											+ channel.getName()
-											+ ">"
-											+ "\t" // no references
-									// FIXME calculate content size and line count
-									// This is currently a 'hack' - return an arbitrary line length
-									// of 10 lines.
-									+"\t"
-										+ item.getDescription().length()
-										+ "\t10"
-									//										+ "\tXref: nntprss "
-									//										+ item.getChannel().getName()
-									//										+ ":"
-									//										+ item.getArticleNumber()
-									);
-								} catch (Exception e) {
-									if (log.isEnabledFor(Priority.WARN)) {
-										log.warn(
-											"Exception thrown in XOVER",
-											e);
-									}
-									//								e.printStackTrace();
-								}
-							}
-							pw.println(".");
-						}
-					}
+					cmdXOVER(pw, currentGroupName, parameters);
 				} else if (command.equalsIgnoreCase("AUTHINFO")) {
 					if (parameters.length > 1) {
 						if (!nntpServer.isSecure()) {
@@ -1193,6 +1149,91 @@ public class ClientHandler implements Runnable {
 				//				pw.println("500 command not recognized");
 			}
 			pw.flush();
+		}
+	}
+
+	private void cmdXOVER(
+		PrintWriter pw,
+		String currentGroupName,
+		String[] parameters) {
+		if (currentGroupName == null) {
+			pw.println("412 No news group currently selected");
+		} else if (parameters.length < 2) {
+			pw.println("500 command not recognized");
+		} else {
+			pw.println("224 Overview information follows");
+			// Interpret parameters and restrict return
+			Channel channel = channelManager.channelByName(currentGroupName);
+			int[] range = getIntRange(parameters[1]);
+			boolean noItemsFound = true;
+			boolean retrieving = true;
+			
+			while(retrieving) {
+				List items =
+					channelManager.getChannelDAO().loadItems(channel, range, false, RETRIEVE_LIMIT);
+
+				if(noItemsFound && items.size() == 0) {
+					pw.println("420 No article(s) selected");
+					break;
+				} else if(items.size() > 0) {
+
+					Iterator itemIter = items.iterator();
+
+					while (itemIter.hasNext()) {
+						Item item = (Item) itemIter.next();
+						try {
+							pw
+								.println(
+									item.getArticleNumber()
+									+ "\t"
+									+ processSubject(
+										MimeUtility.encodeText(
+											item.getTitle(),
+											"UTF-8",
+											"Q"))
+									+ "\t"
+									+ processAuthor(channel, item)
+							//											+ author
+							+"\t"
+								+ df.format(item.getDate())
+								+ "\t"
+								+ "<"
+								+ item.getSignature()
+								+ "@"
+								+ channel.getName()
+								+ ">"
+								+ "\t" // no references
+							// FIXME calculate content size and line count
+							// This is currently a 'hack' - return an arbitrary line length
+							// of 10 lines.
+							+"\t" + item.getDescription().length() + "\t10"
+							//										+ "\tXref: nntprss "
+							//										+ item.getChannel().getName()
+							//										+ ":"
+							//										+ item.getArticleNumber()
+							);
+						} catch (Exception e) {
+							if (log.isEnabledFor(Priority.WARN)) {
+								log.warn("Exception thrown in XOVER", e);
+							}
+						}
+
+					}
+				
+					noItemsFound = false;
+
+					range[0] = ((Item)items.get(items.size() - 1)).getArticleNumber() + 1;
+					if(range[1] != AppConstants.OPEN_ENDED_RANGE && range[0] > range[1])
+//	   Reached end of items...					
+						retrieving = false;
+				} else {
+// end of articles
+					retrieving = false;
+				}
+			}
+
+			if(!noItemsFound)			
+				pw.println(".");
 		}
 	}
 
@@ -1331,15 +1372,15 @@ public class ClientHandler implements Runnable {
 			br.close();
 			pw.close();
 			bodyPw.close();
-			client.close();
+			//			client.close();
 
 		} catch (Exception e) {
 			if (!(e instanceof IOException)) {
 				if (log.isEnabledFor(Priority.WARN)) {
 					log.warn("Unexpected exception thrown", e);
 				}
-			} else if(e instanceof SocketTimeoutException) {
-				if(log.isDebugEnabled()) {
+			} else if (e instanceof SocketTimeoutException) {
+				if (log.isDebugEnabled()) {
 					log.debug("NNTP Client socket timed out");
 				}
 			}
@@ -1347,70 +1388,77 @@ public class ClientHandler implements Runnable {
 			if (log.isInfoEnabled()) {
 				log.info("NNTP Client connection closed");
 			}
+			try {
+				client.close();
+			} catch (Exception e) {
+			}
 		}
 	}
 
 	private String processAuthor(Channel channel, Item item) {
 		String authorEmail = null;
 
-		if(item.getCreator() != null && item.getCreator().length() > 0) {
+		if (item.getCreator() != null && item.getCreator().length() > 0) {
 			String creator = item.getCreator().trim();
 			String author;
 			String email = null;
-			
+
 			int atPos = creator.indexOf('@');
-			if(atPos > 0) {
-// We have found an @ sign after the first character - indicative 
-// of the creator containing an email address...
+			if (atPos > 0) {
+				// We have found an @ sign after the first character - indicative 
+				// of the creator containing an email address...
 				int spacePos = creator.substring(0, atPos).lastIndexOf(' ');
-				if(spacePos == -1) {
-// Let's assume that it is just an email...
+				if (spacePos == -1) {
+					// Let's assume that it is just an email...
 					author = creator;
 					email = creator;
 				} else {
 					author = creator.substring(0, spacePos);
-					email = creator.substring(spacePos+1);
-					if(email.charAt(0) == '(' && email.charAt(email.length() -1) == ')') {
-						email = email.substring(1, email.length() -1);
+					email = creator.substring(spacePos + 1);
+					if (email.charAt(0) == '('
+						&& email.charAt(email.length() - 1) == ')') {
+						email = email.substring(1, email.length() - 1);
 					}
-					if(email.startsWith("mailto:") && email.length() > "mailto:".length()) {
+					if (email.startsWith("mailto:")
+						&& email.length() > "mailto:".length()) {
 						email = email.substring("mailto:".length());
-					}											
+					}
 				}
-			}
-			else {
-// No email address provided
+			} else {
+				// No email address provided
 				author = creator;
 			}
 
-			authorEmail =
-				stripTabsLineBreaks(processAuthor(author, email));
-		} 
-		
+			authorEmail = stripTabsLineBreaks(processAuthor(author, email));
+		}
+
 		if ((authorEmail == null || authorEmail.length() == 0)) {
-			if(channel.getManagingEditor() == null) {
+			if (channel.getManagingEditor() == null) {
 				authorEmail =
 					stripTabsLineBreaks(processAuthor(channel.getAuthor(), ""));
 			} else {
-				authorEmail = 
-					stripTabsLineBreaks(processAuthor(channel.getAuthor(), RSSHelper.parseEmail(channel.getManagingEditor())));
+				authorEmail =
+					stripTabsLineBreaks(
+						processAuthor(
+							channel.getAuthor(),
+							RSSHelper.parseEmail(channel.getManagingEditor())));
 			}
 		}
-		
+
 		return authorEmail;
 	}
-	
+
 	private String processAuthor(String author, String email) {
 		String authorEmail;
-		if(email == null || email.length() == 0) {
+		if (email == null || email.length() == 0) {
 			email = "unknown@email";
 		}
-		
+
 		try {
-			InternetAddress inetAddress = new InternetAddress(
-				email, author, "UTF-8");
-			authorEmail = inetAddress.toString();	
-		} catch(UnsupportedEncodingException uee) {
+			InternetAddress inetAddress =
+				new InternetAddress(email, author, "UTF-8");
+			authorEmail = inetAddress.toString();
+		} catch (UnsupportedEncodingException uee) {
 			authorEmail = "";
 		}
 		return authorEmail;
