@@ -3,10 +3,10 @@
 <!-- License under the GNU Public License -->
 
 <nntprss-publish>
-	<interface name="blogger" class="org.methodize.nntprss.rss.publish.BloggerPublisher"/>
-	<interface name="livejournal" class="org.methodize.nntprss.rss.publish.LiveJournalPublisher"/>
-	<interface name="metaweblog" class="org.methodize.nntprss.rss.publish.MetaWeblogPublisher"/>
-	<interface name="movabletype" class="org.methodize.nntprss.rss.publish.MovableTypePublisher"/>
+	<interface name="blogger" class="org.methodize.nntprss.feed.publish.BloggerPublisher"/>
+	<interface name="livejournal" class="org.methodize.nntprss.feed.publish.LiveJournalPublisher"/>
+	<interface name="metaweblog" class="org.methodize.nntprss.feed.publish.MetaWeblogPublisher"/>
+	<interface name="movabletype" class="org.methodize.nntprss.feed.publish.MovableTypePublisher"/>
 
 	<system name="b2" 
 		title="b2" 
