@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.4 2003/01/27 23:05:51 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.5 2003/01/27 23:16:16 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
 
@@ -241,7 +241,7 @@ public class ChannelManagerDAO {
 					stmt.executeUpdate("ALTER TABLE items ADD COLUMN comments varchar(500)");					
 				default:
 // Force re-poll of all channels after DB upgrade...
-					stmt.executeUpdate("UPDATE channels SET lastPolled = null");
+					stmt.executeUpdate("UPDATE channels SET lastPolled = null, lastModified = null, lastETag = null");
 			}
 
 
