@@ -1,7 +1,7 @@
-nntp//rss - version 0.4
+nntp//rss - version 0.5
 -----------------------
 
-February 8, 2003
+October 25, 2004
 
 Bridging the worlds of NNTP clients and RSS feeds, nntp//rss is an 
 application that will enable you to use your existing NNTP 
@@ -39,15 +39,15 @@ Requirements
 Upgrading from version 0.3
 ==========================
 
-nntp//rss v0.4 uses a new database persistence engine.  This 
+nntp//rss v0.5 uses a new database persistence engine.  This 
 provides greater performance, and reduces memory usage.  Follow the
 steps below if you wish to migrate your existing articles from 
-nntp//rss v0.3.  Note that if you have a large database of articles,
+nntp//rss v0.5.  Note that if you have a large database of articles,
 this process may take a some time.
 
 If you do not want to migrate your existing articles, just follow the
 steps to export your channel configuration.  You can import this
-configuration directly into nntp//rss v0.4.
+configuration directly into nntp//rss v0.5.
 
 1. Backup your channel configuration.  Go into nntp//rss's web
    administration interface, select 'System Configuration', then
@@ -58,15 +58,15 @@ configuration directly into nntp//rss v0.4.
 
 3. Backup your current nntp//rss directory.
 
-4. As v0.4 contains a number of additional libraries and files,
-   the easiest way to upgrade is to unpack nntp//rss 0.4 to a 
+4. As v0.5 contains a number of additional libraries and files,
+   the easiest way to upgrade is to unpack nntp//rss 0.5 to a 
    separate directory, then copy over your nntp//rss 0.3 database
    files.  These files contain configuration and channel data.
 
-   i. Unpack v0.4 to a new directory
+   i. Unpack v0.5 to a new directory
    ii. Copy the following files from the root (nntprss) directory of 
    your nntp//rss v0.3 installation, to the root (nntprss) directory
-   of your v0.4 installation:
+   of your v0.5 installation:
    
    nntprssdb.properties
    nntprssdb.data
@@ -81,7 +81,7 @@ configuration directly into nntp//rss v0.4.
    web interface security, you should copy this over from your
    previous installation.
 
-6. Start nntp//rss v0.3
+6. Start nntp//rss v0.5
    (See below for startup information)
 
 Your existing configuration will be kept.
@@ -118,7 +118,7 @@ the following command:
 
 Windows:
 
-javaw -jar nntprss-start.jar
+nntprss.exe
 
 Other Platforms:
 
@@ -137,7 +137,7 @@ nntp//rss runs will need to have the appropriate rights to open that port.
 If the user does not have those rights, you will see the following exception 
 during startup:
 
-19:38:44,527 [main] INFO  Main - Starting nntp//rss v0.2
+19:38:44,527 [main] INFO  Main - Starting nntp//rss v0.4
 java.net.BindException: Permission denied
         at java.net.PlainSocketImpl.socketBind(Native Method)
         at java.net.PlainSocketImpl.bind(PlainSocketImpl.java:331)
@@ -242,6 +242,22 @@ Running nntp//rss as a Windows Service
 See the separate WINDOWS-SERVICE.TXT documentation for  
 information on how to configure nntp//rss to run as a 
 Windows service.
+
+
+Using MySQL as the underlying Database
+======================================
+
+nntp//rss v0.5 support MySQL as a database.  To use MySQL with
+nntp//rss, perform the following steps:
+
+1. Create an empty database in MySQL, create a MySQL user, and
+   assign it the appropriate rights for the new database.
+2. Edit nntprss-config.xml, and comment out the entire <db> element
+   for the Derby database.
+3. Uncomment the <db> element for MySQL, and modify the connection
+   string to match the database and user credentials for the
+   database you created in step 1.
+4. Start nntp//rss as shown above.
 
 
 nntp//rss News Feed
