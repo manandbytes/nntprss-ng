@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.8 2004/03/28 22:27:54 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.9 2004/10/22 03:41:55 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -123,8 +123,8 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 
             stmt.executeUpdate(
                 "CREATE INDEX fk_channel ON " + TABLE_ITEMS + " (channel)");
-            //			stmt.executeUpdate(
-            //				"CREATE INDEX fk_signature ON items (signature)");
+            stmt.executeUpdate(
+            	"CREATE INDEX fk_signature ON items (signature)");
 
             stmt.executeUpdate(
                 "CREATE TABLE "
