@@ -46,6 +46,20 @@ run, it will create and prepopulate a database with some sample feeds.
 These feeds can be changed through the web-based administration
 interface.
 
+Note to Unix/Linux users:
+
+As nntp//rss starts an NNTP client listener on TCP port 119, 
+if you are running on a Unix-based environment, the user under which
+nntp//rss runs will need to have the appropriate rights to open that port.
+If the user does not have those rights, you will see the following exception 
+during startup:
+
+19:38:44,527 [main] INFO  Main - Starting nntp//rss v0.1
+java.net.BindException: Permission denied
+        at java.net.PlainSocketImpl.socketBind(Native Method)
+        at java.net.PlainSocketImpl.bind(PlainSocketImpl.java:331)
+...
+
 
 Accessing nntp//rss from your existing news reader
 ==================================================
