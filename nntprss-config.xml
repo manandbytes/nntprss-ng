@@ -38,7 +38,6 @@
 
     <channel name='com.benhammersley' url='http://www.benhammersley.com/index.rdf' historical='true'/>
     <channel name='com.danielsjourney' url='http://www.danielsjourney.com/rss.php' historical='true'/>
-    <channel name='com.dynamicobjects.abort.retry.fail' url='http://www.dynamicobjects.com/~diego/weblogs/arf/index.xml' historical='true'/>
     <channel name='com.jasonbrome' url='http://www.jasonbrome.com/blog/index.rdf' historical='true'/>
     <channel name='com.russellbeattie' url='http://www.russellbeattie.com/notebook/rss.jsp' historical='true'/>
     <channel name='com.sixapart' url='http://www.sixapart.com/log/index.rdf' historical='true'/>
