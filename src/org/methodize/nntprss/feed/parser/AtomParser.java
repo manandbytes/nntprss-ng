@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.Channel;
@@ -56,19 +57,26 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.1 2003/07/20 02:39:05 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.2 2003/07/20 02:46:25 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
 
 	private static ThreadLocal dateParsers = new ThreadLocal() {
 		public Object initialValue() {
-			return new SimpleDateFormat[] {
+			SimpleDateFormat[] dcDateArray = 
+				new SimpleDateFormat[] {
 				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
 				new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz"),
 				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
 				new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'")};
 
+			TimeZone gmt = TimeZone.getTimeZone("GMT");
+			for (int tz = 0; tz < dcDateArray.length; tz++) {
+				dcDateArray[tz].setTimeZone(gmt);
+			}
+
+			return dcDateArray; 
 		}
 	};
 	
