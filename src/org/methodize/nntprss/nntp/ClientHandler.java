@@ -63,9 +63,11 @@ import javax.mail.internet.MimeUtility;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.methodize.nntprss.feed.Category;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.feed.Item;
+import org.methodize.nntprss.feed.ItemContainer;
 import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.feed.publish.BloggerPublisher;
 import org.methodize.nntprss.feed.publish.LiveJournalPublisher;
@@ -80,7 +82,7 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.9 2003/09/28 20:22:50 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.10 2003/10/24 02:35:51 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
@@ -232,22 +234,24 @@ public class ClientHandler implements Runnable {
 	private void writeArticle(
 		PrintWriter pw,
 		PrintWriter bodyPw,
-		Channel channel,
+		ItemContainer group,
 		Item item)
 		throws IOException {
 
-		writeHead(pw, channel, item);
+		writeHead(pw, group, item);
 		pw.println();
 		pw.flush();
 
-		writeBody(bodyPw, channel, item);
+		writeBody(bodyPw, item);
 
 	}
 
-	private void writeHead(PrintWriter pw, Channel channel, Item item)
+	private void writeHead(PrintWriter pw, ItemContainer group, Item item)
 		throws IOException {
 
 		String boundary = "----=_Part_" + item.getDate().getTime();
+
+		Channel channel = item.getChannel();
 
 		pw.print("From: ");
 		pw.println(processAuthor(channel, item));
@@ -259,7 +263,7 @@ public class ClientHandler implements Runnable {
 		//				processAuthor(channel.getAuthor(), RSSHelper.parseEmail(channel.getManagingEditor())));
 		//		}
 
-		pw.println("Newsgroups: " + channel.getName());
+		pw.println("Newsgroups: " + group.getName());
 		pw.println("Date: " + df.format(item.getDate()));
 		pw.println(
 			"Subject: "
@@ -295,9 +299,10 @@ public class ClientHandler implements Runnable {
 		pw.flush();
 	}
 
-	private void writeBody(PrintWriter pw, Channel channel, Item item)
+	private void writeBody(PrintWriter pw, Item item)
 		throws IOException {
 
+		Channel channel = item.getChannel();
 		String boundary = null;
 
 		if (nntpServer.getContentType() == AppConstants.CONTENT_TYPE_MIXED) {
@@ -573,7 +578,7 @@ public class ClientHandler implements Runnable {
 						|| command.equalsIgnoreCase("STAT")) {
 					//					pw.println("430 no such article found");
 					Item item = null;
-					Channel channel = null;
+					ItemContainer group = null;
 
 					// ***************************
 					//TODO: resolve no current group scenario
@@ -581,13 +586,20 @@ public class ClientHandler implements Runnable {
 					if (parameters.length == 1
 						&& currentArticle != NO_CURRENT_ARTICLE) {
 						// Get current article
-						channel =
-							channelManager.channelByName(currentGroupName);
-
-						item =
-							channelManager.getChannelDAO().loadItem(
-								channel,
-								currentArticle);
+						group =
+							channelManager.groupByName(currentGroupName);
+						
+						if(group instanceof Channel) {
+							item =
+								channelManager.getChannelDAO().loadItem(
+									(Channel)group,
+									currentArticle);
+						} else if(group instanceof Category) {
+							item =
+								channelManager.getChannelDAO().loadItem(
+									(Category)group,
+									currentArticle);							
+						}
 
 					} else {
 						String artNumOrMsgId = parameters[1];
@@ -595,13 +607,22 @@ public class ClientHandler implements Runnable {
 						if (artNumOrMsgId.indexOf('<') == -1) {
 							// Article number
 							//						item = channel.getItemByArticleNumber(Long.parseLong(artNumOrMsgId));
-							channel =
-								channelManager.channelByName(currentGroupName);
 
-							item =
-								channelManager.getChannelDAO().loadItem(
-									channel,
-									Integer.parseInt(artNumOrMsgId));
+							group =
+								channelManager.groupByName(currentGroupName);
+
+							if(group instanceof Channel) {
+								item =
+									channelManager.getChannelDAO().loadItem(
+										(Channel)group,
+										Integer.parseInt(artNumOrMsgId));
+							} else if(group instanceof Category) {
+								item =
+									channelManager.getChannelDAO().loadItem(
+										(Category)group,
+										Integer.parseInt(artNumOrMsgId));							
+							}
+
 						} else {
 							// Message IDs are in the form
 							// <itemsignature@channelname>
@@ -614,15 +635,16 @@ public class ClientHandler implements Runnable {
 										sepPos + 1,
 										artNumOrMsgId.length() - 1);
 
-								channel =
+// Item signature retrieval only supported by original group, not category
+								group =
 									channelManager.channelByName(
 										artChannelName);
-								if (channel != null) {
+								if (group != null) {
 									item =
 										channelManager
 											.getChannelDAO()
 											.loadItem(
-											channel,
+											(Channel)group,
 											itemSignature);
 								}
 
@@ -646,10 +668,10 @@ public class ClientHandler implements Runnable {
 									+ " <"
 									+ item.getSignature()
 									+ "@"
-									+ channel.getName()
+									+ group.getName()
 									+ "> article retrieved - head and body follow");
 
-							writeArticle(pw, bodyPw, channel, item);
+							writeArticle(pw, bodyPw, group, item);
 							pw.println(".");
 						} else if (command.equalsIgnoreCase("HEAD")) {
 							pw.println(
@@ -658,10 +680,10 @@ public class ClientHandler implements Runnable {
 									+ " <"
 									+ item.getSignature()
 									+ "@"
-									+ channel.getName()
+									+ group.getName()
 									+ "> article retrieved - head follows");
 
-							writeHead(pw, channel, item);
+							writeHead(pw, group, item);
 							pw.println(".");
 						} else if (command.equalsIgnoreCase("BODY")) {
 							pw.println(
@@ -670,11 +692,11 @@ public class ClientHandler implements Runnable {
 									+ " <"
 									+ item.getSignature()
 									+ "@"
-									+ channel.getName()
+									+ group.getName()
 									+ "> article retrieved - body follows");
 
 							pw.flush();
-							writeBody(bodyPw, channel, item);
+							writeBody(bodyPw, item);
 							pw.println(".");
 						} else if (command.equalsIgnoreCase("STAT")) {
 							pw.println(
@@ -683,7 +705,7 @@ public class ClientHandler implements Runnable {
 									+ " <"
 									+ item.getSignature()
 									+ "@"
-									+ channel.getName()
+									+ group.getName()
 									+ "> article retrieved - request text separately");
 						}
 
@@ -691,19 +713,19 @@ public class ClientHandler implements Runnable {
 					}
 				} else if (command.equalsIgnoreCase("GROUP")) {
 					currentGroupName = parameters[1];
-					Channel channel =
-						channelManager.channelByName(currentGroupName);
-					if (channel != null) {
+					ItemContainer group =
+						channelManager.groupByName(currentGroupName);
+					if (group != null) {
 						pw.println(
 							"211 "
-								+ channel.getTotalArticles()
+								+ group.getTotalArticles()
 								+ " "
-								+ channel.getFirstArticleNumber()
+								+ group.getFirstArticleNumber()
 								+ " "
-								+ channel.getLastArticleNumber()
+								+ group.getLastArticleNumber()
 								+ " "
 								+ currentGroupName);
-						currentArticle = channel.getFirstArticleNumber();
+						currentArticle = group.getFirstArticleNumber();
 					} else {
 						pw.println("411 no such news group");
 					}
@@ -716,19 +738,28 @@ public class ClientHandler implements Runnable {
 					if (currentGroupName == null) {
 						pw.println("412 No news group currently selected");
 					} else {
-						Channel channel =
-							channelManager.channelByName(currentGroupName);
+						ItemContainer group =
+							channelManager.groupByName(currentGroupName);
 						if (currentArticle == NO_CURRENT_ARTICLE) {
 							pw.println(
 								"420 no current article has been selected");
 						} else if (
-							currentArticle > channel.getFirstArticleNumber()) {
-							Item item =
-								channelManager
+							currentArticle > group.getFirstArticleNumber()) {
+							Item item = null;
+							if(group instanceof Channel) {
+								item = channelManager
 									.getChannelDAO()
 									.loadPreviousItem(
-									channel,
+									(Channel)group,
 									currentArticle);
+							} else if(group instanceof Category) {
+								item = channelManager
+									.getChannelDAO()
+									.loadPreviousItem(
+									(Category)group,
+									currentArticle);
+							}
+																
 							currentArticle = item.getArticleNumber();
 							pw.println(
 								"223 "
@@ -760,10 +791,10 @@ public class ClientHandler implements Runnable {
 							parameters[1].equalsIgnoreCase("NEWSGROUPS")) {
 							//							pw.println("503 program error, function not performed");
 							pw.println("215 list of newsgroups follows");
-							Iterator channelIter = channelManager.channels();
-							while (channelIter.hasNext()) {
-								Channel channel = (Channel) channelIter.next();
-								pw.println(channel.getName() + " ");
+							Iterator groupIter = channelManager.groups();
+							while (groupIter.hasNext()) {
+								ItemContainer group = (ItemContainer) groupIter.next();
+								pw.println(group.getName() + " ");
 								// @TODO think about description
 								//									+ channel.getDescription());
 							}
@@ -793,38 +824,43 @@ public class ClientHandler implements Runnable {
 
 					} else {
 						pw.println("215 list of newsgroups follows");
-						Iterator channelIter = channelManager.channels();
-						while (channelIter.hasNext()) {
-							Channel channel = (Channel) channelIter.next();
+						Iterator groupIter = channelManager.groups();
+						while (groupIter.hasNext()) {
+							ItemContainer group = (ItemContainer) groupIter.next();
 							// group list first p
 							pw.println(
-								channel.getName()
+								group.getName()
 									+ " "
-									+ (channel.getLastArticleNumber() - 1)
+									+ (group.getLastArticleNumber() - 1)
 									+ " "
-									+ channel.getFirstArticleNumber()
+									+ group.getFirstArticleNumber()
 									+ " "
-									+ (channel.isPostingEnabled() ? "y" : "n"));
+									+ (group instanceof Channel && ((Channel)group).isPostingEnabled() ? "y" : "n"));
 						}
 						pw.println(".");
 					}
 				} else if (command.equalsIgnoreCase("LISTGROUP")) {
-					Channel channel = null;
+					ItemContainer group = null;
 					if (parameters.length > 1) {
-						channel = channelManager.channelByName(parameters[1]);
+						group = channelManager.groupByName(parameters[1]);
 					} else {
 						if (currentGroupName != null) {
-							channel =
-								channelManager.channelByName(currentGroupName);
+							group =
+								channelManager.groupByName(currentGroupName);
 						}
 					}
 
-					if (channel != null) {
+					if (group != null) {
 						pw.println("211 list of article numbers follow");
 
-						List items =
-							channelManager.getChannelDAO().loadArticleNumbers(
-								channel);
+						List items = null;
+						if(group instanceof Channel) {
+							items = channelManager.getChannelDAO().loadArticleNumbers(
+								(Channel)group);
+						} else if(group instanceof Category) {
+							items = channelManager.getChannelDAO().loadArticleNumbers(
+								(Category)group);
+						}
 
 						Iterator itemIter = items.iterator();
 						while (itemIter.hasNext()) {
@@ -865,18 +901,18 @@ public class ClientHandler implements Runnable {
 
 						if (startDate != null) {
 							pw.println("231 list of new newsgroups follows");
-							Iterator channelIter = channelManager.channels();
-							while (channelIter.hasNext()) {
-								Channel channel = (Channel) channelIter.next();
+							Iterator groupIter = channelManager.groups();
+							while (groupIter.hasNext()) {
+								ItemContainer group = (ItemContainer) groupIter.next();
 								// Only list channels created after the
 								// start date provided by the nntp client
-								if (channel.getCreated().after(startDate)) {
+								if (group.getCreated().after(startDate)) {
 									pw.println(
-										channel.getName()
+										group.getName()
 											+ " "
-											+ channel.getFirstArticleNumber()
+											+ group.getFirstArticleNumber()
 											+ " "
-											+ (channel.getLastArticleNumber()
+											+ (group.getLastArticleNumber()
 												- 1)
 											+ " n");
 								}
@@ -894,17 +930,23 @@ public class ClientHandler implements Runnable {
 					if (currentGroupName == null) {
 						pw.println("412 No news group currently selected");
 					} else {
-						Channel channel =
-							channelManager.channelByName(currentGroupName);
+						ItemContainer group =
+							channelManager.groupByName(currentGroupName);
 						if (currentArticle == NO_CURRENT_ARTICLE) {
 							pw.println(
 								"420 no current article has been selected");
 						} else if (
-							currentArticle < channel.getLastArticleNumber()) {
-							Item item =
-								channelManager.getChannelDAO().loadNextItem(
-									channel,
+							currentArticle < group.getLastArticleNumber()) {
+							Item item = null;
+							if(group instanceof Channel) {
+								item = channelManager.getChannelDAO().loadNextItem(
+									(Channel)group,
 									currentArticle);
+							} else if(group instanceof Category) {
+								item = channelManager.getChannelDAO().loadNextItem(
+									(Category)group,
+									currentArticle);
+							}
 							currentArticle = item.getArticleNumber();
 							pw.println(
 								"223 "
@@ -917,7 +959,6 @@ public class ClientHandler implements Runnable {
 						}
 					}
 				} else if (command.equalsIgnoreCase("POST")) {
-					//					pw.println("440 posting not allowed");
 					cmdPost(br, pw);
 				} else if (command.equalsIgnoreCase("QUIT")) {
 					pw.println("205 closing connection - goodbye!");
@@ -929,18 +970,24 @@ public class ClientHandler implements Runnable {
 					int header = NNTP_HEADER_UNKNOWN;
 					boolean useMessageId = false;
 					boolean groupSelected = true;
-					Channel channel = null;
+					ItemContainer group = null;
 					if (parameters.length == 2) {
 						if (currentGroupName == null) {
 							groupSelected = false;
 						} else {
 							header = parseHeaderName(parameters[1]);
-							channel =
-								channelManager.channelByName(currentGroupName);
-							Item item =
-								channelManager.getChannelDAO().loadItem(
-									channel,
+							group =
+								channelManager.groupByName(currentGroupName);
+							Item item = null;
+							if(group instanceof Channel) {
+								item = channelManager.getChannelDAO().loadItem(
+									(Channel)group,
 									currentArticle);
+							} else if(group instanceof Category) {
+								item = channelManager.getChannelDAO().loadItem(
+									(Category)group,
+									currentArticle);
+							}
 							if (item != null) {
 								items = new ArrayList();
 								items.add(item);
@@ -961,15 +1008,16 @@ public class ClientHandler implements Runnable {
 										sepPos + 1,
 										parameters[2].length() - 1);
 
-								channel =
+// Signature look-ups are only on channels, not categories
+								group =
 									channelManager.channelByName(
 										artChannelName);
-								if (channel != null) {
+								if (group != null) {
 									Item item =
 										channelManager
 											.getChannelDAO()
 											.loadItem(
-											channel,
+											(Channel)group,
 											itemSignature);
 
 									if (item != null) {
@@ -986,15 +1034,23 @@ public class ClientHandler implements Runnable {
 								groupSelected = false;
 							} else {
 								int[] range = getIntRange(parameters[2]);
-								channel =
-									channelManager.channelByName(
+								group =
+									channelManager.groupByName(
 										currentGroupName);
-								items =
-									channelManager.getChannelDAO().loadItems(
-										channel,
+								items = null;
+								if(group instanceof Channel) {
+									items = channelManager.getChannelDAO().loadItems(
+										(Channel)group,
 										range,
 										false,
 										ChannelDAO.LIMIT_NONE);
+								} else if(group instanceof Category) {
+									items = channelManager.getChannelDAO().loadItems(
+										(Category)group,
+										range,
+										false,
+										ChannelDAO.LIMIT_NONE);
+								}
 							}
 						}
 					} else {
@@ -1042,39 +1098,23 @@ public class ClientHandler implements Runnable {
 
 								switch (header) {
 									case NNTP_HEADER_FROM :
-
 										pw.println(
-											processAuthor(channel, item));
-										//
-										//										String email;
-										//										if(channel.getManagingEditor() != null) {
-										//											email = RSSHelper.parseEmail(channel.getManagingEditor());	
-										//										} else {
-										//											email = "";
-										//										}
-										//										String author = processAuthor(channel.getAuthor(), email);
-
-										//										pw.println(
-										//											stripTabsLineBreaks(MimeUtility.encodeText(author, "UTF-8", "Q"))  );
-										//										pw.println(stripTabsLineBreaks(author));
-
+											processAuthor(item.getChannel(), item));
 										break;
 									case NNTP_HEADER_DATE :
 										pw.println(df.format(item.getDate()));
 										break;
 									case NNTP_HEADER_NEWSGROUP :
-										pw.println(item.getChannel().getName());
+//										pw.println(item.getChannel().getName());
+										pw.println(group.getName());
 										break;
 									case NNTP_HEADER_SUBJECT :
-										//										pw.println(
-										//											processSubject(item.getTitle()));
 										pw.println(
 											processSubject(
 												MimeUtility.encodeText(
 													item.getTitle(),
 													"UTF-8",
 													"Q")));
-
 										break;
 									case NNTP_HEADER_MESSAGE_ID :
 										pw.println(
@@ -1163,14 +1203,18 @@ public class ClientHandler implements Runnable {
 		} else {
 			pw.println("224 Overview information follows");
 			// Interpret parameters and restrict return
-			Channel channel = channelManager.channelByName(currentGroupName);
+			ItemContainer group = channelManager.groupByName(currentGroupName);
 			int[] range = getIntRange(parameters[1]);
 			boolean noItemsFound = true;
 			boolean retrieving = true;
 			
 			while(retrieving) {
-				List items =
-					channelManager.getChannelDAO().loadItems(channel, range, false, RETRIEVE_LIMIT);
+				List items = null;
+				if(group instanceof Channel) {
+					items = channelManager.getChannelDAO().loadItems((Channel)group, range, false, RETRIEVE_LIMIT);
+				} else if(group instanceof Category) {
+					items = channelManager.getChannelDAO().loadItems((Category)group, range, false, RETRIEVE_LIMIT);
+				}
 
 				if(noItemsFound && items.size() == 0) {
 					pw.println("420 No article(s) selected");
@@ -1192,7 +1236,7 @@ public class ClientHandler implements Runnable {
 											"UTF-8",
 											"Q"))
 									+ "\t"
-									+ processAuthor(channel, item)
+									+ processAuthor(item.getChannel(), item)
 							//											+ author
 							+"\t"
 								+ df.format(item.getDate())
@@ -1200,7 +1244,7 @@ public class ClientHandler implements Runnable {
 								+ "<"
 								+ item.getSignature()
 								+ "@"
-								+ channel.getName()
+								+ item.getChannel().getName()
 								+ ">"
 								+ "\t" // no references
 							// FIXME calculate content size and line count

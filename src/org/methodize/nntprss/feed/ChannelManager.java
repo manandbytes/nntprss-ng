@@ -36,8 +36,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -49,7 +51,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.3 2003/09/28 20:18:40 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.4 2003/10/24 02:34:13 jasonbrome Exp $
  */
 public class ChannelManager implements Externalizable {
 
@@ -65,6 +67,7 @@ public class ChannelManager implements Externalizable {
 	private boolean observeHttp301 = false;
 
 	private Map channels;
+	private Map categories;
 	private static ChannelManager channelManager = new ChannelManager();
 	private ChannelDAO channelDAO;
 	private ChannelPoller channelPoller;
@@ -102,7 +105,8 @@ public class ChannelManager implements Externalizable {
 		updateProxyConfig();
 
 		// Load feeds...
-		channels = channelDAO.loadChannels();
+		categories = channelDAO.loadCategories();
+		channels = channelDAO.loadChannels(categories);
 
 		//		// Start feed poller...
 		//		startPoller();
@@ -114,10 +118,26 @@ public class ChannelManager implements Externalizable {
 		channelDAO.addChannel(channel);
 		channels.put(channel.getName(), channel);
 	}
+	
+	public void addCategory(Category category) {
+		category.setCreated(new Date());
+		channelDAO.addCategory(category);
+		categories.put(category.getName(), category);
+	}
 
 	public void deleteChannel(Channel channel) {
 		channels.remove(channel.getName());
+
+		if(channel.getCategory() != null) {
+			Category category = channel.getCategory();
+			category.removeChannel(channel);
+		}
 		channelDAO.deleteChannel(channel);
+	}
+
+	public void deleteCategory(Category category) {
+		categories.remove(category.getName());
+		channelDAO.deleteCategory(category);
 	}
 
 	public void start() {
@@ -132,8 +152,44 @@ public class ChannelManager implements Externalizable {
 		return channels.values().iterator();
 	}
 
+	public Iterator categories() {
+		return categories.values().iterator();
+	}
+
+	public Iterator groups() {
+		Set groups = new HashSet();
+		groups.addAll(channels.values());
+		groups.addAll(categories.values());
+		return groups.iterator();
+	}
+
 	public Channel channelByName(String name) {
 		return (Channel) channels.get(name);
+	}
+
+	public Category categoryByName(String name) {
+		return (Category) categories.get(name);
+	}
+
+	public ItemContainer groupByName(String name) {
+		ItemContainer group = (ItemContainer)channels.get(name);
+		if(group == null) {
+			group = (ItemContainer)categories.get(name);
+		} 
+		return group;
+	}
+
+	public Category categoryById(int id) {
+		Category category = null;
+		Iterator categoryIter = categories.values().iterator();
+		while(categoryIter.hasNext()) {
+			Category nextCategory = (Category)categoryIter.next();
+			if(nextCategory.getId() == id) {
+				category = nextCategory;
+				break;
+			}
+		}
+		return category;
 	}
 
 	private void startPoller() {
