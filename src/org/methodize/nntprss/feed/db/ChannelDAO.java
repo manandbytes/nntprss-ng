@@ -65,7 +65,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelDAO.java,v 1.2 2003/09/28 20:10:07 jasonbrome Exp $
+ * @version $Id: ChannelDAO.java,v 1.3 2003/09/28 20:41:41 jasonbrome Exp $
  */
 public abstract class ChannelDAO {
 
@@ -100,8 +100,17 @@ public abstract class ChannelDAO {
 			Class.forName("org.hsqldb.jdbcDriver");
 		}
 
+		String user = dbConfig.getAttribute("user");
+		String password = dbConfig.getAttribute("password");
+		if(user == null) {
+			user = "sa";
+		}
+		if(password == null) {
+			password = "";
+		}
+		
 		ConnectionFactory connectionFactory =
-			new DriverManagerConnectionFactory(connectString, "sa", "");
+			new DriverManagerConnectionFactory(connectString, user, password);
 
 		//
 		// Now we'll create the PoolableConnectionFactory, which wraps
