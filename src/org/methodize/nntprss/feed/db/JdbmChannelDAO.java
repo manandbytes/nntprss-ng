@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbmChannelDAO.java,v 1.6 2004/03/23 01:49:23 jasonbrome Exp $
+ * @version $Id: JdbmChannelDAO.java,v 1.7 2004/03/24 04:26:40 jasonbrome Exp $
  */
 public class JdbmChannelDAO extends ChannelDAO {
 
@@ -1090,6 +1090,11 @@ public class JdbmChannelDAO extends ChannelDAO {
 					rs.close();
 
 					count += recCount;
+
+					if(moreResults && log.isInfoEnabled()) {
+						log.info(
+							"Migrating items... " + (totalCount + count) + " items moved");
+					}
 
 					recMan.commit();
 				}
