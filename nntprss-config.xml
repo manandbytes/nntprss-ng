@@ -26,8 +26,8 @@
 <!-- Item processors are invoked in the order listed below -->
 <!--
   <itemProcessors>
-    <processor class="org.methodize.nntprss.plugin.sample.MyItemProcessor"/>
-    <processor class="org.methodize.nntprss.plugin.sample.MyItemProcessor2"/>
+    <processor class="org.methodize.nntprss.plugin.examples.ItemLogPlugin"/>
+    <processor class="org.methodize.nntprss.plugin.examples.SomeOtherPlugin"/>
   </itemProcessors>
 -->
 
@@ -51,9 +51,7 @@
     <channel name='com.russellbeattie' url='http://www.russellbeattie.com/notebook/rss.jsp' historical='true'/>
     <channel name='com.sixapart' url='http://www.sixapart.com/log/index.rdf' historical='true'/>
     <channel name='com.scripting.news' url='http://www.scripting.com/rss.xml' historical='true'/>
-    <channel name='com.siliconvalley.weblog.dangillmor' url='http://weblog.siliconvalley.com/column/dangillmor/index.xml' historical='true'/>
     <channel name='nntprss.news' url='http://rss.methodize.org/nntprss.xml' historical='true'/>
-    <channel name='org.diveintomark' url='http://diveintomark.org/xml/rss.xml' historical='true'/>
     <channel name='org.slashdot' url='http://slashdot.org/slashdot.rdf' historical='true'/>
 
   </channels>
