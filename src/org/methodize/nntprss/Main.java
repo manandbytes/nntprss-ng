@@ -31,6 +31,8 @@ package org.methodize.nntprss;
  * ----------------------------------------------------- */
 
 import java.io.InputStream;
+import java.security.Provider;
+import java.security.Security;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,13 +41,14 @@ import org.apache.log4j.Logger;
 import org.methodize.nntprss.admin.AdminServer;
 import org.methodize.nntprss.db.DBManager;
 import org.methodize.nntprss.nntp.NNTPServer;
-import org.methodize.nntprss.rss.ChannelManager;
+import org.methodize.nntprss.feed.ChannelManager;
+import org.methodize.nntprss.feed.publish.PublishManager;
 import org.methodize.nntprss.util.AppConstants;
 import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Main.java,v 1.5 2003/03/24 03:09:18 jasonbrome Exp $
+ * @version $Id: Main.java,v 1.6 2003/07/19 00:00:24 jasonbrome Exp $
  */
 public class Main {
 
@@ -54,6 +57,7 @@ public class Main {
 	private DBManager dbManager = null;
 	private NNTPServer nntpServer = null;
 	private ChannelManager channelManager = null;
+	private PublishManager publishManager = null;
 	private AdminServer adminServer = null;
 	private WindowsSysTray windowsSysTray = null;
 
@@ -94,6 +98,21 @@ public class Main {
 		}
 
 		try {
+// Set DNS cache properties to sensible values...
+// Cache successful DNS for one hour
+			System.setProperty("networkaddress.cache.ttl", Integer.toString(60 * 60));
+			System.setProperty("networkaddress.cache.negative.ttl", "1");
+
+// Initialize SSL 
+			try {
+				Class providerClass = Class.forName("com.sun.net.ssl.internal.ssl.Provider");
+				Security.addProvider((Provider)providerClass.newInstance());
+				System.setProperty("java.protocol.handler.pkgs",
+					 "com.sun.net.ssl.internal.www.protocol");
+			} catch(ClassNotFoundException cnfe) {
+				log.warn("JSSE not found - HTTPS support not available");
+			}
+
 			if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
 				windowsSysTray = new WindowsSysTray();
 			}
@@ -108,6 +127,9 @@ public class Main {
 
 			channelManager = ChannelManager.getChannelManager();
 			channelManager.configure(config);
+
+			publishManager = PublishManager.getPublishManager();
+			publishManager.configure(config);
 
 			// Start NNTP server
 			nntpServer = new NNTPServer();
@@ -125,6 +147,7 @@ public class Main {
 			if(windowsSysTray != null) {
 				windowsSysTray.setAdminURL("http://127.0.0.1:"
 					+ adminServer.getPort() + "/");
+				windowsSysTray.setChannelManager(channelManager);
 				windowsSysTray.showStarted();
 			}
 
