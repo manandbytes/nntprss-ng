@@ -86,11 +86,11 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.3 2003/09/28 20:17:39 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.4 2003/10/24 02:33:51 jasonbrome Exp $
  */
-public class Channel implements Runnable, Externalizable {
+public class Channel extends ItemContainer implements Runnable, Externalizable {
 
-	public static final int EXTERNAL_VERSION = 1;  
+	public static final int EXTERNAL_VERSION = 2;  
 
 	public static final int STATUS_OK = 0;
 	public static final int STATUS_NOT_FOUND = 1;
@@ -102,32 +102,30 @@ public class Channel implements Runnable, Externalizable {
 	public static final int STATUS_PROXY_AUTHENTICATION_REQUIRED = 7;
 	public static final int STATUS_USER_AUTHENTICATION_REQUIRED = 8;
 
+	public static final long EXPIRATION_KEEP = -1;
+
 	private static final int PUSHBACK_BUFFER_SIZE = 4;
 
 	private Logger log = Logger.getLogger(Channel.class);
 
 	private String author;
-	private String name;
 	private URL url;
 	private int id;
 	private String title;
 	private String link;
 	private String description;
 	private Date lastPolled;
+	private Date lastCleaned;
 	private long lastModified;
 	private String lastETag;
-	private Date created;
-
-	private int firstArticleNumber = 1;
-	private int lastArticleNumber = 0;
-	private int totalArticles = 0;
-
 	private String rssVersion;
 	private String managingEditor;
 
-	private boolean historical = true;
+//	private boolean historical = true;
 	private boolean enabled = true;
 	private boolean parseAtAllCost = false;
+
+	private long expiration = EXPIRATION_KEEP;
 
 	// Publishing related
 	private boolean postingEnabled = false;
@@ -140,11 +138,14 @@ public class Channel implements Runnable, Externalizable {
 
 	private ChannelManager channelManager;
 	private ChannelDAO channelDAO;
+	private Category category = null;
 
 	private transient boolean polling = false;
 	private transient boolean connected = false;
 
 	public static final long DEFAULT_POLLING_INTERVAL = 0;
+// Clean channels every 24 hours
+	public static final long CLEANING_INTERVAL = 1000 * 60 * 60 * 24;
 	private static final int HTTP_CONNECTION_TIMEOUT = 1000 * 60 * 5;
 
 
@@ -192,14 +193,6 @@ public class Channel implements Runnable, Externalizable {
 	}
 
 	/**
-	 * Returns the name.
-	 * @return String
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
 	 * Returns the url.
 	 * @return String
 	 */
@@ -230,7 +223,8 @@ public class Channel implements Runnable, Externalizable {
 		// Guard against change in history mid-poll
 		polling = true;
 
-		boolean keepHistory = historical;
+//		boolean keepHistory = historical;
+		long keepExpiration = expiration;
 
 		lastPolled = new Date();
 
@@ -405,7 +399,7 @@ public class Channel implements Runnable, Externalizable {
 						}
 					}
 
-					processChannelDocument(keepHistory, rssDoc);
+					processChannelDocument(expiration, rssDoc);
 
 					// Update last modified / etag from headers
 					//					lastETag = httpCon.getHeaderField("ETag");
@@ -486,7 +480,7 @@ public class Channel implements Runnable, Externalizable {
 
 	}
 
-	private void processChannelDocument(boolean keepHistory, Document rssDoc)
+	private void processChannelDocument(long keepExpiration, Document rssDoc)
 		throws NoSuchAlgorithmException, IOException {
 		Element rootElm = rssDoc.getDocumentElement();
 
@@ -502,7 +496,7 @@ public class Channel implements Runnable, Externalizable {
 			rssVersion = docParser.getFormatVersion(rootElm);
 			docParser.extractFeedInfo(rootElm, this);	
 			docParser.processFeedItems(rootElm, this, channelDAO,
-				keepHistory);
+				keepExpiration != 0);
 		} // end if docParser != null
 
 	}
@@ -656,38 +650,6 @@ public class Channel implements Runnable, Externalizable {
 	}
 
 	/**
-	 * Returns the firstArticleNumber.
-	 * @return long
-	 */
-	public int getFirstArticleNumber() {
-		return firstArticleNumber;
-	}
-
-	/**
-	 * Returns the lastArticleNumber.
-	 * @return long
-	 */
-	public int getLastArticleNumber() {
-		return lastArticleNumber;
-	}
-
-	/**
-	 * Sets the firstArticleNumber.
-	 * @param firstArticleNumber The firstArticleNumber to set
-	 */
-	public void setFirstArticleNumber(int firstArticleNumber) {
-		this.firstArticleNumber = firstArticleNumber;
-	}
-
-	/**
-	 * Sets the lastArticleNumber.
-	 * @param lastArticleNumber The lastArticleNumber to set
-	 */
-	public void setLastArticleNumber(int lastArticleNumber) {
-		this.lastArticleNumber = lastArticleNumber;
-	}
-
-	/**
 	 * Returns the author.
 	 * @return String
 	 */
@@ -814,22 +776,6 @@ public class Channel implements Runnable, Externalizable {
 	}
 
 	/**
-	 * Returns the created.
-	 * @return Date
-	 */
-	public Date getCreated() {
-		return created;
-	}
-
-	/**
-	 * Sets the created.
-	 * @param created The created to set
-	 */
-	public void setCreated(Date created) {
-		this.created = created;
-	}
-
-	/**
 	 * Returns the rssVersion.
 	 * @return String
 	 */
@@ -866,33 +812,17 @@ public class Channel implements Runnable, Externalizable {
 	 * Returns the historical.
 	 * @return boolean
 	 */
-	public boolean isHistorical() {
-		return historical;
-	}
+//	public boolean isHistorical() {
+//		return historical;
+//	}
 
 	/**
 	 * Sets the historical.
 	 * @param historical The historical to set
 	 */
-	public void setHistorical(boolean historical) {
-		this.historical = historical;
-	}
-
-	/**
-	 * Returns the totalArticles.
-	 * @return int
-	 */
-	public int getTotalArticles() {
-		return totalArticles;
-	}
-
-	/**
-	 * Sets the totalArticles.
-	 * @param totalArticles The totalArticles to set
-	 */
-	public void setTotalArticles(int totalArticles) {
-		this.totalArticles = totalArticles;
-	}
+//	public void setHistorical(boolean historical) {
+//		this.historical = historical;
+//	}
 
 	/**
 	 * Returns the status.
@@ -1205,6 +1135,7 @@ public class Channel implements Runnable, Externalizable {
 			link = in.readUTF();
 			description = in.readUTF();
 			lastPolled = new Date(in.readLong());
+			lastCleaned = new Date(in.readLong());
 			lastModified = in.readLong();
 			lastETag = in.readUTF();
 			created = new Date(in.readLong());
@@ -1214,7 +1145,9 @@ public class Channel implements Runnable, Externalizable {
 			rssVersion = in.readUTF();
 			managingEditor = in.readUTF();
 
-			historical = in.readBoolean();
+//			historical = in.readBoolean();
+//			in.readBoolean();
+
 			enabled = in.readBoolean();
 			parseAtAllCost = in.readBoolean();
 
@@ -1224,7 +1157,15 @@ public class Channel implements Runnable, Externalizable {
 			status = in.readInt();
 			pollingIntervalSeconds = in.readLong();
 
+			expiration = in.readLong();
+			int categoryId = in.readInt();
+
 			initialize();
+			
+			if(categoryId != 0) {
+				category = channelManager.categoryById(categoryId);
+				category.getChannels().put(new Integer(id), this);
+			}
 	}
 
 	/* (non-Javadoc)
@@ -1240,6 +1181,7 @@ public class Channel implements Runnable, Externalizable {
 		out.writeUTF(link != null ? link : "");
 		out.writeUTF(description != null ? description : "");
 		out.writeLong(lastPolled != null ? lastPolled.getTime() : 0);
+		out.writeLong(lastCleaned != null ? lastCleaned.getTime() : 0);
 		out.writeLong(lastModified);
 		out.writeUTF(lastETag != null ? lastETag : "");
 		out.writeLong(created != null ? created.getTime() : 0);
@@ -1249,7 +1191,7 @@ public class Channel implements Runnable, Externalizable {
 		out.writeUTF(rssVersion != null ? rssVersion : "");
 		out.writeUTF(managingEditor != null ? managingEditor : "");
 
-		out.writeBoolean(historical);
+//		out.writeBoolean(historical);
 		out.writeBoolean(enabled);
 		out.writeBoolean(parseAtAllCost);
 
@@ -1258,6 +1200,51 @@ public class Channel implements Runnable, Externalizable {
 		out.writeUTF(XMLHelper.stringMapToXML(publishConfig));
 		out.writeInt(status);
 		out.writeLong(pollingIntervalSeconds);
+		
+		out.writeLong(expiration);
+		out.writeInt(category != null ? category.getId() : 0);
+	}
+
+	/**
+	 * @return
+	 */
+	public long getExpiration() {
+		return expiration;
+	}
+
+	/**
+	 * @param l
+	 */
+	public void setExpiration(long l) {
+		expiration = l;
+	}
+
+	/**
+	 * @return
+	 */
+	public Category getCategory() {
+		return category;
+	}
+
+	/**
+	 * @param category
+	 */
+	public void setCategory(Category category) {
+		this.category = category;
+	}
+
+	/**
+	 * @return
+	 */
+	public Date getLastCleaned() {
+		return lastCleaned;
+	}
+
+	/**
+	 * @param date
+	 */
+	public void setLastCleaned(Date date) {
+		lastCleaned = date;
 	}
 
 }
