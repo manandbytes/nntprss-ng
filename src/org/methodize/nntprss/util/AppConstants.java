@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -36,13 +36,19 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: AppConstants.java,v 1.4 2003/01/22 05:10:38 jasonbrome Exp $
  */
 public class AppConstants {
 
 	public static final String NNTPRSS_CONFIGURATION_FILE =
 		"nntprss-config.xml";
-	public static final String VERSION = "0.1";
+	public static final String VERSION = "0.2-alpha";
+	
+	public static final int OPEN_ENDED_RANGE = -1;
+
+	public static final int CONTENT_TYPE_TEXT = 1;
+	public static final int CONTENT_TYPE_HTML = 2;
+	public static final int CONTENT_TYPE_MIXED = 3;
 
 	private static DocumentBuilderFactory docBuilderFactory =
 		DocumentBuilderFactory.newInstance();

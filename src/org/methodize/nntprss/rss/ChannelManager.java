@@ -2,7 +2,7 @@ package org.methodize.nntprss.rss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002, 2003 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Methodize Solutions
@@ -40,7 +40,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version 0.1
+ * @version $Id: ChannelManager.java,v 1.3 2003/01/22 05:08:44 jasonbrome Exp $
  */
 public class ChannelManager {
 
@@ -56,7 +56,7 @@ public class ChannelManager {
 
 	private ChannelManager() {
 		// Private constructor - singleton class
-		channelManagerDAO = ChannelManagerDAO.getRSSManagerDAO();
+		channelManagerDAO = ChannelManagerDAO.getChannelManagerDAO();
 	}
 
 	public static ChannelManager getChannelManager() {
@@ -76,7 +76,7 @@ public class ChannelManager {
 
 	public void configure(Document config) {
 
-		channelManagerDAO.initialize(this, config);
+		channelManagerDAO.loadConfiguration(this);
 
 // Set proxy configuration, if necessary.
 		if(proxyServer != null && proxyServer.length() > 0) {
@@ -88,8 +88,8 @@ public class ChannelManager {
 		// Load feeds...
 		channels = channelManagerDAO.loadChannels();
 
-		// Start feed poller...
-		startPoller();
+//		// Start feed poller...
+//		startPoller();
 
 	}
 
@@ -102,6 +102,11 @@ public class ChannelManager {
 	public void deleteChannel(Channel channel) {
 		channels.remove(channel.getName());
 		channelManagerDAO.deleteChannel(channel);
+	}
+
+
+	public void start() {
+		startPoller();
 	}
 
 	public void shutdown() {
@@ -124,6 +129,8 @@ public class ChannelManager {
 	private void stopPoller() {
 		channelPoller.shutdown();
 	}
+
+
 	
 	public void saveConfiguration() {
 		channelManagerDAO.saveConfiguration(this);
