@@ -61,7 +61,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.6 2003/01/28 05:39:39 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.7 2003/02/03 05:15:38 jasonbrome Exp $
  */
 public class Channel implements Runnable {
 
@@ -155,7 +155,7 @@ public class Channel implements Runnable {
 			httpCon.setDoInput(true);
 			httpCon.setDoOutput(false);
 			httpCon.setRequestMethod("GET");
-			httpCon.setRequestProperty("User-Agent", "nntp//rss v"+ AppConstants.VERSION);
+			httpCon.setRequestProperty("User-Agent", AppConstants.getUserAgent());
 
 			// ETag
 			if (lastETag != null) {
@@ -393,7 +393,7 @@ public class Channel implements Runnable {
 			httpCon.setDoInput(true);
 			httpCon.setDoOutput(false);
 			httpCon.setRequestMethod("GET");
-			httpCon.setRequestProperty("User-Agent", "nntp//rss v"+ AppConstants.VERSION);
+			httpCon.setRequestProperty("User-Agent", AppConstants.getUserAgent());
 			httpCon.connect();
 			InputStream is = httpCon.getInputStream();
 
