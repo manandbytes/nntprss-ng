@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServerListener.java,v 1.3 2003/07/19 00:06:17 jasonbrome Exp $
+ * @version $Id: NNTPServerListener.java,v 1.4 2003/09/28 20:23:52 jasonbrome Exp $
  */
 public class NNTPServerListener extends Thread {
 
@@ -77,7 +77,8 @@ public class NNTPServerListener extends Thread {
 	
 				if (log.isInfoEnabled()) {
 					log.info(
-						"NNTP Client connection");
+						"NNTP Client connection from "
+							+ clientSocket.getInetAddress().getHostAddress());
 //					log.info(
 //						"NNTP Client connection from "
 //							+ clientSocket.getInetAddress());
