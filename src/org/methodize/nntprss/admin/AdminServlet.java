@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.12 2004/01/04 21:09:33 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.13 2004/03/23 01:43:03 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -1934,7 +1934,7 @@ public class AdminServlet extends HttpServlet {
 			writer.print(channel.getExpiration());			
 			writer.print("' ");
 			if(channel.getCategory() != null) {
-				writer.print("' category='");
+				writer.print(" category='");
 				writer.print(channel.getCategory().getName());
 				writer.print("' ");
 			}
@@ -2152,7 +2152,7 @@ public class AdminServlet extends HttpServlet {
 						if(category == null) {
 // Need to create category...
 							category = new Category();
-   							category.setName(name);
+   							category.setName(categoryName);
    							channelManager.addCategory(category);
 						}
 						category.addChannel(newChannel);
