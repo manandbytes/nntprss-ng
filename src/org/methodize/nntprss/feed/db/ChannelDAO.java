@@ -30,21 +30,31 @@ package org.methodize.nntprss.feed.db;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.methodize.nntprss.feed.Category;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
 import org.methodize.nntprss.feed.Item;
 import org.methodize.nntprss.nntp.NNTPServer;
+import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelDAO.java,v 1.6 2004/03/27 02:12:48 jasonbrome Exp $
+ * @version $Id: ChannelDAO.java,v 1.7 2004/03/28 22:26:04 jasonbrome Exp $
  */
 public abstract class ChannelDAO {
 
@@ -171,4 +181,248 @@ public abstract class ChannelDAO {
         Channel channel,
         Set itemSignatures);
 
+	boolean migrateHsql() {
+		boolean hsqlFound = false;
+
+		// Check for nntp//rss v0.3 hsqldb database - if found, migrate...
+		Connection hsqlConn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			Class.forName("org.hsqldb.jdbcDriver");
+			hsqlConn =
+				DriverManager.getConnection("jdbc:hsqldb:nntprssdb", "sa", "");
+
+			if (log.isInfoEnabled()) {
+				log.info("Migrating hsqldb to JDBC Database");
+			}
+
+			// Initialize database specific values
+			migrateInitializeDatabase();
+
+			stmt = hsqlConn.createStatement();
+
+			try {
+				rs = stmt.executeQuery("SELECT * FROM config");
+			} catch (SQLException e) {
+				// Assume that hsqldb is not found...
+				if (log.isEnabledFor(Priority.WARN)) {
+					log.warn(
+						"Exising hsqldb database not found, skipping migration");
+				}
+				return hsqlFound;
+			}
+
+			if (log.isInfoEnabled()) {
+				log.info("Migrating system configuration...");
+			}
+
+			if (rs.next()) {
+				ChannelManager channelManager =
+					ChannelManager.getChannelManager();
+				channelManager.setPollingIntervalSeconds(
+					rs.getLong("pollingInterval"));
+				channelManager.setProxyServer(rs.getString("proxyServer"));
+				channelManager.setProxyPort(rs.getInt("proxyPort"));
+				channelManager.setProxyUserID(rs.getString("proxyUserID"));
+				channelManager.setProxyPassword(rs.getString("proxyPassword"));
+				saveConfiguration(channelManager);
+
+				NNTPServer nntpServer = new NNTPServer();
+				loadConfiguration(nntpServer);
+				nntpServer.setContentType(rs.getInt("contentType"));
+				nntpServer.setSecure(rs.getBoolean("nntpSecure"));
+				saveConfiguration(nntpServer);
+			}
+
+			rs.close();
+			stmt.close();
+
+			if (log.isInfoEnabled()) {
+				log.info("Finished migration system configuration...");
+			}
+
+			if (log.isInfoEnabled()) {
+				log.info("Migrating channel configuration...");
+			}
+
+			rs = stmt.executeQuery("SELECT * FROM channels");
+			Map channelMap = new TreeMap();
+
+			while (rs.next()) {
+				int origId = rs.getInt("id");
+
+				Channel channel =
+					new Channel(rs.getString("name"), rs.getString("url"));
+				channel.setAuthor(rs.getString("author"));
+				channel.setTitle(rs.getString("title"));
+				channel.setLink(rs.getString("link"));
+				channel.setDescription(rs.getString("description"));
+				channel.setLastArticleNumber(rs.getInt("lastArticle"));
+				channel.setCreated(rs.getTimestamp("created"));
+				channel.setRssVersion(rs.getString("rssVersion"));
+				channel.setExpiration(
+					rs.getBoolean("historical") ? Channel.EXPIRATION_KEEP : 0);
+				channel.setEnabled(rs.getBoolean("enabled"));
+				channel.setPostingEnabled(rs.getBoolean("postingEnabled"));
+				channel.setParseAtAllCost(rs.getBoolean("parseAtAllCost"));
+				channel.setPublishAPI(rs.getString("publishAPI"));
+				channel.setPublishConfig(
+					XMLHelper.xmlToStringHashMap(
+						rs.getString("publishConfig")));
+				channel.setManagingEditor(rs.getString("managingEditor"));
+				channel.setPollingIntervalSeconds(
+					rs.getLong("pollingInterval"));
+				addChannel(channel);
+
+				channelMap.put(new Integer(origId), channel);
+
+				if (log.isInfoEnabled()) {
+					log.info(
+						"Added Channel "
+							+ channel
+							+ " (origId="
+							+ origId
+							+ ")");
+				}
+			}
+
+			stmt.close();
+			rs.close();
+
+			if (log.isInfoEnabled()) {
+				log.info("Finished migrating channel configuration...");
+			}
+
+			if (log.isInfoEnabled()) {
+				log.info("Migrating items...");
+			}
+
+			// Copy channel items...
+			Iterator channelIter = channelMap.entrySet().iterator();
+			int totalCount = 0;
+			while (channelIter.hasNext()) {
+
+				Map.Entry entry = (Map.Entry) channelIter.next();
+
+				int channelOrigId = ((Integer) entry.getKey()).intValue();
+				int count = 0;
+				boolean moreResults = true;
+				Channel channel = (Channel) entry.getValue();
+
+				if (log.isInfoEnabled()) {
+					log.info(
+						"Migrating items from channel "
+							+ channel.getName()
+							+ " (origId="
+							+ channelOrigId
+							+ ")");
+				}
+
+				while (moreResults) {
+					rs =
+						stmt.executeQuery(
+							"SELECT LIMIT "
+								+ count
+								+ " 1000 * FROM items WHERE channel = "
+								+ ((Integer) entry.getKey()).intValue());
+
+					int recCount = 0;
+
+					while (rs.next()) {
+						Item item = new Item();
+						item.setArticleNumber(rs.getInt("articleNumber"));
+						item.setChannel(channel);
+						item.setTitle(rs.getString("title"));
+						item.setLink(rs.getString("link"));
+						item.setDescription(rs.getString("description"));
+						item.setComments(rs.getString("comments"));
+						item.setDate(rs.getTimestamp("dtStamp"));
+						item.setSignature(rs.getString("signature"));
+
+						try {
+							saveItem(item);
+						} catch (Exception e) {
+							String msg =
+								"Migration failed: Exception thrown while trying to save item "
+									+ item
+									+ " in channel "
+									+ channel;
+							log.fatal(msg, e);
+							throw new RuntimeException(msg);
+						}
+
+						recCount++;
+					}
+
+					if (recCount < 1000) {
+						moreResults = false;
+					}
+
+					stmt.close();
+					rs.close();
+
+					count += recCount;
+
+					if (log.isInfoEnabled()) {
+						if (moreResults) {
+							log.info(
+								"Migrating items... "
+									+ (totalCount + count)
+									+ " items moved");
+						}
+					}
+				}
+
+				channel.setTotalArticles(count);
+				updateChannel(channel);
+
+				totalCount += count;
+
+				if (log.isInfoEnabled()) {
+					log.info(
+						"Migrated "
+							+ count
+							+ " items (total "
+							+ totalCount
+							+ ") for channel "
+							+ channel.getName());
+				}
+			}
+
+			if (log.isInfoEnabled()) {
+				log.info("Finished migrating items. " + totalCount + " items migrated.");
+			}
+
+			// Shutdown hsqldb
+			stmt.execute("SHUTDOWN");
+			hsqlFound = true;
+		} catch (Exception e) {
+			if (log.isEnabledFor(Priority.ERROR)) {
+				log.error("Exception thrown when trying to migrate hsqldb", e);
+			}
+			throw new RuntimeException("Exception throws whent rying to migrate hsqldb " + e.getMessage());
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (Exception e) {
+			}
+			try {
+				if (rs != null)
+					rs.close();
+			} catch (Exception e) {
+			}
+			try {
+				if (hsqlConn != null)
+					hsqlConn.close();
+			} catch (Exception e) {
+			}
+		}
+
+		return hsqlFound;
+	}
+
+	abstract void migrateInitializeDatabase() throws Exception;
 }
