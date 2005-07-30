@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: JdbcChannelDAO.java,v 1.12 2005/02/13 21:59:19 jasonbrome Exp $
+ * @version $Id: JdbcChannelDAO.java,v 1.13 2005/07/30 01:48:52 jasonbrome Exp $
  */
 
 public abstract class JdbcChannelDAO extends ChannelDAO {
@@ -164,11 +164,10 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
     public Map loadChannels(ChannelManager channelManager) {
         Map channels = new TreeMap();
+        Map channelsById = new TreeMap();
         Connection conn = null;
         Statement stmt = null;
-        PreparedStatement ps = null;
         ResultSet rs = null;
-        ResultSet rs2 = null;
 
         if (log.isInfoEnabled()) {
             log.info("Loading channel configuration");
@@ -180,11 +179,6 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + TABLE_CHANNELS);
             if (rs != null) {
-                ps =
-                    conn.prepareStatement(
-                        "SELECT MIN(articleNumber), COUNT(articleNumber), MAX(articleNumber) FROM "
-                            + TABLE_ITEMS
-                            + " WHERE channel = ?");
                 while (rs.next()) {
                     String name = rs.getString("name");
                     String url = rs.getString("url");
@@ -203,26 +197,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     channel.setTitle(rs.getString("title"));
                     channel.setLink(rs.getString("link"));
                     channel.setDescription(rs.getString("description"));
-
-                    ps.setInt(1, channel.getId());
-                    rs2 = ps.executeQuery();
-                    if (rs2 != null) {
-                        if (rs2.next()) {
-                            int firstArticleNumber = rs2.getInt(1);
-                            if (firstArticleNumber != 0) {
-                                channel.setFirstArticleNumber(
-                                    firstArticleNumber);
-                            } else {
-                                channel.setFirstArticleNumber(1);
-                            }
-
-                            channel.setTotalArticles(rs2.getInt(2));
-                            channel.setLastArticleNumber(rs2.getInt(3));
-                        }
-                        rs2.close();
-                    }
-
                     channel.setLastPolled(rs.getTimestamp("lastPolled"));
+					channel.setLastCleaned(rs.getTimestamp("lastCleaned"));
                     channel.setLastModified(rs.getLong("lastModified"));
                     channel.setLastETag(rs.getString("lastETag"));
                     channel.setRssVersion(rs.getString("rssVersion"));
@@ -243,6 +219,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     channel.setExpiration(rs.getLong("expiration"));
 
                     channels.put(channel.getName(), channel);
+                    channelsById.put(new Integer(channel.getId()), channel);
 
                     int categoryId = rs.getInt("category");
 
@@ -255,6 +232,32 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                         channel.setCategory(category);
                     }
                 }
+
+				rs.close();
+				rs = stmt.executeQuery("SELECT channel, MIN(articleNumber), COUNT(articleNumber), MAX(articleNumber) FROM "
+							+ TABLE_ITEMS
+							+ " GROUP BY channel");
+							
+				if (rs != null) {
+					while (rs.next()) {
+						int channelId = rs.getInt(1);
+						Channel channel = (Channel)channelsById.get(new Integer(channelId));
+						if(channel != null)
+						{
+							int firstArticleNumber = rs.getInt(2);
+							if (firstArticleNumber != 0) {
+								channel.setFirstArticleNumber(
+									firstArticleNumber);
+							} else {
+								channel.setFirstArticleNumber(2);
+							}
+	
+							channel.setTotalArticles(rs.getInt(3));
+							channel.setLastArticleNumber(rs.getInt(4));
+						}
+					}
+				}
+                
             }
         } catch (SQLException se) {
             throw new RuntimeException(se);
@@ -265,18 +268,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             } catch (SQLException se) {
             }
             try {
-                if (rs2 != null)
-                    rs2.close();
-            } catch (SQLException se) {
-            }
-            try {
                 if (stmt != null)
                     stmt.close();
-            } catch (SQLException se) {
-            }
-            try {
-                if (ps != null)
-                    ps.close();
             } catch (SQLException se) {
             }
             try {
@@ -639,7 +632,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                         + "SET author = ?, name = ?, url = ?, "
                         + "title = ?, link = ?, description = ?, "
                         + "lastArticle = ?, "
-                        + "lastPolled = ?, lastModified = ?, lastETag = ?, rssVersion = ?, "
+                        + "lastPolled = ?, lastCleaned = ?, lastModified = ?, lastETag = ?, rssVersion = ?, "
                         + "enabled = ?, "
                         + "postingEnabled = ?, "
                         + "publishAPI = ?, "
@@ -668,6 +661,14 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             } else {
                 ps.setNull(paramCount++, java.sql.Types.TIMESTAMP);
             }
+
+			if (channel.getLastCleaned() != null) {
+				ps.setTimestamp(
+					paramCount++,
+					new Timestamp(channel.getLastCleaned().getTime()));
+			} else {
+				ps.setNull(paramCount++, java.sql.Types.TIMESTAMP);
+			}
 
             ps.setLong(paramCount++, channel.getLastModified());
             ps.setString(paramCount++, channel.getLastETag());
@@ -1343,7 +1344,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             // TODO: only really need to do this if first article number is not in set...
             ps =
                 conn.prepareStatement(
-                    "SELECT MIN(articleNumber) as firstArticleNumber FROM "
+                    "SELECT MIN(articleNumber) as firstArticleNumber, COUNT(articleNumber) as totalArticles FROM "
                         + TABLE_ITEMS
                         + " WHERE channel = ?");
             int paramCount = 1;
@@ -1366,6 +1367,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     } else {
                         channel.setFirstArticleNumber(firstArticle);
                     }
+                    channel.setTotalArticles(rs.getInt("totalArticles"));
                 }
 
             }
@@ -1431,7 +1433,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             // TODO: only really need to do this if first article number is not in set...
             ps =
                 conn.prepareStatement(
-                    "SELECT MIN(articleNumber) as firstArticleNumber FROM "
+                    "SELECT MIN(articleNumber) as firstArticleNumber, COUNT(articleNumber) as totalArticles FROM "
                         + TABLE_ITEMS
                         + " WHERE channel = ?");
             paramCount = 1;
@@ -1454,6 +1456,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     } else {
                         channel.setFirstArticleNumber(firstArticle);
                     }
+                    int totalArticles = rs.getInt("totalArticles");
+                    channel.setTotalArticles(totalArticles);
                 }
 
             }
@@ -1525,7 +1529,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 }
             }
 
-            // Perform set arithmatic to discover new items
+            // Perform set arithmetic to discover new items
             newSignatures.addAll(itemSignatures);
             newSignatures.removeAll(currentSignatures);
 
