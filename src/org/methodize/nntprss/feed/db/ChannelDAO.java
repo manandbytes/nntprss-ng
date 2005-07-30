@@ -61,13 +61,13 @@ import jdbm.helper.TupleBrowser;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelDAO.java,v 1.9 2005/02/13 21:59:19 jasonbrome Exp $
+ * @version $Id: ChannelDAO.java,v 1.10 2005/07/30 01:47:42 jasonbrome Exp $
  */
 public abstract class ChannelDAO {
 
     public static final int LIMIT_NONE = -1;
 
-    static final int DBVERSION = 5;
+    static final int DBVERSION = 6;
 
     Logger log = Logger.getLogger(ChannelDAO.class);
 
