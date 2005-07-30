@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.9 2005/02/13 22:00:53 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.10 2005/07/30 01:47:13 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
@@ -371,17 +371,17 @@ public class RSSParser extends GenericParser {
             if (currentSignatures.size() > 0) {
                 if (channel.getExpiration() == 0) {
                     channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+					channel.setTotalArticles(currentSignatures.size());
                 } else if (
                     channel.getExpiration() > 0
-                        && channel.getLastCleaned().before(
+                        && (channel.getLastCleaned() == null || channel.getLastCleaned().before(
                             new Date(
                                 System.currentTimeMillis()
-                                    - Channel.CLEANING_INTERVAL))) {
+                                    - Channel.CLEANING_INTERVAL)))) {
                     channelDAO.deleteExpiredItems(channel, currentSignatures);
                     channel.setLastCleaned(new Date());
                 }
             }
-            channel.setTotalArticles(currentSignatures.size());
         }
     }
 

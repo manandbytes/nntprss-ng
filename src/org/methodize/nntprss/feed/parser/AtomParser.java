@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.9 2005/02/13 22:00:52 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.10 2005/07/30 01:47:12 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
@@ -343,17 +343,17 @@ public class AtomParser extends GenericParser {
             if (currentSignatures.size() > 0) {
                 if (channel.getExpiration() == 0) {
                     channelDAO.deleteItemsNotInSet(channel, currentSignatures);
+					channel.setTotalArticles(currentSignatures.size());
                 } else if (
                     channel.getExpiration() > 0
-                        && channel.getLastCleaned().before(
-                            new Date(
-                                System.currentTimeMillis()
-                                    - Channel.CLEANING_INTERVAL))) {
+						&& (channel.getLastCleaned() == null || channel.getLastCleaned().before(
+					new Date(
+						System.currentTimeMillis()
+							- Channel.CLEANING_INTERVAL)))) {
                     channelDAO.deleteExpiredItems(channel, currentSignatures);
                     channel.setLastCleaned(new Date());
                 }
             }
-            channel.setTotalArticles(currentSignatures.size());
         }
     }
 
