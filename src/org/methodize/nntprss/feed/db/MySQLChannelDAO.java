@@ -50,12 +50,12 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.12 2005/02/13 21:59:19 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.13 2005/07/30 01:49:26 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
 
-    private static final int DBVERSION = 5;
+    private static final int DBVERSION = 6;
     private static final int MYSQL_FALSE = 0;
     private static final int MYSQL_TRUE = 1;
 
@@ -90,6 +90,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
                     + "description text, "
                     + "lastArticle int not null, "
                     + "lastPolled timestamp, "
+                    + "lastCleaned timestamp, "
                     + "created timestamp, "
                     + "lastModified bigint, "
                     + "lastETag varchar(255), "
@@ -469,6 +470,12 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
                         "CREATE INDEX fk_channel ON "
                             + TABLE_ITEMS
                             + " (channel)");
+
+				case 5 :
+					stmt.executeUpdate(
+						"ALTER TABLE "
+							+ TABLE_CHANNELS
+							+ " ADD COLUMN lastCleaned timestamp");
 
                 default :
                     // Force re-poll of all channels after DB upgrade...
