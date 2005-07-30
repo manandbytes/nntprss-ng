@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.17 2005/02/13 21:54:57 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.18 2005/07/30 01:44:52 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -1117,44 +1117,44 @@ public class AdminServlet extends HttpServlet {
         writeOption(
             writer,
             "Keep items for 1 day",
-            (1000 * 60 * 60 * 24 * 1),
+            (1000L * 60 * 60 * 24 * 1),
             expiration);
         writeOption(
             writer,
             "Keep items for 2 days",
-            (1000 * 60 * 60 * 24 * 2),
+            (1000L * 60 * 60 * 24 * 2),
             expiration);
         writeOption(
             writer,
             "Keep items for 4 days",
-            (1000 * 60 * 60 * 24 * 4),
+            (1000L * 60 * 60 * 24 * 4),
             expiration);
         writeOption(
             writer,
             "Keep items for 1 week",
-            (1000 * 60 * 60 * 24 * 7),
+            (1000L * 60 * 60 * 24 * 7),
             expiration);
         writeOption(
             writer,
             "Keep items for 2 weeks",
-            (1000 * 60 * 60 * 24 * 14),
+            (1000L * 60 * 60 * 24 * 14),
             expiration);
         writeOption(
             writer,
             "Keep items for 4 weeks",
-            (1000 * 60 * 60 * 24 * 28),
+            (1000L * 60 * 60 * 24 * 28),
             expiration);
 
 		writeOption(
 			writer,
 			"Keep items for 6 months",
-			((1000 * 60 * 60 * 24) * 180),
+			((1000L * 60 * 60 * 24) * 180),
 			expiration);
 
 		writeOption(
 			writer,
 			"Keep items for 1 year",
-			((1000 * 60 * 60 * 24) * 365),
+			((1000L * 60 * 60 * 24) * 365),
 			expiration);
 
         writer.write("</select></td></tr>");
