@@ -1,4 +1,4 @@
-February 13, 2005 - nntp//rss v0.5-beta-2
+TBD - nntp//rss v0.5-beta-2
 
 + Introduced Item Processors - this allows custom modules to be plugged
   into the polling engine.  ItemProcessor classes are called when new
@@ -12,8 +12,10 @@ February 13, 2005 - nntp//rss v0.5-beta-2
   (e.g. Username: myuser@mysite.com, Password: test,
   URL: http://myuser%40mysite.com:test@some.url.com/feed.xml)
   Thanks to Steven Rohall for his help in finding and resolving this bug!
-+ Fixed redirection bug
++ Fixed HTTP redirection bug
 + Added 6 month and 1 year expiration options
++ Fixed item expiration bug
++ Improved start-up times for large channel sets
 
 October 25, 2004 - nntp//rss v0.5-beta-1
 
