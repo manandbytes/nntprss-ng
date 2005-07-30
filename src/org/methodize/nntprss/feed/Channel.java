@@ -87,7 +87,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.15 2005/02/13 21:56:24 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.16 2005/07/30 01:46:10 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer
@@ -518,8 +518,8 @@ public class Channel
                 rootElm,
                 this,
                 channelDAO,
-                keepExpiration != 0);
-            channelDAO.updateChannel(this); //ALEK
+                keepExpiration < 0);
+            channelDAO.updateChannel(this); 
         } // end if docParser != null
 
     }
