@@ -5,10 +5,10 @@ package org.methodize.nntprss.feed;
  * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
- * mail:  Methodize Solutions
- *        PO Box 3865
- *        Grand Central Station
- *        New York NY 10163
+ * mail:  Jason Brome
+ *        PO Box 222-WOB
+ *        West Orange
+ *        NJ 07052-0222
  * 
  * This file is part of nntp//rss
  * 
@@ -87,7 +87,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.16 2005/07/30 01:46:10 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.17 2005/08/24 23:12:10 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer

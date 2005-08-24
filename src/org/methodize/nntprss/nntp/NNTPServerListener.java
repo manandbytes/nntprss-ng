@@ -5,10 +5,10 @@ package org.methodize.nntprss.nntp;
  * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
- * mail:  Methodize Solutions
- *        PO Box 3865
- *        Grand Central Station
- *        New York NY 10163
+ * mail:  Jason Brome
+ *        PO Box 222-WOB
+ *        West Orange
+ *        NJ 07052-0222
  * 
  * This file is part of nntp//rss
  * 
@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServerListener.java,v 1.7 2005/02/13 22:04:46 jasonbrome Exp $
+ * @version $Id: NNTPServerListener.java,v 1.8 2005/08/24 23:12:11 jasonbrome Exp $
  */
 public class NNTPServerListener extends Thread {
 

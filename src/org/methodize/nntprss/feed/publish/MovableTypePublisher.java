@@ -17,10 +17,10 @@ import org.methodize.nntprss.feed.Item;
  *
  * email: nntprss@methodize.org
  * web:   http://www.methodize.org/nntprss
- * mail:  Methodize Solutions
- *        PO Box 3865
- *        Grand Central Station
- *        New York NY 10163
+ * mail:  Jason Brome
+ *        PO Box 222-WOB
+ *        West Orange
+ *        NJ 07052-0222
  * 
  * This file is part of nntp//rss
  * 
@@ -44,7 +44,7 @@ import org.methodize.nntprss.feed.Item;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MovableTypePublisher.java,v 1.4 2005/02/13 22:02:16 jasonbrome Exp $
+ * @version $Id: MovableTypePublisher.java,v 1.5 2005/08/24 23:12:11 jasonbrome Exp $
  */
 
 public class MovableTypePublisher implements Publisher {

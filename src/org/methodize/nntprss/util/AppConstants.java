@@ -5,10 +5,10 @@ package org.methodize.nntprss.util;
  * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
- * mail:  Methodize Solutions
- *        PO Box 3865
- *        Grand Central Station
- *        New York NY 10163
+ * mail:  Jason Brome
+ *        PO Box 222-WOB
+ *        West Orange
+ *        NJ 07052-0222
  * 
  * This file is part of nntp//rss
  * 
@@ -39,7 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.19 2005/02/13 22:12:53 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.20 2005/08/24 23:12:10 jasonbrome Exp $
  */
 public final class AppConstants {
 

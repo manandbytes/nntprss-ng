@@ -5,10 +5,10 @@ package org.methodize.nntprss.admin;
  * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
- * mail:  Methodize Solutions
- *        PO Box 3865
- *        Grand Central Station
- *        New York NY 10163
+ * mail:  Jason Brome
+ *        PO Box 222-WOB
+ *        West Orange
+ *        NJ 07052-0222
  * 
  * This file is part of nntp//rss
  * 
@@ -55,7 +55,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServer.java,v 1.9 2005/02/13 21:54:57 jasonbrome Exp $
+ * @version $Id: AdminServer.java,v 1.10 2005/08/24 23:12:12 jasonbrome Exp $
  */
 public class AdminServer {
 
