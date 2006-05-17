@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.19 2005/08/24 23:12:11 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.20 2006/05/17 04:46:17 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -2686,13 +2686,13 @@ public class AdminServlet extends HttpServlet {
         while (channelIter.hasNext()) {
             Channel channel = (Channel) channelIter.next();
             writer.print("  <outline text='");
-            writer.print(XMLHelper.escapeString(channel.getTitle()));
+            writer.print(channel.getTitle() != null ? XMLHelper.escapeString(channel.getTitle()) : "");
             writer.print("' description='");
-            writer.print(XMLHelper.escapeString(channel.getDescription()));
+            writer.print(channel.getDescription() != null ? XMLHelper.escapeString(channel.getDescription()) : "");
             writer.print("' htmlUrl='");
-            writer.print(XMLHelper.escapeString(channel.getLink()));
+            writer.print(channel.getLink() != null ? XMLHelper.escapeString(channel.getLink()) : "");
             writer.print("' title='");
-            writer.print(XMLHelper.escapeString(channel.getTitle()));
+            writer.print(channel.getTitle() != null ? XMLHelper.escapeString(channel.getTitle()) : "");
             writer.print("' ");
             if (channel.getRssVersion() != null) {
                 if (channel.getRssVersion().toUpperCase().startsWith("RSS")
@@ -3464,7 +3464,7 @@ public class AdminServlet extends HttpServlet {
         writer.write("</td></tr>");
 
         writer.write(
-            "<tr><th class='subHead'><span class='smalltext'>nntp//rss - Copyright &copy; 2002-2003 Jason Brome.  All Rights Reserved.</span></th></tr>");
+            "<tr><th class='subHead'><span class='smalltext'>nntp//rss - Copyright &copy; 2002-2006 Jason Brome.  All Rights Reserved.</span></th></tr>");
 
         writer.write("</table>");
 
