@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin.search;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -36,7 +36,7 @@ import org.apache.xmlrpc.XmlRpcClient;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: FeedsterSearch.java,v 1.5 2005/08/24 23:12:11 jasonbrome Exp $
+ * @version $Id: FeedsterSearch.java,v 1.6 2006/05/17 04:12:42 jasonbrome Exp $
  */
 
 public class FeedsterSearch {

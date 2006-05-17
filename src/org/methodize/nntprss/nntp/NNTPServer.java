@@ -2,7 +2,7 @@ package org.methodize.nntprss.nntp;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -56,7 +56,7 @@ import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.10 2005/08/24 23:12:11 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.11 2006/05/17 04:13:38 jasonbrome Exp $
  */
 
 public class NNTPServer implements Externalizable {

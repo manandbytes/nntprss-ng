@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -42,7 +42,7 @@ import org.w3c.dom.Text;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ParserCallback.java,v 1.5 2005/08/24 23:12:10 jasonbrome Exp $
+ * @version $Id: ParserCallback.java,v 1.6 2006/05/17 04:13:53 jasonbrome Exp $
  */
 public class ParserCallback extends HTMLEditorKit.ParserCallback {
 
