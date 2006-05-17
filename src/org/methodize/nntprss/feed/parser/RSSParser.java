@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.11 2005/08/24 23:12:10 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.12 2006/05/17 04:14:33 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
@@ -340,7 +340,18 @@ public class RSSParser extends GenericParser {
                                 : strippedDesc.length();
                         item.setTitle(strippedDesc.substring(0, length));
                     }
-                    item.setDescription(description);
+                    
+                    // If empty description, set the description to the title.
+                    // This will also help out in scenarios where the title of the
+                    // RSS feed contains large content
+                    if(description.trim().length() > 0) {
+                        item.setDescription(description);
+                    } else if(title.length() > 0) {
+                    	item.setDescription(title);
+                    } else {
+                    	item.setDescription("");
+                    }
+                    
                     item.setLink(link);
                     item.setGuid(guid);
                     item.setGuidIsPermaLink(guidIsPermaLink);
