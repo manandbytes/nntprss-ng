@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-    <classpathentry excluding="**/*.CVS" kind="src" path="src"/>
-    <classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-    <classpathentry kind="lib" path="ext/lib/commons-collections.jar"/>
-    <classpathentry kind="lib" path="ext/lib/commons-dbcp.jar"/>
-    <classpathentry kind="lib" path="ext/lib/commons-pool.jar"/>
-    <classpathentry kind="lib" path="ext/lib/crimson.jar"/>
-    <classpathentry kind="lib" path="ext/lib/hsqldb.jar"/>
-    <classpathentry kind="lib" path="ext/lib/javax.servlet.jar"/>
-    <classpathentry kind="lib" path="ext/lib/log4j-1.2.7.jar"/>
-    <classpathentry kind="lib" path="ext/lib/org.mortbay.jetty-jdk1.2.jar"/>
-    <classpathentry kind="lib" path="ext/lib/xmlrpc-1.1.jar"/>
-    <classpathentry kind="lib" path="ext/lib/activation.jar"/>
-    <classpathentry kind="lib" path="ext/lib/mailapi.jar"/>
-    <classpathentry kind="lib" path="ext/lib/systray4j.jar"/>
-    <classpathentry kind="lib" path="ext/lib/commons-httpclient.jar" sourcepath="C:/java/commons-httpclient-2.0-beta1/src/java"/>
-    <classpathentry kind="lib" path="ext/lib/commons-logging.jar"/>
-    <classpathentry kind="lib" path="ext/lib/mysql.jar"/>
-    <classpathentry kind="lib" path="ext/lib/jdbm-0.20.jar" sourcepath="C:/projects/jdbm/src/main"/>
-    <classpathentry kind="output" path="bin"/>
+	<classpathentry excluding="**/*.CVS" kind="src" path="src"/>
+	<classpathentry kind="lib" path="ext/lib/commons-collections.jar"/>
+	<classpathentry kind="lib" path="ext/lib/commons-dbcp.jar"/>
+	<classpathentry kind="lib" path="ext/lib/commons-pool.jar"/>
+	<classpathentry kind="lib" path="ext/lib/crimson.jar"/>
+	<classpathentry kind="lib" path="ext/lib/hsqldb.jar"/>
+	<classpathentry kind="lib" path="ext/lib/javax.servlet.jar"/>
+	<classpathentry kind="lib" path="ext/lib/log4j-1.2.7.jar"/>
+	<classpathentry kind="lib" path="ext/lib/org.mortbay.jetty-jdk1.2.jar"/>
+	<classpathentry kind="lib" path="ext/lib/xmlrpc-1.1.jar"/>
+	<classpathentry kind="lib" path="ext/lib/activation.jar"/>
+	<classpathentry kind="lib" path="ext/lib/mailapi.jar"/>
+	<classpathentry kind="lib" path="ext/lib/systray4j.jar"/>
+	<classpathentry kind="lib" path="ext/lib/commons-httpclient.jar" sourcepath="C:/java/commons-httpclient-2.0-beta1/src/java"/>
+	<classpathentry kind="lib" path="ext/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="ext/lib/mysql.jar"/>
+	<classpathentry kind="lib" path="ext/lib/jdbm-0.20.jar" sourcepath="C:/projects/jdbm/src/main"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
