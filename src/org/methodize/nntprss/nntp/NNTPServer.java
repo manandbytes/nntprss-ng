@@ -2,7 +2,7 @@ package org.methodize.nntprss.nntp;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -56,7 +56,7 @@ import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.11 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.12 2007/12/16 21:49:05 jasonbrome Exp $
  */
 
 public class NNTPServer implements Externalizable {
@@ -131,9 +131,9 @@ public class NNTPServer implements Externalizable {
             try {
                 Properties props = new Properties();
                 props.load(userConfig);
-                Enumeration enum = props.propertyNames();
-                while (enum.hasMoreElements()) {
-                    String user = (String) enum.nextElement();
+                Enumeration propertyNameEnum = props.propertyNames();
+                while (propertyNameEnum.hasMoreElements()) {
+                    String user = (String) propertyNameEnum.nextElement();
                     users.put(user, props.getProperty(user));
                 }
 
