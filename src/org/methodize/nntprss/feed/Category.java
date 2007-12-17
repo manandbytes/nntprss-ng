@@ -1,10 +1,5 @@
 package org.methodize.nntprss.feed;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +7,7 @@ import org.methodize.nntprss.feed.db.ChannelDAO;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -42,13 +37,9 @@ import org.methodize.nntprss.feed.db.ChannelDAO;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Category.java,v 1.7 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: Category.java,v 1.8 2007/12/17 04:07:59 jasonbrome Exp $
  */
-public class Category extends ItemContainer implements Externalizable {
-
-    public static final int EXTERNAL_VERSION = 2;
-    private static final int VERSION_UTF = 1;
-    private static final int VERSION_OBJECT = 2;
+public class Category extends ItemContainer  {
 
     private int id;
 
@@ -83,40 +74,6 @@ public class Category extends ItemContainer implements Externalizable {
     public void save() {
         // Update channel in database...
         channelDAO.updateCategory(this);
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-     */
-    public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException {
-        int version = in.readInt();
-        id = in.readInt();
-
-        if (version == VERSION_UTF)
-            name = in.readUTF();
-        else
-            name = (String) in.readObject();
-
-        firstArticleNumber = in.readInt();
-        lastArticleNumber = in.readInt();
-        totalArticles = in.readInt();
-        created = new Date(in.readLong());
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-     */
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(EXTERNAL_VERSION);
-        out.writeInt(id);
-        out.writeObject(name != null ? name : "");
-
-        out.writeInt(firstArticleNumber);
-        out.writeInt(lastArticleNumber);
-        out.writeInt(totalArticles);
-        out.writeLong(created != null ? created.getTime() : 0);
-
     }
 
     /**

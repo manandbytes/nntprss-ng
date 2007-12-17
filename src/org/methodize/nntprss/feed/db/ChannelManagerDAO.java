@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -30,17 +30,16 @@ package org.methodize.nntprss.feed.db;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManagerDAO.java,v 1.8 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: ChannelManagerDAO.java,v 1.9 2007/12/17 04:11:00 jasonbrome Exp $
  */
 public class ChannelManagerDAO {
 
-    private Logger log = Logger.getLogger(ChannelManagerDAO.class);
+    // private static final Logger log = Logger.getLogger(ChannelManagerDAO.class);
 
     private static final ChannelManagerDAO channelManagerDAO =
         new ChannelManagerDAO();
@@ -91,8 +90,8 @@ public class ChannelManagerDAO {
                         + e);
             }
         } else {
-            // Default to JDBM
-            channelDAO = new JdbmChannelDAO();
+            // Default to Derby
+            channelDAO = new DerbyChannelDAO();
         }
         initialized = true;
     }

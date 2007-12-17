@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -30,38 +30,19 @@ package org.methodize.nntprss.feed.db;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.methodize.nntprss.feed.Category;
-import org.methodize.nntprss.feed.Channel;
-import org.methodize.nntprss.feed.ChannelManager;
-import org.methodize.nntprss.feed.Item;
+import org.methodize.nntprss.feed.*;
 import org.methodize.nntprss.nntp.NNTPServer;
 import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
-import jdbm.btree.BTree;
-import jdbm.helper.Tuple;
-import jdbm.helper.TupleBrowser;
-
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelDAO.java,v 1.12 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: ChannelDAO.java,v 1.13 2007/12/17 04:10:43 jasonbrome Exp $
  */
 public abstract class ChannelDAO {
 
@@ -69,7 +50,7 @@ public abstract class ChannelDAO {
 
     static final int DBVERSION = 6;
 
-    Logger log = Logger.getLogger(ChannelDAO.class);
+    static final Logger log = Logger.getLogger(ChannelDAO.class);
 
     public abstract void shutdown();
 
@@ -430,244 +411,6 @@ public abstract class ChannelDAO {
 
 		return hsqlFound;
 	}
-
-	boolean migrateJdbm() {
-		boolean jdbmFound = false;
-
-		long recID = 0;
-		RecordManager recMan = null;
-		
-		// Check for nntp//rss v0.4 jdbm database - if found, migrate...
-		try {
-			recMan = RecordManagerFactory.createRecordManager(JdbmChannelDAO.DATABASE);
-			recID = recMan.getNamedObject(JdbmChannelDAO.RECORD_CHANNELS_BTREE);
-		} catch(IOException ie) {
-		}
-		
-		if (recID != 0) {
-		
-			try {
-				if (log.isInfoEnabled()) {
-					log.info("Migrating jdbm to JDBC Database");
-				}
-	
-				// Initialize database specific values
-				migrateInitializeDatabase();
-	
-				// TODO Get config...
-				if (log.isInfoEnabled()) {
-					log.info("Migrating system configuration...");
-				}
-
-				ChannelManager channelManager =
-					ChannelManager.getChannelManager();
-				ChannelManager channelManagerInstance =
-					(ChannelManager) recMan.fetch(
-						recMan.getNamedObject(JdbmChannelDAO.RECORD_CHANNEL_CONFIG),
-						new InstanceJdbmSerializer(channelManager));
-		
-				channelManager.setPollingIntervalSeconds(
-					channelManagerInstance.getPollingIntervalSeconds());
-				channelManager.setProxyServer(
-					channelManagerInstance.getProxyServer());
-				channelManager.setProxyPort(
-					channelManagerInstance.getProxyPort());
-				channelManager.setProxyUserID(
-					channelManagerInstance.getProxyUserID());
-				channelManager.setProxyPassword(
-					channelManagerInstance.getProxyPassword());
-				saveConfiguration(channelManager);
-	
-				NNTPServer nntpServer = new NNTPServer();
-				loadConfiguration(nntpServer);
-				NNTPServer nntpServerInstance =
-					(NNTPServer) recMan.fetch(
-						recMan.getNamedObject(JdbmChannelDAO.RECORD_NNTP_CONFIG),
-						new InstanceJdbmSerializer(nntpServer));
-				nntpServer.setContentType(
-					nntpServer.getContentType());
-				nntpServer.setSecure(
-					nntpServer.isSecure());
-				saveConfiguration(nntpServer);
-	
-				if (log.isInfoEnabled()) {
-					log.info("Finished migration system configuration...");
-				}
-	
-				if (log.isInfoEnabled()) {
-					log.info("Migrating channel configuration...");
-				}
-	
-				Map channelMap = new TreeMap();
-				BTree btChannels = BTree.load(recMan, recID);
-				TupleBrowser browser = btChannels.browse();
-				Tuple tuple = new Tuple();
-				Map btItemsByIdMap = new HashMap();
-				while (browser.getNext(tuple)) {
-					long recId = ((Long) tuple.getValue()).longValue();
-					Channel origChannel =
-						(Channel) recMan.fetch(
-							recId,
-							GenericJdbmSerializer.getSerializer(Channel.class));
-
-					BTree bt =
-						BTree.load(
-							recMan,
-							recMan.getNamedObject(
-								JdbmChannelDAO.RECORD_ITEMS_BY_ID_BTREE + origChannel.getId()));
-					btItemsByIdMap.put(new Integer(origChannel.getId()), bt);
-
-					TupleBrowser articleBrowser = bt.browse(null);
-					Tuple articleTuple = new Tuple();
-					if (articleBrowser.getPrevious(articleTuple)) {
-						origChannel.setLastArticleNumber(
-							((Integer) articleTuple.getKey()).intValue());
-					}
-
-					int origId = origChannel.getId();
-	
-					Channel channel =
-						new Channel(origChannel.getName(), origChannel.getUrl());
-					channel.setAuthor(origChannel.getAuthor());
-					channel.setTitle(origChannel.getTitle());
-					channel.setLink(origChannel.getLink());
-					channel.setDescription(origChannel.getDescription());
-					channel.setLastArticleNumber(origChannel.getLastArticleNumber());
-					channel.setCreated(origChannel.getCreated());
-					channel.setRssVersion(origChannel.getRssVersion());
-					channel.setExpiration(origChannel.getExpiration());
-					channel.setEnabled(origChannel.isEnabled());
-					channel.setPostingEnabled(origChannel.isPostingEnabled());
-					channel.setParseAtAllCost(origChannel.isParseAtAllCost());
-					channel.setPublishAPI(origChannel.getPublishAPI());
-					channel.setPublishConfig(origChannel.getPublishConfig());
-					channel.setManagingEditor(origChannel.getManagingEditor());
-					channel.setPollingIntervalSeconds(origChannel.getPollingIntervalSeconds());
-					addChannel(channel);
-	
-					channelMap.put(new Integer(origId), channel);
-	
-					if (log.isInfoEnabled()) {
-						log.info(
-							"Added Channel "
-								+ channel
-								+ " (origId="
-								+ origId
-								+ ")");
-					}					
-				}
-					
-				if (log.isInfoEnabled()) {
-					log.info("Finished migrating channel configuration...");
-				}
-	
-				if (log.isInfoEnabled()) {
-					log.info("Migrating items...");
-				}
-	
-				// Copy channel items...
-				Iterator channelIter = channelMap.entrySet().iterator();
-				int totalCount = 0;
-				while (channelIter.hasNext()) {
-	
-					Map.Entry entry = (Map.Entry) channelIter.next();
-	
-					int channelOrigId = ((Integer) entry.getKey()).intValue();
-					int count = 0;
-					boolean moreResults = true;
-					Channel channel = (Channel) entry.getValue();
-	
-					if (log.isInfoEnabled()) {
-						log.info(
-							"Migrating items from channel "
-								+ channel.getName()
-								+ " (origId="
-								+ channelOrigId
-								+ ")");
-					}
-
-					BTree bt = (BTree) btItemsByIdMap.get(new Integer(channelOrigId));
-					browser = bt.browse();
-					tuple = new Tuple();
-					while (browser.getNext(tuple)) {
-						boolean match = true;
-						int id = ((Integer) tuple.getKey()).intValue();
-						Item origItem =
-							(Item) recMan.fetch(
-								((Long) tuple.getValue()).longValue(),
-								GenericJdbmSerializer.getSerializer(Item.class));
-
-						Item item = new Item();
-						item.setArticleNumber(origItem.getArticleNumber());
-						item.setChannel(channel);
-						item.setTitle(origItem.getTitle());
-						item.setLink(origItem.getLink());
-						item.setDescription(origItem.getDescription());
-						item.setComments(origItem.getComments());
-						item.setDate(origItem.getDate());
-						item.setSignature(origItem.getSignature());
-	
-						try {
-							saveItem(item);
-						} catch (Exception e) {
-							String msg =
-								"Migration failed: Exception thrown while trying to save item "
-									+ item
-									+ " in channel "
-									+ channel;
-							log.fatal(msg, e);
-								throw new RuntimeException(msg);
-						}
-	
-						count++;
-
-						if (log.isInfoEnabled()) {
-							if (count % 1000 == 0) {
-								log.info(
-									"Migrating items... "
-										+ (totalCount + count)
-										+ " items moved");
-							}
-						}
-					}
-	
-					channel.setTotalArticles(count);
-					updateChannel(channel);
-	
-					totalCount += count;
-	
-					if (log.isInfoEnabled()) {
-						log.info(
-							"Migrated "
-								+ count
-								+ " items (total "
-								+ totalCount
-								+ ") for channel "
-								+ channel.getName());
-					}
-				}
-	
-				if (log.isInfoEnabled()) {
-					log.info("Finished migrating items. " + totalCount + " items migrated.");
-				}
-	
-				// TODO Shutdown jdbm
-				recMan.commit();
-				recMan.close();
-
-				jdbmFound = true;
-			} catch (Exception e) {
-				if (log.isEnabledFor(Priority.ERROR)) {
-					log.error("Exception thrown when trying to migrate jdbm", e);
-				}
-				throw new RuntimeException("Exception throws whent rying to migrate jdbm " + e.getMessage());
-			} finally {
-			}
-
-		}
-		return jdbmFound;
-	}
-
 
 	abstract void migrateInitializeDatabase() throws Exception;
 }
