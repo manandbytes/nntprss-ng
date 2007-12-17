@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -42,11 +42,11 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: GenericParser.java,v 1.8 2006/05/17 04:13:53 jasonbrome Exp $
+ * @version $Id: GenericParser.java,v 1.9 2007/12/17 04:12:59 jasonbrome Exp $
  */
 public abstract class GenericParser {
 
-	protected ItemProcessor[] itemProcessors;
+	protected final ItemProcessor[] itemProcessors;
 
     public abstract boolean isParsable(Element docRootElement);
     public abstract String getFormatVersion(Element docRootElement);
@@ -64,7 +64,7 @@ public abstract class GenericParser {
 		itemProcessors = ChannelManager.getChannelManager().getItemProcessors();
 	}
 
-    String stripControlChars(String string) {
+    static String stripControlChars(String string) {
         StringBuffer strippedString = new StringBuffer();
         for (int charCount = 0; charCount < string.length(); charCount++) {
             char c = string.charAt(charCount);

@@ -2,7 +2,7 @@ package org.methodize.nntprss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -54,15 +54,12 @@ import snoozesoft.systray4j.SysTrayMenuListener;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: WindowsSysTray.java,v 1.8 2006/05/17 04:12:04 jasonbrome Exp $
+ * @version $Id: WindowsSysTray.java,v 1.9 2007/12/17 04:06:09 jasonbrome Exp $
  */
 
 public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
 
-    private SysTrayMenu menu;
-    private SysTrayMenuIcon nntpIcon;
-
-    private String adminURL = "http://127.0.0.1:7810/";
+	private static final long serialVersionUID = -3602617081322972702L;
 
     private static final String MENU_ABOUT_TEXT = "About nntp//rss...";
     private static final String MENU_ABOUT_CMD = "about";
@@ -74,6 +71,11 @@ public class WindowsSysTray extends JFrame implements SysTrayMenuListener {
     private static final String MENU_REPOLL_CMD = "repoll";
 
     private static final String ICON_FILE = "nntprss.ico";
+	
+	private final SysTrayMenu menu;
+    private final SysTrayMenuIcon nntpIcon;
+
+    private String adminURL = "http://127.0.0.1:7810/";
 
     private ChannelManager channelManager;
 

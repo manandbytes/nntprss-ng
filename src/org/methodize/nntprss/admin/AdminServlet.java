@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -37,18 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 
 import javax.mail.internet.MailDateFormat;
 import javax.servlet.ServletException;
@@ -59,31 +48,19 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.methodize.nntprss.admin.search.Syndic8Search;
 import org.methodize.nntprss.feed.Category;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.ChannelManager;
-import org.methodize.nntprss.feed.publish.BloggerPublisher;
-import org.methodize.nntprss.feed.publish.LiveJournalPublisher;
-import org.methodize.nntprss.feed.publish.MetaWeblogPublisher;
-import org.methodize.nntprss.feed.publish.Publisher;
-import org.methodize.nntprss.feed.publish.PublisherException;
+import org.methodize.nntprss.feed.publish.*;
 import org.methodize.nntprss.nntp.NNTPServer;
-import org.methodize.nntprss.util.AppConstants;
-import org.methodize.nntprss.util.HTMLHelper;
-import org.methodize.nntprss.util.HttpUserException;
-import org.methodize.nntprss.util.RSSHelper;
-import org.methodize.nntprss.util.XMLHelper;
+import org.methodize.nntprss.util.*;
 import org.mortbay.servlet.MultiPartRequest;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServlet.java,v 1.20 2006/05/17 04:46:17 jasonbrome Exp $
+ * @version $Id: AdminServlet.java,v 1.21 2007/12/17 04:06:54 jasonbrome Exp $
  * 
  * Web Administration interface for nntp//rss
  * 
@@ -95,13 +72,14 @@ import org.xml.sax.SAXException;
  */
 public class AdminServlet extends HttpServlet {
 
-    private static final String TAB_HELP = "help";
+	private static final long serialVersionUID = 8555883793099816127L;
+	
+	private static final String TAB_HELP = "help";
     private static final String TAB_CONFIG = "config";
     private static final String TAB_QUICKEDIT = "quickedit";
     private static final String TAB_ADD_CHANNEL = "add";
     private static final String TAB_VIEW_CATEGORIES = "categories";
     private static final String TAB_VIEW_CHANNELS = "channels";
-    private static final String TAB_FIND_FEEDS = "findfeeds";
     private static final String CSS_HEADER = "<style type='text/css'>" 
     	+ "<!--"
         //		+ "a:link,a:active,a:visited { color : #FFF240; } "
@@ -134,10 +112,6 @@ public class AdminServlet extends HttpServlet {
     // Magic value to indicate that the current password should not be changed.
     // Currently used within posting/publishing configuration.
     private static final String PASSWORD_MAGIC_KEY = "###__KCV__###";
-
-    private void writeHeader(Writer writer) throws IOException {
-        writeHeader(writer, "");
-    }
 
     private void writeHeader(Writer writer, String tab) throws IOException {
 
@@ -309,7 +283,6 @@ public class AdminServlet extends HttpServlet {
         writer.write(
             "<td class='row2'><input type='checkbox' name='nntpSecure' value='true' ");
         if (nntpServer.isSecure()) {
-            boolean nntpSecure = nntpServer.isSecure();
             writer.write("checked");
         }
         writer.write("></td></tr>");
@@ -502,14 +475,14 @@ public class AdminServlet extends HttpServlet {
                 ((!refresh)
                     ? channel.getPublishAPI()
                     : request.getParameter("publishAPI"));
-            long pollingIntervalSeconds =
-                ((!refresh)
-                    ? channel.getPollingIntervalSeconds()
-                    : Long.parseLong(request.getParameter("pollingInterval")));
-            long expiration =
-                ((!refresh)
-                    ? channel.getExpiration()
-                    : Long.parseLong(request.getParameter("expiration")));
+//            long pollingIntervalSeconds =
+//                ((!refresh)
+//                    ? channel.getPollingIntervalSeconds()
+//                    : Long.parseLong(request.getParameter("pollingInterval")));
+//            long expiration =
+//                ((!refresh)
+//                    ? channel.getExpiration()
+//                    : Long.parseLong(request.getParameter("expiration")));
             int categoryId = 0;
             if (!refresh) {
                 if (channel.getCategory() != null) {
@@ -1867,9 +1840,6 @@ public class AdminServlet extends HttpServlet {
         boolean updated)
         throws ServletException, IOException {
 
-        DateFormat df =
-            DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-
         Writer writer = response.getWriter();
         writeHeader(writer, TAB_QUICKEDIT);
 
@@ -2551,10 +2521,6 @@ public class AdminServlet extends HttpServlet {
             (ChannelManager) getServletContext().getAttribute(
                 AdminServer.SERVLET_CTX_RSS_MANAGER);
 
-        NNTPServer nntpServer =
-            (NNTPServer) getServletContext().getAttribute(
-                AdminServer.SERVLET_CTX_NNTP_SERVER);
-
         String name = request.getParameter("name").trim();
 
         List errors = new ArrayList();
@@ -3001,11 +2967,6 @@ public class AdminServlet extends HttpServlet {
         writeHeader(writer, TAB_CONFIG);
 
         writeCheckboxSelector(writer, "checkAllImport", "import", "channels");
-        //		writeCheckboxSelector(writer, "checkAllHistorical", "historical", "channels");
-
-        ChannelManager channelManager =
-            (ChannelManager) getServletContext().getAttribute(
-                AdminServer.SERVLET_CTX_RSS_MANAGER);
 
         writer.write("<b>mySubscriptions.opml validation</b><p>");
 
@@ -3016,10 +2977,6 @@ public class AdminServlet extends HttpServlet {
             DocumentBuilder db = AppConstants.newDocumentBuilder();
             Document doc = db.parse(mpRequest.getInputStream("file"));
             Element docElm = doc.getDocumentElement();
-
-            // XXX Expectation is that there will be a body element
-            Element bodyElm =
-                (Element) docElm.getElementsByTagName("body").item(0);
 
             NodeList channels = docElm.getElementsByTagName("outline");
             if (channels.getLength() > 0) {
@@ -3192,8 +3149,8 @@ public class AdminServlet extends HttpServlet {
             if (addStr != null) {
 
                 String name = request.getParameter("name" + channelCount);
-                String historicalStr =
-                    request.getParameter("historical" + channelCount);
+//                String historicalStr =
+//                    request.getParameter("historical" + channelCount);
                 long expiration =
                     Long.parseLong(
                         request.getParameter("expiration" + channelCount));
@@ -3464,135 +3421,9 @@ public class AdminServlet extends HttpServlet {
         writer.write("</td></tr>");
 
         writer.write(
-            "<tr><th class='subHead'><span class='smalltext'>nntp//rss - Copyright &copy; 2002-2006 Jason Brome.  All Rights Reserved.</span></th></tr>");
+            "<tr><th class='subHead'><span class='smalltext'>nntp//rss - Copyright &copy; 2002-2007 Jason Brome.  All Rights Reserved.</span></th></tr>");
 
         writer.write("</table>");
-
-        writeFooter(writer);
-        writer.flush();
-    }
-
-    private void cmdFindFeedsForm(
-        HttpServletRequest request,
-        HttpServletResponse response)
-        throws ServletException, IOException {
-
-        Writer writer = response.getWriter();
-        writeHeader(writer, TAB_FIND_FEEDS);
-
-        writer.write("<b>Find Feeds<b>");
-
-        writer.write("<form action='?action=findfeeds' method='POST'>");
-        writer.write("<table class='tableBorder'>");
-
-        writer.write(
-            "<tr><th class='titleHead'>&nbsp;<a class='tableHead' href='http://www.feedster.com' target='feedster'>Feedster</a>&nbsp;</th><td class='row2'><input type='text' name='search' maxLength='256' size='55'></td><td class='row1'><input type='submit' value='Search'><input type='hidden' name='engine' value='feedster'></td>");
-        writer.write("</tr>");
-
-        writer.write("</table>");
-        writer.write("</form>");
-
-        writer.write("<form action='?action=findfeeds' method='POST'>");
-        writer.write("<table class='tableBorder'>");
-
-        //		writer.write("<br>&nbsp;<br>");
-
-        writer.write(
-            "<tr><th class='titleHead'>&nbsp;<a class='tableHead' href='http://www.syndic8.com' target='syndic8'>Syndic8</a>&nbsp;</th><td class='row2'><input type='text' name='search' maxLength='256' size='55'></td><td class='row1'><input type='submit' value='Search'><input type='hidden' name='engine' value='syndic8'></td>");
-        writer.write("</tr>");
-
-        writer.write("</table>");
-        writer.write("</form>");
-
-        writer.write("<br>&nbsp;<br>");
-
-        writeFooter(writer);
-        writer.flush();
-    }
-
-    private void cmdFindFeeds(
-        HttpServletRequest request,
-        HttpServletResponse response)
-        throws ServletException, IOException {
-
-        Writer writer = response.getWriter();
-        writeHeader(writer, TAB_FIND_FEEDS);
-
-        String searchTerm = request.getParameter("search");
-
-        writer.flush();
-
-        String engine = request.getParameter("engine");
-
-        if (engine.equals("feedster")) {
-            writer.write("Feedster search not yet supported.");
-        } else {
-            Syndic8Search s = new Syndic8Search();
-            try {
-                Vector results = s.search(searchTerm);
-                if (results.size() == 0) {
-                    writer.write("No matches found for " + searchTerm);
-                } else {
-                    // Write channel listing...
-
-                    writer.write("<table class='tableborder' border='0'>");
-                    writer.write(
-                        "<tr><th colspan='5' class='tableHead'><a class='tableHead' href='http://www.syndic8.com/'>Syndic8.com</a> - Search Results for <b>"
-                            + searchTerm
-                            + "</b> ("
-                            + results.size()
-                            + " matches)</td></th>");
-                    writer.write(
-                        "<tr><th class='subHead'>Name</th><th class='subHead'>Description</th><th class='subHead'>&nbsp;</th></tr>");
-
-                    for (int chlCount = 0;
-                        chlCount < results.size();
-                        chlCount++) {
-                        Map channel = (Map) results.get(chlCount);
-
-                        writer.write("<tr>");
-                        // Name
-                        writer.write(
-                            "<td class='row1'>"
-                                + "<a target='homepage' class='row' title='Channel' href='"
-                                + channel.get(Syndic8Search.FIELD_HOMEPAGE_URL)
-                                + "'>"
-                                + HTMLHelper.escapeString(
-                                    (String) channel.get(
-                                        Syndic8Search.FIELD_NAME))
-                                + "</a></td>");
-
-                        // Description						
-                        writer.write(
-                            "<td class='row1'>"
-                                + HTMLHelper.escapeString(
-                                    (String) channel.get(
-                                        Syndic8Search.FIELD_DESCRIPTION))
-                                + "</td>");
-
-                        // Subscribe
-                        writer.write(
-                            "<td class='row1'>"
-                                + "<a class='row' title='Subscribe' href='/?action=addform&URL="
-                                + URLEncoder.encode(
-                                    (String) channel.get(
-                                        Syndic8Search.FIELD_FEED_URL))
-                                + "'>[Subscribe]</a></td>");
-
-                        writer.write("</tr>");
-
-                    }
-
-                    writer.write("</table><p>");
-
-                }
-            } catch (Exception e) {
-                writer.write(
-                    "Unable to execute your Syndic8 search.<br>The Syndic8 server returned the following error message:<br>");
-                writer.write(e.getMessage());
-            }
-
-        }
 
         writeFooter(writer);
         writer.flush();
@@ -3653,10 +3484,6 @@ public class AdminServlet extends HttpServlet {
                 cmdQuickEditChannelsUpdate(request, response);
             } else if (action.equals("help")) {
                 cmdHelp(request, response);
-            } else if (action.equals("findfeedsform")) {
-                cmdFindFeedsForm(request, response);
-            } else if (action.equals("findfeeds")) {
-                cmdFindFeeds(request, response);
             } else if (action.equals("categories")) {
                 cmdShowCurrentCategories(request, response);
             } else {

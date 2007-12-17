@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: RSSParser.java,v 1.12 2006/05/17 04:14:33 jasonbrome Exp $
+ * @version $Id: RSSParser.java,v 1.13 2007/12/17 04:13:45 jasonbrome Exp $
  */
 
 public class RSSParser extends GenericParser {
@@ -91,8 +91,8 @@ public class RSSParser extends GenericParser {
         }
     };
 
-    private static RSSParser rssParser = new RSSParser();
-    private Logger log = Logger.getLogger(RSSParser.class);
+    private static final RSSParser rssParser = new RSSParser();
+    private static final Logger log = Logger.getLogger(RSSParser.class);
 
     private RSSParser() {
     }
@@ -183,12 +183,6 @@ public class RSSParser extends GenericParser {
             itemCount >= 0;
             itemCount--) {
             Element itemElm = (Element) itemList.item(itemCount);
-            String title;
-            String link;
-            String description;
-            ByteArrayOutputStream bos;
-            byte[] signatureSource;
-            byte[] signature;
             String signatureStr = generateItemSignature(md, itemElm);
 
             if (!keepHistory) {
@@ -244,7 +238,7 @@ public class RSSParser extends GenericParser {
                         XMLHelper.getChildElementValue(itemElm, "pubDate");
                     if (pubDateStr != null && pubDateStr.length() > 0) {
                         // Parse Date...
-                        log.info("pubDate == " + pubDateStr);
+                        log.debug("pubDate == " + pubDateStr);
                         try {
                             pubDate =
                                 ((MailDateFormat) date822Parser.get()).parse(

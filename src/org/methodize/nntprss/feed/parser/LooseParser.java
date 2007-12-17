@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -30,15 +30,7 @@ package org.methodize.nntprss.feed.parser;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.CharArrayReader;
-import java.io.CharArrayWriter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
 
 import javax.swing.text.html.parser.DTD;
 import javax.swing.text.html.parser.DTDConstants;
@@ -46,7 +38,6 @@ import javax.swing.text.html.parser.DocumentParser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
@@ -54,7 +45,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: LooseParser.java,v 1.6 2006/05/17 04:13:53 jasonbrome Exp $
+ * @version $Id: LooseParser.java,v 1.7 2007/12/17 04:13:16 jasonbrome Exp $
  * 
  * 'Loose' Parser - when enabled, will parse those
  * not well-formed RSS/RDF xml documents on which the 
@@ -146,8 +137,8 @@ public class LooseParser {
 
     public static void main(String args[]) {
         try {
-            Channel tstChannel = new Channel("test", "http://localhost/");
-            List items = new ArrayList();
+            // Channel tstChannel = new Channel("test", "http://localhost/");
+            // List items = new ArrayList();
 
             InputStream is = new FileInputStream("c:\\test.xml");
             Document doc = parse(is);

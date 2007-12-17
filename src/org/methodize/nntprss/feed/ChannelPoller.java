@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -40,19 +40,16 @@ import org.methodize.nntprss.util.FixedThreadPool;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelPoller.java,v 1.7 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: ChannelPoller.java,v 1.8 2007/12/17 04:09:43 jasonbrome Exp $
  */
 public class ChannelPoller extends Thread {
 
-    private Logger log = Logger.getLogger(ChannelPoller.class);
-
-    private Map channels;
-    private boolean active = true;
-    //	private SimpleThreadPool simpleThreadPool;
-    private FixedThreadPool fixedThreadPool;
-
-    //	private static final int MAX_POLL_THREADS = 20;
+    private static final Logger log = Logger.getLogger(ChannelPoller.class);
     private static final int MAX_POLL_THREADS = 4;
+
+    private final Map channels;
+    private final FixedThreadPool fixedThreadPool;
+    private volatile boolean active = true;
 
     // Check pending polls every 30 seconds
     private static final int POLL_INTERVAL = 30 * 1000;
@@ -99,10 +96,6 @@ public class ChannelPoller extends Thread {
                 while (channelIter.hasNext() && active) {
                     Channel channel = (Channel) channelIter.next();
                     if (channel.isEnabled()) {
-                        //						if(channel.isPolling()) {
-                        //							channel.checkConnection();
-                        //						}
-
                         if (channel.isAwaitingPoll()) {
                             fixedThreadPool.run(channel);
                         }

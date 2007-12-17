@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -30,25 +30,12 @@ package org.methodize.nntprss.feed;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.*;
-import java.util.ConcurrentModificationException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.*;
 import org.apache.log4j.Logger;
-import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.methodize.nntprss.feed.db.ChannelDAO;
+import org.methodize.nntprss.feed.db.ChannelManagerDAO;
 import org.methodize.nntprss.plugin.ItemProcessor;
 import org.methodize.nntprss.plugin.PluginException;
 import org.w3c.dom.Document;
@@ -57,12 +44,11 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ChannelManager.java,v 1.11 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: ChannelManager.java,v 1.12 2007/12/17 04:09:28 jasonbrome Exp $
  */
-public class ChannelManager implements Externalizable {
+public class ChannelManager {
 
-    public static final int EXTERNAL_VERSION = 1;
-	private Logger log = Logger.getLogger(ChannelManager.class);
+	private static final Logger log = Logger.getLogger(ChannelManager.class);
 
     private long pollingIntervalSeconds = 60 * 60;
 
@@ -77,12 +63,11 @@ public class ChannelManager implements Externalizable {
     private Map channels;
     private Map categories;
     private static ChannelManager channelManager = new ChannelManager();
-    private ChannelDAO channelDAO;
+    private final ChannelDAO channelDAO;
     private ChannelPoller channelPoller;
 
-    private HostConfiguration hostConfig = null;
-    //	private HttpState httpState = null;
-    private MultiThreadedHttpConnectionManager httpConMgr;
+    private HostConfiguration hostConfig;
+    private final MultiThreadedHttpConnectionManager httpConMgr;
 
 	private ItemProcessor[] itemProcessors = null;
 
@@ -113,9 +98,6 @@ public class ChannelManager implements Externalizable {
         channelDAO.loadConfiguration(this);
 
         updateProxyConfig();
-
-        //		// Start feed poller...
-        //		startPoller();
 
 		// Get poller Configuration
 		Element rootElm = config.getDocumentElement();
@@ -245,7 +227,7 @@ public class ChannelManager implements Externalizable {
 
     public Category categoryById(int id) {
         Category category = null;
-        if(categories != null) // Null check for jdbm migrate
+        if(categories != null) 
         {
 	        Iterator categoryIter = categories.values().iterator();
 	        while (categoryIter.hasNext()) {
@@ -265,7 +247,9 @@ public class ChannelManager implements Externalizable {
     }
 
     private void stopPoller() {
-        channelPoller.shutdown();
+    	if(channelPoller != null) {
+    		channelPoller.shutdown();
+    	}
     }
 
     public synchronized void repollAllChannels() {
@@ -302,42 +286,10 @@ public class ChannelManager implements Externalizable {
     private void updateProxyConfig() {
         // Set proxy configuration, if necessary.
         if (useProxy && (proxyServer != null) && (proxyServer.length() > 0)) {
-            //			System.setProperty("http.proxyHost", proxyServer);
-            //			System.setProperty("http.proxyPort", Integer.toString(proxyPort));
-            //			System.setProperty("http.proxySet", "true");
-
             // Set HttpClient proxy configuration
             hostConfig.setProxy(proxyServer, proxyPort);
-
-            //            if ((proxyUserID != null && proxyUserID.length() > 0) ||
-            //            	(proxyPassword != null && proxyPassword.length() > 0)) {
-            //                Authenticator.setDefault(new Authenticator() {
-            //                        protected PasswordAuthentication getPasswordAuthentication() {
-            //                            return new PasswordAuthentication(proxyUserID,
-            //                                (proxyPassword == null) ? new char[0]
-            //                                                        : proxyPassword.toCharArray());
-            //                        }
-            //                    });
-            //
-            //				httpClient.getState().setProxyCredentials(null,
-            //					new UsernamePasswordCredentials(proxyUserID,
-            //                                (proxyPassword == null) ? ""
-            //                                                        : proxyPassword));
-            //
-            //            } else {
-            //            	Authenticator.setDefault(null);
-            //            	
-            //            	httpClient.getState().setProxyCredentials(null, null);
-            //            }
         } else {
-            //            System.setProperty("http.proxyHost", "");
-            //            System.setProperty("http.proxyPort", "");
-            //            System.setProperty("http.proxySet", "false");
-            //            Authenticator.setDefault(null);
-
             hostConfig = new HostConfiguration();
-            //           	httpClient.getState().setProxyCredentials(null, null);
-
         }
     }
 
@@ -470,35 +422,6 @@ public class ChannelManager implements Externalizable {
      */
     public void setObserveHttp301(boolean b) {
         observeHttp301 = b;
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-     */
-    public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException {
-        in.readInt();
-        pollingIntervalSeconds = in.readLong();
-        proxyServer = in.readUTF();
-        proxyPort = in.readInt();
-        proxyUserID = in.readUTF();
-        proxyPassword = in.readUTF();
-        useProxy = in.readBoolean();
-        observeHttp301 = in.readBoolean();
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-     */
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(EXTERNAL_VERSION);
-        out.writeLong(pollingIntervalSeconds);
-        out.writeUTF(proxyServer != null ? proxyServer : "");
-        out.writeInt(proxyPort);
-        out.writeUTF(proxyUserID != null ? proxyUserID : "");
-        out.writeUTF(proxyPassword != null ? proxyPassword : "");
-        out.writeBoolean(useProxy);
-        out.writeBoolean(observeHttp301);
     }
 
     /**
