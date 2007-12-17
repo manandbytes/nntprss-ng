@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.parser;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -32,19 +32,13 @@ package org.methodize.nntprss.feed.parser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.Channel;
@@ -52,17 +46,19 @@ import org.methodize.nntprss.feed.Item;
 import org.methodize.nntprss.feed.db.ChannelDAO;
 import org.methodize.nntprss.util.Base64;
 import org.methodize.nntprss.util.XMLHelper;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AtomParser.java,v 1.12 2006/05/17 04:13:53 jasonbrome Exp $
+ * @version $Id: AtomParser.java,v 1.13 2007/12/17 04:12:42 jasonbrome Exp $
  */
 
 public class AtomParser extends GenericParser {
 
-    public static final String XMLNS_ATOM = "http://purl.org/atom/ns#";
+    public static final String XMLNS_OLD_ATOM = "http://purl.org/atom/ns#";
+    public static final String XMLNS_ATOM = "http://www.w3.org/2005/Atom";
 
     private static ThreadLocal dateParsers = new ThreadLocal() {
         public Object initialValue() {
@@ -82,8 +78,8 @@ public class AtomParser extends GenericParser {
         }
     };
 
-    private static AtomParser atomParser = new AtomParser();
-    private Logger log = Logger.getLogger(AtomParser.class);
+    private static final AtomParser atomParser = new AtomParser();
+    private static final Logger log = Logger.getLogger(AtomParser.class);
 
     private AtomParser() {
     }
@@ -121,7 +117,9 @@ public class AtomParser extends GenericParser {
             XMLHelper.getChildElementValue(docRootElement, "title"));
         // XXX Currently assign channelTitle to author
         channel.setAuthor(channel.getTitle());
-        channel.setLink(extractLink(docRootElement, "alternate"));
+
+    	URI xmlBase = extractXmlBase(docRootElement, channel);
+        channel.setLink(extractLink(channel, docRootElement, xmlBase));
 
         // @TODO: Summary or Subtitle?
         String description;
@@ -167,6 +165,8 @@ public class AtomParser extends GenericParser {
         boolean keepHistory)
         throws NoSuchAlgorithmException, IOException {
 
+    	URI xmlBase = extractXmlBase(rootElm, channel);
+    	
         NodeList entryList = rootElm.getElementsByTagName("entry");
 
         Calendar retrievalDate = Calendar.getInstance();
@@ -193,12 +193,6 @@ public class AtomParser extends GenericParser {
             itemCount >= 0;
             itemCount--) {
             Element itemElm = (Element) entryList.item(itemCount);
-            String title;
-            String link;
-            String description;
-            ByteArrayOutputStream bos;
-            byte[] signatureSource;
-            byte[] signature;
             String signatureStr = generateEntrySignature(md, itemElm);
 
             if (!keepHistory) {
@@ -227,7 +221,7 @@ public class AtomParser extends GenericParser {
                         XMLHelper.getChildElementValue(entryElm, "title", "");
                     //					String link =
                     //						XMLHelper.getChildElementValue(entryElm, "link", "");
-                    String link = extractLink(entryElm, "alternate");
+                    String link = extractLink(channel, entryElm, xmlBase);
 
                     String guid =
                         XMLHelper.getChildElementValue(entryElm, "id");
@@ -357,6 +351,49 @@ public class AtomParser extends GenericParser {
         }
     }
 
+    private URI extractXmlBase(Element rootElm, Channel channel) {
+    	return extractXmlBase(rootElm, channel, null);
+    }
+    
+	private URI extractXmlBase(Element rootElm, Channel channel, URI existingBase)
+			 {
+		URI xmlBase;
+		// Handle xml:base
+    	Attr xmlBaseAttr = rootElm.getAttributeNodeNS(XMLHelper.XML_NS_URI, "base");
+
+    	// XXX Malformed URLs?
+    	try {
+	    	if(xmlBaseAttr != null) {
+	    		if(existingBase == null) {
+	    			xmlBase = new URI(xmlBaseAttr.getValue());
+	    		} else {
+	    			xmlBase = existingBase.resolve(xmlBaseAttr.getValue());
+	    		}
+	    	} else {
+	    		if(existingBase != null) {
+	    			xmlBase = existingBase;
+	    		} else {
+	    			xmlBase = new URI(channel.getUrl());
+	    		}
+	    	}
+    	}
+    	catch(URISyntaxException use) {
+    		// XXX Use channel URL - this should be ok, otherwise
+    		// we would have not got here in the first place
+    		try {
+    			if(existingBase != null) {
+    				xmlBase = existingBase;
+    			} else {
+    				xmlBase = new URI(channel.getUrl());
+    			}
+    		}
+    		catch(URISyntaxException use2) { 
+    			xmlBase = null;
+    		}
+    	}
+		return xmlBase;
+	}
+
     public String processContent(Element itemElm) {
         // Check for xhtml:body
         String description = null;
@@ -368,8 +405,9 @@ public class AtomParser extends GenericParser {
 
             String type = contentElm.getAttribute("type");
             String mode = contentElm.getAttribute("mode");
-            if (type.startsWith("application/xhtml")
-                && !mode.equalsIgnoreCase("escaped")) {
+            if ((type.startsWith("application/xhtml")
+                && !mode.equalsIgnoreCase("escaped")) || 
+                type.equals("xhtml")) {
                 // xhtml body 				
                 NodeList children = contentElm.getChildNodes();
                 StringBuffer content = new StringBuffer();
@@ -393,16 +431,22 @@ public class AtomParser extends GenericParser {
         return description;
     }
 
-    private String extractLink(Element itemElm, String rel) {
+    private String extractLink(Channel channel, Element itemElm, URI xmlBase) {
         String link = null;
+
+        // Get entry's XML base
+        URI entryXmlBase = extractXmlBase(itemElm, channel, xmlBase);
         NodeList elemList = itemElm.getChildNodes();
         for (int i = 0; i < elemList.getLength(); i++) {
             if (elemList.item(i).getNodeName().equals("link")
-                && elemList.item(i).getNamespaceURI().equals(XMLNS_ATOM)) {
+                &&
+                ( elemList.item(i).getNamespaceURI().equals(XMLNS_ATOM) ||
+                elemList.item(i).getNamespaceURI().equals(XMLNS_OLD_ATOM)) ) {
                 Element linkElm = (Element) elemList.item(i);
-                String linkRel = linkElm.getAttribute("rel");
-                if (linkRel.equals(rel)) {
-                    link = linkElm.getAttribute("href");
+                Attr linkRelNode = linkElm.getAttributeNode("rel");
+                if(linkRelNode == null || linkRelNode.getValue().equals("alternate")) {
+                    String entryLink = linkElm.getAttribute("href");
+                    link = entryXmlBase.resolve(entryLink).toString();
                     break;
                 }
             }
