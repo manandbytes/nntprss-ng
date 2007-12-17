@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DerbyChannelDAO.java,v 1.7 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: DerbyChannelDAO.java,v 1.8 2007/12/17 04:11:24 jasonbrome Exp $
  */
 
 public class DerbyChannelDAO extends JdbcChannelDAO {
@@ -59,7 +59,7 @@ public class DerbyChannelDAO extends JdbcChannelDAO {
     private static final int DERBY_FALSE = 0;
     private static final int DERBY_TRUE = 1;
 
-    private Logger log = Logger.getLogger(DerbyChannelDAO.class);
+    private static final Logger log = Logger.getLogger(DerbyChannelDAO.class);
 
     public DerbyChannelDAO() {
     	String mrjVersion = System.getProperty("mrj.version");
@@ -218,7 +218,7 @@ public class DerbyChannelDAO extends JdbcChannelDAO {
         Connection conn = null;
         PreparedStatement ps = null;
 
-        if (!migrateJdbm() && !migrateHsql()) {
+        if (!migrateHsql()) {
 
             if (log.isInfoEnabled()) {
                 log.info("Loading channels");

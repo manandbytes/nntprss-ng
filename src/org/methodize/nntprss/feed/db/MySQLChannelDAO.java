@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MySQLChannelDAO.java,v 1.15 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: MySQLChannelDAO.java,v 1.16 2007/12/17 04:11:55 jasonbrome Exp $
  */
 
 public class MySQLChannelDAO extends JdbcChannelDAO {
@@ -59,7 +59,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
     private static final int MYSQL_FALSE = 0;
     private static final int MYSQL_TRUE = 1;
 
-    private Logger log = Logger.getLogger(MySQLChannelDAO.class);
+    private static final Logger log = Logger.getLogger(MySQLChannelDAO.class);
 
     public MySQLChannelDAO() {
     }
@@ -210,7 +210,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
         Connection conn = null;
         PreparedStatement ps = null;
 
-		if (!migrateJdbm() && !migrateHsql()) {
+		if (!migrateHsql()) {
 
             if (log.isInfoEnabled()) {
                 log.info("Loading channels");
