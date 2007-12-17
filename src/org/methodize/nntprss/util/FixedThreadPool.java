@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -38,20 +38,21 @@ import org.apache.log4j.Priority;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: FixedThreadPool.java,v 1.9 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: FixedThreadPool.java,v 1.10 2007/12/17 04:17:04 jasonbrome Exp $
  */
 
 public class FixedThreadPool {
 
-    private ThreadGroup threadGroup = null;
-    private List pool = new ArrayList();
-    private boolean shutdown = false;
-    private String threadName;
+    private static final Logger log = Logger.getLogger(FixedThreadPool.class);
+	
+    private final ThreadGroup threadGroup;
+    private final List pool = new ArrayList();
+    private final String threadName;
 
-    private Logger log = Logger.getLogger(FixedThreadPool.class);
+    private volatile boolean shutdown = false;
 
     private class WorkerThread extends Thread {
-        private boolean shutdown = false;
+        private volatile boolean shutdown = false;
         private Runnable task;
 
         public WorkerThread(ThreadGroup threadGroup, String threadName) {
@@ -114,21 +115,12 @@ public class FixedThreadPool {
         // Thread groups enable easier debugging in certain IDE,
         // so lets assign our pool threads to a specific group
 
-        if (name != null) {
-            threadGroup = new ThreadGroup(name);
-        } else {
-            threadGroup = new ThreadGroup("anonymous");
-        }
-
-        if (threadName != null) {
-            this.threadName = threadName;
-        } else {
-            this.threadName = "STP-anonymous";
-        }
+        this.threadGroup = new ThreadGroup(name != null ? name : "anonymous");
+        this.threadName = threadName != null ? threadName : "STP-anonymous";
 
         for (int i = 0; i < maxThreads; i++) {
             WorkerThread worker =
-                new WorkerThread(threadGroup, threadName + " #" + i);
+                new WorkerThread(this.threadGroup, this.threadName + " #" + i);
             pool.add(worker);
             worker.start();
         }

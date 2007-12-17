@@ -2,7 +2,7 @@ package org.methodize.nntprss.nntp;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -82,18 +82,13 @@ import org.methodize.nntprss.util.XMLHelper;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ClientHandler.java,v 1.17 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: ClientHandler.java,v 1.18 2007/12/17 04:14:21 jasonbrome Exp $
  */
 public class ClientHandler implements Runnable {
 
-    private static final int RETRIEVE_LIMIT = 1000;
-    private Logger log = Logger.getLogger(ClientHandler.class);
+    private static final Logger log = Logger.getLogger(ClientHandler.class);
 
-    private Socket client = null;
-    private ChannelManager channelManager = ChannelManager.getChannelManager();
-    private DateFormat df;
-    private DateFormat nntpDateFormat;
-    private NNTPServer nntpServer;
+    private static final int RETRIEVE_LIMIT = 1000;
 
     // Required
     private static final int NNTP_HEADER_UNKNOWN = -1;
@@ -121,6 +116,12 @@ public class ClientHandler implements Runnable {
 
     private static final int NO_CURRENT_ARTICLE = -1;
 
+    private final Socket client;
+    private final ChannelManager channelManager = ChannelManager.getChannelManager();
+    private final DateFormat df;
+    private final DateFormat nntpDateFormat;
+    private final NNTPServer nntpServer;
+    
     public ClientHandler(NNTPServer nntpServer, Socket client) {
         this.nntpServer = nntpServer;
         this.client = client;
@@ -1440,11 +1441,11 @@ public class ClientHandler implements Runnable {
             // Changed to enforce utf-8 encoding on output...
             PrintWriter pw =
                 new CRLFPrintWriter(
-                    new OutputStreamWriter(client.getOutputStream()));
+                    new OutputStreamWriter(os));
 
             PrintWriter bodyPw =
                 new CRLFPrintWriter(
-                    new OutputStreamWriter(client.getOutputStream(), "utf-8"));
+                    new OutputStreamWriter(os, "utf-8"));
 
             // Send 201 connection header
             pw.println(

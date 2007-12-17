@@ -2,7 +2,7 @@ package org.methodize.nntprss.nntp;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -31,27 +31,35 @@ package org.methodize.nntprss.nntp;
  * ----------------------------------------------------- */
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServerListener.java,v 1.9 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: NNTPServerListener.java,v 1.10 2007/12/17 04:14:52 jasonbrome Exp $
  */
 public class NNTPServerListener extends Thread {
 
-    private Logger log = Logger.getLogger(NNTPServerListener.class);
+    private static final Logger log = Logger.getLogger(NNTPServerListener.class);
 
-    private ServerSocket serverSocket = null;
-    private boolean active = true;
-    private NNTPServer nntpServer = null;
+    private volatile boolean active = true;
+
+    private final ServerSocket serverSocket;
+    private final NNTPServer nntpServer;
 
     public NNTPServerListener(NNTPServer nntpServer, int port)
         throws Exception {
-        serverSocket = new ServerSocket(port);
+    	try {
+    		serverSocket = new ServerSocket(port);
+    	} catch(BindException be) {
+    		if(port <= 1024) {
+    			throw new Exception("Bind exception establishing NNTP server socket on port " + port
+    					+ " - if running on Unix, are you running as root?");
+    		} else {
+    			throw be;
+    		}
+    	}
         this.nntpServer = nntpServer;
     }
 

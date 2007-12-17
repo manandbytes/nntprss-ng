@@ -5,7 +5,7 @@ import java.util.Map;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -18,7 +18,7 @@ import java.util.Map;
  * Entities list from:
  * http://www.w3.org/TR/html401/sgml/entities.html
  * 
- * Portions © International Organization for Standardization 1986:
+ * Portions ï¿½ International Organization for Standardization 1986:
  * Permission to copy in any form is granted for use with
  * conforming SGML systems and applications as defined in
  * ISO 8879, provided this notice is included in all copies.
@@ -43,12 +43,12 @@ import java.util.Map;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: HTMLHelper.java,v 1.7 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: HTMLHelper.java,v 1.8 2007/12/17 04:17:18 jasonbrome Exp $
  */
 
 public class HTMLHelper {
 
-    private static Map escapeMap = new HashMap();
+    private static final Map escapeMap = new HashMap();
 
     static {
 

@@ -30,19 +30,10 @@ package org.methodize.nntprss.nntp;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.net.*;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
@@ -56,33 +47,30 @@ import org.w3c.dom.Node;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: NNTPServer.java,v 1.12 2007/12/16 21:49:05 jasonbrome Exp $
+ * @version $Id: NNTPServer.java,v 1.13 2007/12/17 04:14:39 jasonbrome Exp $
  */
 
-public class NNTPServer implements Externalizable {
+public class NNTPServer {
 
-    public static final int EXTERNAL_VERSION = 1;
+    private static final Logger log = Logger.getLogger(NNTPServer.class);
 
-    private Logger log = Logger.getLogger(NNTPServer.class);
+    // 30 minute default timeout on NNTP client connections
+    private static final int DEFAULT_CONNECTION_TIMEOUT = 30 * 60 * 1000;
 
     private NNTPServerListener listener = null;
     private SimpleThreadPool simpleThreadPool;
     private int listenerPort;
     private InetAddress address = null;
 
-    private static final int MAX_NNTP_CLIENT_THREADS = 5;
-
-    // 30 minute default timeout on NNTP client connections
-    private static final int DEFAULT_CONNECTION_TIMEOUT = 30 * 60 * 1000;
-
+    //private static final int MAX_NNTP_CLIENT_THREADS = 5;
     private int contentType = AppConstants.CONTENT_TYPE_MIXED;
     private boolean secure = false;
     private boolean footnoteUrls = true;
     private String hostName = null;
 
-    private ChannelDAO channelDAO;
+    private final ChannelDAO channelDAO;
 
-    private Map users = new HashMap();
+    private final Map users = new HashMap();
 
     public NNTPServer() {
         channelDAO = ChannelManagerDAO.getChannelManagerDAO().getChannelDAO();
@@ -166,7 +154,9 @@ public class NNTPServer implements Externalizable {
     }
 
     public void shutdown() {
-        listener.shutdown();
+    	if(listener != null) {
+    		listener.shutdown();
+    	}
     }
 
     void handleConnection(Socket clientConnection) {
@@ -255,30 +245,6 @@ public class NNTPServer implements Externalizable {
      */
     public void setHostName(String string) {
         hostName = string;
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-     */
-    public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException {
-
-        in.readInt();
-        contentType = in.readInt();
-        secure = in.readBoolean();
-        footnoteUrls = in.readBoolean();
-        hostName = in.readUTF();
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-     */
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(EXTERNAL_VERSION);
-        out.writeInt(contentType);
-        out.writeBoolean(secure);
-        out.writeBoolean(footnoteUrls);
-        out.writeUTF(hostName != null ? hostName : "");
     }
 
 }

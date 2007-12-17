@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.publish;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -32,12 +32,14 @@ package org.methodize.nntprss.feed.publish;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: PublisherException.java,v 1.6 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: PublisherException.java,v 1.7 2007/12/17 04:14:04 jasonbrome Exp $
  */
 
 public class PublisherException extends Exception {
 
-    public PublisherException(Throwable cause) {
+	private static final long serialVersionUID = -5838081523381952542L;
+
+	public PublisherException(Throwable cause) {
         super(cause);
     }
 }

@@ -2,7 +2,7 @@ package org.methodize.nntprss.plugin.examples;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -38,11 +38,11 @@ import org.w3c.dom.Element;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: ItemLogPlugin.java,v 1.3 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: ItemLogPlugin.java,v 1.4 2007/12/17 04:15:38 jasonbrome Exp $
  */
 public class ItemLogPlugin implements ItemProcessor {
 
-	private Logger log = Logger.getLogger(ItemLogPlugin.class);
+	private static final Logger log = Logger.getLogger(ItemLogPlugin.class);
 
     public void initialize(Element config) throws PluginException {
     	log.info("Initializing ItemLogPlugin");

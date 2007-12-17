@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -32,17 +32,20 @@ package org.methodize.nntprss.util;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: HttpUserException.java,v 1.6 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: HttpUserException.java,v 1.7 2007/12/17 04:17:34 jasonbrome Exp $
  */
 
 public class HttpUserException extends Exception {
 
-    private int status;
-    public HttpUserException(int status) {
-        this.status = status;
-    }
+	private static final long serialVersionUID = -8653391878322255929L;
 
-    public int getStatus() {
-        return status;
-    }
+	private final int status;
+
+	public HttpUserException(int status) {
+		this.status = status;
+	}
+
+	public int getStatus() {
+		return status;
+	}
 }

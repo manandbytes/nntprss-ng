@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed.publish;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -44,7 +44,7 @@ import org.methodize.nntprss.util.AppConstants;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: LiveJournalPublisher.java,v 1.6 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: LiveJournalPublisher.java,v 1.7 2007/12/17 04:14:04 jasonbrome Exp $
  */
 
 public class LiveJournalPublisher implements Publisher {
@@ -115,7 +115,7 @@ public class LiveJournalPublisher implements Publisher {
 
             params.add(struct);
 
-            Map response = (Map) xmlrpc.execute(METHOD_POSTEVENT, params);
+            /* Map response = (Map) */ xmlrpc.execute(METHOD_POSTEVENT, params);
 
             // Discard response
             // anum - The key number used to calculate the public itemid ID number for URLs.
@@ -152,7 +152,7 @@ public class LiveJournalPublisher implements Publisher {
 
             params.add(struct);
 
-            Map userInfo = (Map) xmlrpc.execute(METHOD_LOGIN, params);
+            /* Map userInfo = (Map) */ xmlrpc.execute(METHOD_LOGIN, params);
 
             //TODO: think about message returned in userInfo
 

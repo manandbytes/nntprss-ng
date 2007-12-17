@@ -2,18 +2,14 @@ package org.methodize.nntprss.feed.publish;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.methodize.nntprss.feed.Item;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * web:   http://www.methodize.org/nntprss
@@ -44,15 +40,12 @@ import org.methodize.nntprss.feed.Item;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: MovableTypePublisher.java,v 1.6 2006/05/17 04:13:38 jasonbrome Exp $
+ * @version $Id: MovableTypePublisher.java,v 1.7 2007/12/17 04:14:04 jasonbrome Exp $
  */
 
 public class MovableTypePublisher implements Publisher {
 
     private static final String METHOD_NEWPOST = "metaWeblog.newPost";
-
-    private static final String BLOGGER_APP_KEY =
-        "0B18094ACF9546D113015FD8376930FA62A827";
 
     private static final String METHOD_GETCATEGORYLIST = "mt.getCategoryList";
 
@@ -103,7 +96,7 @@ public class MovableTypePublisher implements Publisher {
             params.addElement(
                 Boolean.valueOf((String) profile.get(PROP_PUBLISH)));
 
-            String postId = (String) xmlrpc.execute(METHOD_NEWPOST, params);
+            /* String postId = (String) */ xmlrpc.execute(METHOD_NEWPOST, params);
 
         } catch (Exception e) {
             throw new PublisherException(e);
@@ -132,8 +125,8 @@ public class MovableTypePublisher implements Publisher {
             // password (string): Password for said username. 
             params.addElement(profile.get(PROP_PASSWORD));
 
-            List categories =
-                (List) xmlrpc.execute(METHOD_GETCATEGORYLIST, params);
+            /* List categories =
+                (List) */ xmlrpc.execute(METHOD_GETCATEGORYLIST, params);
 
         } catch (Exception e) {
             throw new PublisherException(e);
