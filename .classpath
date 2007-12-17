@@ -16,7 +16,7 @@
 	<classpathentry kind="lib" path="ext/lib/commons-httpclient.jar" sourcepath="C:/java/commons-httpclient-2.0-beta1/src/java"/>
 	<classpathentry kind="lib" path="ext/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="ext/lib/mysql.jar"/>
-	<classpathentry kind="lib" path="ext/lib/jdbm-0.20.jar" sourcepath="C:/projects/jdbm/src/main"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="ext/lib/derby.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
