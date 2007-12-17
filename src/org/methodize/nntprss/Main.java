@@ -2,7 +2,7 @@ package org.methodize.nntprss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -48,11 +48,11 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Main.java,v 1.12 2006/05/17 04:11:39 jasonbrome Exp $
+ * @version $Id: Main.java,v 1.13 2007/12/17 04:03:56 jasonbrome Exp $
  */
 public class Main {
 
-    private Logger log = Logger.getLogger(Main.class);
+    private static final Logger log = Logger.getLogger(Main.class);
 
     private DBManager dbManager = null;
     private NNTPServer nntpServer = null;
