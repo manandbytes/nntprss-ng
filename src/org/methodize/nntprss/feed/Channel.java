@@ -2,7 +2,7 @@ package org.methodize.nntprss.feed;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -30,56 +30,26 @@ package org.methodize.nntprss.feed;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.PushbackInputStream;
+import java.io.*;
 import java.net.*;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.NoRouteToHostException;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpRecoverableException;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.methodize.nntprss.feed.db.ChannelDAO;
-import org.methodize.nntprss.feed.parser.AtomParser;
-import org.methodize.nntprss.feed.parser.GenericParser;
-import org.methodize.nntprss.feed.parser.LooseParser;
-import org.methodize.nntprss.feed.parser.RSSParser;
+import org.methodize.nntprss.feed.parser.*;
 import org.methodize.nntprss.util.AppConstants;
 import org.methodize.nntprss.util.HttpUserException;
-import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -87,11 +57,11 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Channel.java,v 1.18 2006/05/17 04:13:17 jasonbrome Exp $
+ * @version $Id: Channel.java,v 1.19 2007/12/17 04:08:39 jasonbrome Exp $
  */
 public class Channel
     extends ItemContainer
-    implements Runnable, Externalizable {
+    implements Runnable {
 
     public static final int EXTERNAL_VERSION = 2;
 
@@ -109,7 +79,7 @@ public class Channel
 
     private static final int PUSHBACK_BUFFER_SIZE = 4;
 
-    private Logger log = Logger.getLogger(Channel.class);
+    private static final Logger log = Logger.getLogger(Channel.class);
 
     private String author;
     private URL url;
@@ -285,7 +255,13 @@ public class Channel
                         || statusCode == HttpStatus.SC_TEMPORARY_REDIRECT) {
 
                         redirected = true;
-                        urlString = result.getLocation();
+                        // Resolve against current URI - may be a relative URI
+                        try {
+                        	urlString = new java.net.URI(urlString).resolve(result.getLocation()).toString();
+                        } catch(URISyntaxException use) {
+                        	// Fall back to just using location from result
+                        	urlString = result.getLocation();
+                        }
                         if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY
                             && channelManager.isObserveHttp301()) {
                             try {
@@ -572,7 +548,8 @@ public class Channel
 
                 HostConfiguration hostConfiguration =
                     client.getHostConfiguration();
-                hostConfiguration.setHost(new URI(urlString));
+                URI hostURI = new URI(urlString);
+                hostConfiguration.setHost(hostURI);
 
                 result = executeHttpRequest(client, hostConfiguration, method);
                 statusCode = result.getStatusCode();
@@ -581,7 +558,13 @@ public class Channel
                     || statusCode == HttpStatus.SC_SEE_OTHER
                     || statusCode == HttpStatus.SC_TEMPORARY_REDIRECT) {
                     redirected = true;
-                    urlString = result.getLocation();
+                    // Resolve against current URI - may be a relative URI
+                    try {
+                    	urlString = new java.net.URI(urlString).resolve(result.getLocation()).toString();
+                    } catch(URISyntaxException use) {
+                    	// Fall back to just using location from result
+                    	urlString = result.getLocation();
+                    }
                 } else {
                     redirected = false;
                 }
@@ -1048,7 +1031,6 @@ public class Channel
 
         HttpResult result;
         int statusCode = -1;
-        int attempt = 0;
 
         try {
             statusCode = client.executeMethod(config, method);
@@ -1144,95 +1126,6 @@ public class Channel
         public void setLocation(String location) {
             this.location = location;
         }
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-     */
-    public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException {
-        in.readInt();
-        author = in.readUTF();
-        name = in.readUTF();
-        url = new URL(in.readUTF());
-        id = in.readInt();
-        title = in.readUTF();
-        link = in.readUTF();
-        description = in.readUTF();
-        lastPolled = new Date(in.readLong());
-        lastCleaned = new Date(in.readLong());
-        lastModified = in.readLong();
-        lastETag = in.readUTF();
-        created = new Date(in.readLong());
-        firstArticleNumber = in.readInt();
-        lastArticleNumber = in.readInt();
-        totalArticles = in.readInt();
-        rssVersion = in.readUTF();
-        managingEditor = in.readUTF();
-
-        //			historical = in.readBoolean();
-        //			in.readBoolean();
-
-        enabled = in.readBoolean();
-        parseAtAllCost = in.readBoolean();
-
-        postingEnabled = in.readBoolean();
-        publishAPI = in.readUTF();
-        publishConfig = XMLHelper.xmlToStringHashMap(in.readUTF());
-        status = in.readInt();
-        pollingIntervalSeconds = in.readLong();
-
-        expiration = in.readLong();
-        int categoryId = in.readInt();
-
-        initialize();
-
-        if (categoryId != 0) {
-            category = channelManager.categoryById(categoryId);
-            if (category != null) {
-                category.getChannels().put(new Integer(id), this);
-            } else {
-                // If category not found, reset to zero
-                categoryId = 0;
-            }
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-     */
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(EXTERNAL_VERSION);
-        out.writeUTF(author != null ? author : "");
-        out.writeUTF(name != null ? name : "");
-        out.writeUTF(url.toString());
-        out.writeInt(id);
-        out.writeUTF(title != null ? title : "");
-        out.writeUTF(link != null ? link : "");
-        out.writeUTF(description != null ? description : "");
-        out.writeLong(lastPolled != null ? lastPolled.getTime() : 0);
-        out.writeLong(lastCleaned != null ? lastCleaned.getTime() : 0);
-        out.writeLong(lastModified);
-        out.writeUTF(lastETag != null ? lastETag : "");
-        out.writeLong(created != null ? created.getTime() : 0);
-        out.writeInt(firstArticleNumber);
-        out.writeInt(lastArticleNumber);
-        out.writeInt(totalArticles);
-        out.writeUTF(rssVersion != null ? rssVersion : "");
-        out.writeUTF(managingEditor != null ? managingEditor : "");
-
-        //		out.writeBoolean(historical);
-        out.writeBoolean(enabled);
-        out.writeBoolean(parseAtAllCost);
-
-        out.writeBoolean(postingEnabled);
-        out.writeUTF(publishAPI != null ? publishAPI : "");
-        out.writeUTF(XMLHelper.stringMapToXML(publishConfig));
-        out.writeInt(status);
-        out.writeLong(pollingIntervalSeconds);
-
-        out.writeLong(expiration);
-        out.writeInt(category != null ? category.getId() : 0);
     }
 
     /**
