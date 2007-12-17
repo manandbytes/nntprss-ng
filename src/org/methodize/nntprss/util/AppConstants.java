@@ -2,7 +2,7 @@ package org.methodize.nntprss.util;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2005 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -39,15 +39,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AppConstants.java,v 1.20 2005/08/24 23:12:10 jasonbrome Exp $
+ * @version $Id: AppConstants.java,v 1.21 2007/12/17 04:16:05 jasonbrome Exp $
  */
 public final class AppConstants {
 
-    private static DocumentBuilderFactory docBuilderFactory;
-    private static String platform;
-    private static String userAgent;
-
-    public static final AppConstants appConstants = new AppConstants();
+    private static final DocumentBuilderFactory docBuilderFactory;
+    private static final String platform;
+    private static final String userAgent;
 
     public static final String NNTPRSS_CONFIGURATION_FILE =
         "nntprss-config.xml";
@@ -57,15 +55,15 @@ public final class AppConstants {
 
     public static final String USERS_CONFIG = "users.properties";
 
-    public static final String VERSION = "0.5-beta-2";
+    public static final String VERSION = "0.5-beta-3";
 
     public static final int OPEN_ENDED_RANGE = -1;
 
     public static final int CONTENT_TYPE_TEXT = 1;
     public static final int CONTENT_TYPE_HTML = 2;
     public static final int CONTENT_TYPE_MIXED = 3;
-
-    private AppConstants() {
+    
+    static {
         // Private constructor... initialize platform string
         StringBuffer pltfmBuf = new StringBuffer();
         String osName = System.getProperty("os.name");
@@ -95,6 +93,9 @@ public final class AppConstants {
 
         docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
+    }
+
+    private AppConstants() {
     }
 
     public static DocumentBuilder newDocumentBuilder()
