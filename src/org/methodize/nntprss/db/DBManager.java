@@ -2,7 +2,7 @@ package org.methodize.nntprss.db;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -35,7 +35,7 @@ import org.w3c.dom.Document;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: DBManager.java,v 1.10 2006/05/17 04:12:55 jasonbrome Exp $
+ * @version $Id: DBManager.java,v 1.11 2007/12/17 04:07:36 jasonbrome Exp $
  */
 public class DBManager {
 

@@ -2,7 +2,7 @@ package org.methodize.nntprss.admin;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -55,7 +55,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: AdminServer.java,v 1.11 2006/05/17 04:12:24 jasonbrome Exp $
+ * @version $Id: AdminServer.java,v 1.12 2007/12/17 04:06:24 jasonbrome Exp $
  */
 public class AdminServer {
 
