@@ -109,7 +109,7 @@
 
     <tar destfile="${basedir}/../nntprss-${version}.tar">
       <tarfileset dir="ext/lib" includes="*" prefix="nntprss/ext/lib" />
-      <tarfileset dir="src/xml" includes="*" prefix="xml" />
+      <tarfileset dir="src/xml" includes="*" prefix="nntprss/xml" />
       <tarfileset dir="." prefix="nntprss">
         <include name="CHANGELOG"/>
         <include name="LICENSE.TXT"/>
