@@ -2,7 +2,7 @@ package org.methodize.nntprss;
 
 /* -----------------------------------------------------------
  * nntp//rss - a bridge between the RSS world and NNTP clients
- * Copyright (c) 2002-2006 Jason Brome.  All Rights Reserved.
+ * Copyright (c) 2002-2007 Jason Brome.  All Rights Reserved.
  *
  * email: nntprss@methodize.org
  * mail:  Jason Brome
@@ -38,7 +38,7 @@ import java.net.URLClassLoader;
 
 /**
  * @author Jason Brome <jason@methodize.org>
- * @version $Id: Startup.java,v 1.12 2006/05/17 04:11:51 jasonbrome Exp $
+ * @version $Id: Startup.java,v 1.13 2007/12/17 04:04:23 jasonbrome Exp $
  */
 public class Startup {
 
@@ -62,8 +62,6 @@ public class Startup {
         "./ext/lib/hsqldb.jar",
         // MySQL Support
         "./ext/lib/mysql.jar",
-        // JDBM Support
-        "./ext/lib/jdbm-0.20.jar",
         // Derby Support
         "./ext/lib/derby.jar",
          "." };
