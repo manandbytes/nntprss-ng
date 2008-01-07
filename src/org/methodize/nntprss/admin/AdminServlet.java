@@ -335,7 +335,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowConfig(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -3453,7 +3452,7 @@ public class AdminServlet extends HttpServlet {
             } else if (action.equals("addcategoryform")) {
                 cmdAddCategoryForm(request, response);
             } else if (action.equals("showconfig")) {
-                cmdShowConfig(request, response);
+                cmdShowConfig(response);
             } else if (action.equals("updateconfig")) {
                 cmdUpdateConfig(request, response);
             } else if (action.equals("show")) {
