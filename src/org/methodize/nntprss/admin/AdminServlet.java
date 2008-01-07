@@ -1017,8 +1017,7 @@ public class AdminServlet extends HttpServlet {
 
     private void writeCategory(
         Writer writer,
-        Category category,
-        HttpServletRequest request)
+        Category category)
         throws IOException {
         if (category == null) {
             writer.write(
@@ -1193,7 +1192,7 @@ public class AdminServlet extends HttpServlet {
             (ChannelManager) getServletContext().getAttribute(
                 AdminServer.SERVLET_CTX_RSS_MANAGER);
         Category category = channelManager.categoryByName(categoryName);
-        writeCategory(writer, category, request);
+        writeCategory(writer, category);
         writeFooter(writer);
     }
 
@@ -1536,8 +1535,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void channelDelete(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        HttpServletRequest request)
         throws ServletException, IOException {
 
         Enumeration paramEnum = request.getParameterNames();
@@ -1559,8 +1557,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void channelRepoll(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        HttpServletRequest request)
         throws ServletException, IOException {
 
         Enumeration paramEnum = request.getParameterNames();
@@ -1589,9 +1586,9 @@ public class AdminServlet extends HttpServlet {
         throws ServletException, IOException {
 
         if (request.getParameter("delete") != null) {
-            channelDelete(request, response);
+            channelDelete(request);
         } else if (request.getParameter("repoll") != null) {
-            channelRepoll(request, response);
+            channelRepoll(request);
         }
 
         // Redirect to main page after performing channel action - otherwise
@@ -1601,7 +1598,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowCurrentChannels(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -1767,7 +1763,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowCurrentCategories(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -1834,7 +1829,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdQuickEditChannels(
-        HttpServletRequest request,
         HttpServletResponse response,
         boolean updated)
         throws ServletException, IOException {
@@ -2113,7 +2107,7 @@ public class AdminServlet extends HttpServlet {
             chlCount++;
         }
 
-        cmdQuickEditChannels(request, response, true);
+        cmdQuickEditChannels(response, true);
     }
 
     private void writeCheckboxSelector(
@@ -3442,7 +3436,7 @@ public class AdminServlet extends HttpServlet {
         if (request.getServerPort() == adminServer.getPort()) {
             String action = request.getParameter("action");
             if (action == null || action.length() == 0) {
-                cmdShowCurrentChannels(request, response);
+                cmdShowCurrentChannels(response);
             } else if (action.equals("add")) {
                 cmdAddChannel(request, response);
             } else if (action.equals("addcategory")) {
@@ -3478,15 +3472,15 @@ public class AdminServlet extends HttpServlet {
             } else if (action.equals("editchlrefresh")) {
                 cmdEditChannelRefresh(request, response);
             } else if (action.equals("quickedit")) {
-                cmdQuickEditChannels(request, response, false);
+                cmdQuickEditChannels(response, false);
             } else if (action.equals("quickeditupdate")) {
                 cmdQuickEditChannelsUpdate(request, response);
             } else if (action.equals("help")) {
                 cmdHelp(request, response);
             } else if (action.equals("categories")) {
-                cmdShowCurrentCategories(request, response);
+                cmdShowCurrentCategories(response);
             } else {
-                cmdShowCurrentChannels(request, response);
+                cmdShowCurrentChannels(response);
             }
         } else {
             // Must be a subscription listener...
