@@ -30,7 +30,6 @@ package org.methodize.nntprss.feed.parser;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,7 +43,6 @@ import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.Item;
 import org.methodize.nntprss.feed.db.ChannelDAO;
-import org.methodize.nntprss.util.Base64;
 import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -61,6 +59,7 @@ public class AtomParser extends GenericParser {
     public static final String XMLNS_ATOM = "http://www.w3.org/2005/Atom";
 
     private static ThreadLocal dateParsers = new ThreadLocal() {
+        @Override
         public Object initialValue() {
             SimpleDateFormat[] dcDateArray =
                 new SimpleDateFormat[] {
@@ -92,6 +91,7 @@ public class AtomParser extends GenericParser {
      * @param docRootElement Root element of feed document
      * @return
      */
+    @Override
     public boolean isParsable(Element docRootElement) {
         if (docRootElement.getNodeName().equals("feed")) {
             return true;
@@ -100,6 +100,7 @@ public class AtomParser extends GenericParser {
         }
     }
 
+    @Override
     public String getFormatVersion(Element docRootElement) {
         String atomVersion;
 
@@ -111,6 +112,7 @@ public class AtomParser extends GenericParser {
         return atomVersion;
     }
 
+    @Override
     public void extractFeedInfo(Element docRootElement, Channel channel) {
         // Read header...
         channel.setTitle(
@@ -158,6 +160,7 @@ public class AtomParser extends GenericParser {
         return author.toString();
     }
 
+    @Override
     public void processFeedItems(
         Element rootElm,
         Channel channel,
@@ -193,7 +196,7 @@ public class AtomParser extends GenericParser {
             itemCount >= 0;
             itemCount--) {
             Element itemElm = (Element) entryList.item(itemCount);
-            String signatureStr = generateEntrySignature(md, itemElm);
+            String signatureStr = generateItemSignature(md, itemElm);
 
             if (!keepHistory) {
                 currentSignatures.add(signatureStr);
@@ -394,6 +397,7 @@ public class AtomParser extends GenericParser {
 		return xmlBase;
 	}
 
+	@Override
     public String processContent(Element itemElm) {
         // Check for xhtml:body
         String description = null;
@@ -452,32 +456,6 @@ public class AtomParser extends GenericParser {
             }
         }
         return link;
-    }
-
-    private String generateEntrySignature(MessageDigest md, Element itemElm)
-        throws IOException {
-        String title = XMLHelper.getChildElementValue(itemElm, "title", "");
-        String link = XMLHelper.getChildElementValue(itemElm, "link", "");
-
-        // Handle xhtml:body / content:encoded / description
-        String description = processContent(itemElm);
-
-        String signatureStr = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        // Used trimmed forms of content, ignore whitespace changes
-        bos.write(title.trim().getBytes());
-        bos.write(link.trim().getBytes());
-        bos.write(description.trim().getBytes());
-        bos.flush();
-        bos.close();
-
-        byte[] signatureSource = bos.toByteArray();
-        md.reset();
-        byte[] signature = md.digest(signatureSource);
-
-        signatureStr = Base64.encodeBytes(signature);
-        return signatureStr;
     }
 
 }

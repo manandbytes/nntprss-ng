@@ -30,7 +30,6 @@ package org.methodize.nntprss.feed.parser;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -52,7 +51,6 @@ import org.apache.log4j.Logger;
 import org.methodize.nntprss.feed.Channel;
 import org.methodize.nntprss.feed.Item;
 import org.methodize.nntprss.feed.db.ChannelDAO;
-import org.methodize.nntprss.util.Base64;
 import org.methodize.nntprss.util.RSSHelper;
 import org.methodize.nntprss.util.XMLHelper;
 import org.w3c.dom.Element;
@@ -91,7 +89,7 @@ public class RSSParser extends GenericParser {
         }
     };
 
-    private static final RSSParser rssParser = new RSSParser();
+    private static final GenericParser rssParser = new RSSParser();
     private static final Logger log = Logger.getLogger(RSSParser.class);
 
     private RSSParser() {
@@ -390,6 +388,7 @@ public class RSSParser extends GenericParser {
         }
     }
 
+    @Override
     public String processContent(Element itemElm) {
         // Check for xhtml:body
         String description = null;
@@ -419,32 +418,6 @@ public class RSSParser extends GenericParser {
                 XMLHelper.getChildElementValue(itemElm, "description", "");
         }
         return description;
-    }
-
-    private String generateItemSignature(MessageDigest md, Element itemElm)
-        throws IOException {
-        String title = XMLHelper.getChildElementValue(itemElm, "title", "");
-        String link = XMLHelper.getChildElementValue(itemElm, "link", "");
-
-        // Handle xhtml:body / content:encoded / description
-        String description = processContent(itemElm);
-
-        String signatureStr = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        // Used trimmed forms of content, ignore whitespace changes
-        bos.write(title.trim().getBytes());
-        bos.write(link.trim().getBytes());
-        bos.write(description.trim().getBytes());
-        bos.flush();
-        bos.close();
-
-        byte[] signatureSource = bos.toByteArray();
-        md.reset();
-        byte[] signature = md.digest(signatureSource);
-
-        signatureStr = Base64.encodeBytes(signature);
-        return signatureStr;
     }
 
 }
