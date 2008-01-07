@@ -2285,7 +2285,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdAddCategoryForm(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -2563,7 +2562,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdExportChannelConfig(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -2607,7 +2605,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdExportOpmlChannelConfig(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -2695,7 +2692,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportChannelConfigForm(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -2717,14 +2713,13 @@ public class AdminServlet extends HttpServlet {
         MultiPartRequest mpRequest = new MultiPartRequest(request);
 
         if (mpRequest.getString("type").equalsIgnoreCase("opml")) {
-            cmdImportOpmlChannelConfigValidate(request, response, mpRequest);
+            cmdImportOpmlChannelConfigValidate(response, mpRequest);
         } else {
-            cmdImportNntpRssChannelConfig(request, response, mpRequest);
+            cmdImportNntpRssChannelConfig(response, mpRequest);
         }
     }
 
     private void cmdImportNntpRssChannelConfig(
-        HttpServletRequest request,
         HttpServletResponse response,
         MultiPartRequest mpRequest)
         throws ServletException, IOException {
@@ -2951,7 +2946,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportOpmlChannelConfigValidate(
-        HttpServletRequest request,
         HttpServletResponse response,
         MultiPartRequest mpRequest)
         throws ServletException, IOException {
@@ -3335,7 +3329,6 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdHelp(
-        HttpServletRequest request,
         HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -3444,7 +3437,7 @@ public class AdminServlet extends HttpServlet {
             } else if (action.equals("addform")) {
                 cmdAddChannelForm(request, response);
             } else if (action.equals("addcategoryform")) {
-                cmdAddCategoryForm(request, response);
+                cmdAddCategoryForm(response);
             } else if (action.equals("showconfig")) {
                 cmdShowConfig(response);
             } else if (action.equals("updateconfig")) {
@@ -3458,13 +3451,13 @@ public class AdminServlet extends HttpServlet {
             } else if (action.equals("categoryupdate")) {
                 cmdUpdateCategory(request, response);
             } else if (action.equals("export")) {
-                cmdExportChannelConfig(request, response);
+                cmdExportChannelConfig(response);
             } else if (action.equals("exportopml")) {
-                cmdExportOpmlChannelConfig(request, response);
+                cmdExportOpmlChannelConfig(response);
             } else if (action.equals("import")) {
                 cmdImportChannelConfig(request, response);
             } else if (action.equals("importform")) {
-                cmdImportChannelConfigForm(request, response);
+                cmdImportChannelConfigForm(response);
             } else if (action.equals("importopml")) {
                 cmdImportOpmlChannelConfig(request, response);
             } else if (action.equals("channelaction")) {
@@ -3476,7 +3469,7 @@ public class AdminServlet extends HttpServlet {
             } else if (action.equals("quickeditupdate")) {
                 cmdQuickEditChannelsUpdate(request, response);
             } else if (action.equals("help")) {
-                cmdHelp(request, response);
+                cmdHelp(response);
             } else if (action.equals("categories")) {
                 cmdShowCurrentCategories(response);
             } else {
