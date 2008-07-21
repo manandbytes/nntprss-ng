@@ -51,7 +51,8 @@
            debug="${debug}"
            optimize="${optimize}"
            deprecation="${deprecation}"
-           target="1.2"
+           compiler="javac1.6"
+           source="1.6"
            >
        <classpath refid="extpath" />
        <include name="**/*.java"/>
