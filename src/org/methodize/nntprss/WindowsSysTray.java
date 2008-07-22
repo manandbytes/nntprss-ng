@@ -35,6 +35,7 @@ package org.methodize.nntprss;
  * ----------------------------------------------------- */
 
 import java.awt.AWTException;
+import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -47,6 +48,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -153,24 +156,18 @@ public class WindowsSysTray implements ActionListener, MouseListener {
         itemExit.setEnabled(false);
     }
 
-    /**
-     * @todo implement this in a cross-platform way
-     */
     private void startBrowser(String url) {
         try {
-            Process process =
-                Runtime.getRuntime().exec(
-                    new String[] {
-                        "cmd.exe",
-                        "/c",
-                        "start",
-                        "\"\"",
-                        "\"" + url + "\"" });
-            process.waitFor();
-            process.exitValue();
-
-        } catch (IOException ie) {
-        } catch (InterruptedException ie) {
+            URI uriToBrowse = new URI(url);
+            if (Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+                Desktop.getDesktop().browse(uriToBrowse);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
