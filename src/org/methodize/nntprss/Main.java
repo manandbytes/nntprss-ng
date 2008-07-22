@@ -30,6 +30,7 @@ package org.methodize.nntprss;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.awt.SystemTray;
 import java.io.InputStream;
 import java.security.Provider;
 import java.security.Security;
@@ -67,6 +68,7 @@ public class Main {
         /**
          * @see java.lang.Runnable#run()
          */
+        @Override
         public void run() {
             if (log.isInfoEnabled()) {
                 log.info("Shutting down nntp//rss...");
@@ -117,10 +119,7 @@ public class Main {
                 log.warn("JSSE not found - HTTPS support not available");
             }
 
-            if (System
-                .getProperty("os.name")
-                .toLowerCase()
-                .startsWith("windows")) {
+            if (SystemTray.isSupported()) {
                 windowsSysTray = new WindowsSysTray();
             }
 

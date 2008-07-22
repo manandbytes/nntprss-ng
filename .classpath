@@ -12,7 +12,6 @@
 	<classpathentry kind="lib" path="ext/lib/xmlrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="ext/lib/activation.jar"/>
 	<classpathentry kind="lib" path="ext/lib/mailapi.jar"/>
-	<classpathentry kind="lib" path="ext/lib/systray4j.jar"/>
 	<classpathentry kind="lib" path="ext/lib/commons-httpclient.jar" sourcepath="C:/java/commons-httpclient-2.0-beta1/src/java"/>
 	<classpathentry kind="lib" path="ext/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="ext/lib/mysql.jar"/>

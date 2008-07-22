@@ -57,7 +57,6 @@ public class Startup {
             "./ext/lib/xmlrpc-1.1.jar",
             "./ext/lib/mailapi.jar",
             "./ext/lib/activation.jar",
-            "./ext/lib/systray4j.jar",
         // hsqldb Support
         "./ext/lib/hsqldb.jar",
         // MySQL Support
