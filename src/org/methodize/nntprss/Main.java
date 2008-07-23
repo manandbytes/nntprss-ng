@@ -31,7 +31,11 @@ package org.methodize.nntprss;
  * ----------------------------------------------------- */
 
 import java.awt.SystemTray;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.security.CodeSource;
 import java.security.Provider;
 import java.security.Security;
 
@@ -168,20 +172,19 @@ public class Main {
     private Document loadConfiguration() {
         Document configDoc = null;
 
-        InputStream configFile =
-            getClass().getClassLoader().getResourceAsStream(
-                AppConstants.NNTPRSS_CONFIGURATION_FILE);
-        if (configFile == null) {
+        CodeSource codeSource = getClass().getProtectionDomain().getCodeSource();
+        try {
+            InputStream configFile = new FileInputStream(new File(codeSource
+                    .getLocation().getFile()).getParent()
+                    + "/" + AppConstants.NNTPRSS_CONFIGURATION_FILE);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            configDoc = db.parse(configFile);
+        } catch (FileNotFoundException e1) {
             throw new RuntimeException(
                 "Cannot load "
                     + AppConstants.NNTPRSS_CONFIGURATION_FILE
                     + " configuration file");
-        }
-
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            configDoc = db.parse(configFile);
         } catch (Exception e) {
             log.error("Error parsing configuration", e);
             throw new RuntimeException(
