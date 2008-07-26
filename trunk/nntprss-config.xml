@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- nntp//rss bootstrap configuration -->
+<!-- http://www.methodize.org/nntprss -->
+
+<nntprss>
+
+<!-- Derby -->
+  <db connect='jdbc:derby:nntprssdb;create=true' driverClass='org.apache.derby.jdbc.EmbeddedDriver' daoClass='org.methodize.nntprss.feed.db.DerbyChannelDAO'/>
+
+<!-- MySQL -->
+<!-- MySQL
+  <db connect='jdbc:mysql://127.0.0.1/nntprssdb?user=blah&amp;password=blah&amp;autoReconnect=true' driverClass='com.mysql.jdbc.Driver' daoClass='org.methodize.nntprss.feed.db.MySQLChannelDAO'/>
+-->
+
+<!-- Listener port for NNTP server -->
+  <nntp port='119'/>
+
+<!-- Listener port for web admin interface -->
+  <admin port='7810'/>
+
+<!-- Poller configuration - number of threads -->
+  <poller threads='5'/>
+
+<!-- Item Processor Plug-in configuration -->
+<!-- Item processors are invoked in the order listed below -->
+<!--
+  <itemProcessors>
+    <processor class="org.methodize.nntprss.plugin.examples.ItemLogPlugin"/>
+    <processor class="org.methodize.nntprss.plugin.examples.SomeOtherPlugin"/>
+  </itemProcessors>
+-->
+
+<!-- Subscription listeners -->
+<!--  <subscribe name='AmphetaDesk' port='8888' path='/index.html' param='add_url' />
+  <subscribe name='Radio Userland' port='5335' path='/system/pages/subscriptions' param='url' /> 
+  <subscribe name='Awasu' port='2604' path='/subscribe' param='url' />
+  <subscribe name='BottomFeeder' port='8666' path='/btf' param='rss' />
+  <subscribe name='Headline Viewer' port='8900' path='/add_provider' param='url' />
+  <subscribe name='Wildgrape NewsDesk' port='8888' path='NewsDesk.html' param='add_url' /> -->
+
+
+<!-- Initial channel list -->
+<!-- These are the channels defined during a fresh installation of nntp//rss -->
+
+  <channels>
+
+    <channel name='com.jasonbrome' url='http://www.jasonbrome.com/blog/index.rdf' historical='true'/>
+    <channel name='nntprss.news' url='http://rss.methodize.org/nntprss.xml' historical='true'/>
+    <channel name='org.slashdot' url='http://slashdot.org/slashdot.rdf' historical='true'/>
+
+  </channels>
+
+</nntprss>

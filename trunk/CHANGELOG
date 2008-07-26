@@ -1,0 +1,159 @@
+TBD - nntp//rss v0.5-beta-3
+
++ Support feed redirection with relative URLs
++ Fixed Atom URI resolution for Feed + Entry links - now support
+  resolution of relative URIs
++ Introduced Item Processors - this allows custom modules to be plugged
+  into the polling engine.  ItemProcessor classes are called when new
+  items are received.  An example processor, ItemLogPlugin, logs the 
+  channel and item title for every new item to the nntp//rss log file.
+  Potential plugins could include alerting and email modules.
++ Set derby.storage.fileSyncTransactionLog=true system property when
+  running under Mac OS.
++ Fixed HTTP URL username/password support for those usernames or passwords
+  that require URL-encoded characters 
+  (e.g. Username: myuser@mysite.com, Password: test,
+  URL: http://myuser%40mysite.com:test@some.url.com/feed.xml)
+  Thanks to Steven Rohall for his help in finding and resolving this bug!
++ Fixed HTTP redirection bug
++ Added 6 month and 1 year expiration options
++ Fixed item expiration bug
++ Improved start-up times for large channel sets
+
+October 25, 2004 - nntp//rss v0.5-beta-1
+
++ Added HSQLDB -> Derby and HSQLDB -> MySQL migration
++ Support deviations from dc:date spec, including yyyy-MM-dd
++ Catch InternalError thrown by Crimson parser when parsing certain
+  invalid input
++ Appropriately handle HTML PRE tags when generating plain text output
++ Derby now default persistence engine in nntp//rss - hsqldb is no
+  longer supported.
++ Categories implemented
++ Added granular article expiration
++ NNTP client now performs chunked retrieval of items in response to
+  XOVER requests, reducing overall memory requirements.
++ Generic subscription listener support added.  Optional configurations
+  in nntprss-config.xml provided for Radio Userland, AmphetaDesk and
+  others.
++ OPML Export Added (System Configuration)
++ Better handling of User Authentication and Proxy Authentication error
+  scenarios
++ Preliminary support for the Atom syndication format.
++ Added 'Observe HTTP 301' - When checked, any 301 (Permanent Redirection)
+  messages returned will cause a channel's URL to be
+  updated with the new URL supplied in the Web Server's response.
++ Added 'Use Proxy' checkbox within System Configuration.
++ Fixed minor issues with the NNTP implementation (STAT generated
+  an unnecessary period, dubious buffer flushing when BODY requested
+  by client).  These changes have finally resolved the issues
+  experienced when trying to use Pine with nntp//rss.
++ HTTPS support addded
++ Support HTTP basic authentication within URL specified username 
+  and password, e.g. http://username:password@full.domain.name/
++ Added 'Quick Edit' screen for fast option changes over multiple
+  channels
++ Added support for guid element and guidIsPermaLink attribute
+  PermaLinks are now shown within article body.  If link element
+  has same value as guid, and guid is a PermaLink, only PermaLink
+  will be shown.
++ Changed User-Agent string to be compliant with HTTP spec
++ Set socket timeout on NNTP client connection - ensure tidying
+  up connections left in an inconsistent state
++ Fixed international character encoding issues on message 
+  Subject and From fields
++ Added support for xhtml:body
++ Added support for pubDate and dc:date
++ Reorganized database classes to facilitate future support for
+  additional DBs (e.g. MySQL)
++ Fixed ClassCastException bug in MetaWeblog API account 
+  validation
++ Repoll Selected Channels added to admin interface channel list
++ Repoll All Channels added to Windows Sys Tray
++ Added index to item table for channel Id
++ Fixed HTML unescaper bug that would throw exception if '&' near
+  end of string
++ Changed OPML import to accept xmlurl AND xmlUrl as attributes
++ Changed boolean configuration items to use checkboxes
+  rather than true/false selects
++ URLs can now be extracted as footnotes - this greatly aids
+  readability for plain text newsreaders.  Thanks to Pete Prodoehl
+  for the suggestion.
++ Skipped v0.4 release
+
+March 23, 2003 - nntp//rss v0.3
+
++ Added read link to main summary view - this has a news: style
+  URL to invoke default system newsreader
++ Posting capability added - Blogger, LiveJournal and
+  MetaWeblog APIs supported
++ Added channel-level polling interval
++ Revamped look and feel of web administration interface
++ Added HttpUrlConnection disconnection timeout to resolve
+  polling deadlock bug
++ Added Windows SysTray Icon
++ Now parse RSS documents that are prefixed with Unicode BOM
++ Fixed bug in XOVER / Subject display - subjects that contained
+  \r\n were being written as-is, causing invalid article
+  lists to be generated.
++ Changed sig delimiter in plain text messages to RFC
+  compliant -- \n
++ Improved MIME conformance of NNTP-served messages
+  (Thanks to Eric Marsden)
++ Support for channel's managingEditor attribute
+  (used as default originator email for channel's items, can
+  use reply functionality within newsreader to send email)
++ mySubscriptions.opml import now supported
++ Channels can now have their polling enabled/disabled
++ HTTP Client now supports gzip as a content encoding
++ Added support for Proxy username and password authentication
+  (Thanks to Ramalingam Thyagarajan)
++ Added NNTP-level authentication - access to NNTP server can
+  now be controlled with same user id / password combinations
+  as the web interface (AUTHINFO implemented)
++ Fixed problem with character encoding, international 
+  characters in the message body will be correctly rendered
++ Added <base> to html content to resolve broken imgs where
+  img src URL was relative
++ Fixed problem with CDATA sections within description
++ NNTP Server Improvements
+  - LIST active.times (returns dummy result to support nn)
+  - LISTGROUP - added to support Entourage (Office X)
++ Added platform information to user-agent header
+
+January 27, 2003 - nntp//rss v0.2	
+
++ Fixed bug with parameter order in NNTP LIST command
++ Support for <comments> URL within <item> (RSS v2.0)
++ Support for channel's title, description and link -
+  displayed in message content, if available
++ Support for content:encoded
++ Web interface now securable through users.properties file
++ FixedThreadPool for channel polling - now hard limit on
+  number of threads used during polling
++ NNTP Server Improvements
+  - XHDR
+  - NEXT / LAST
+  - LIST OVERVIEW.FMT (to harden XOVER support)
+  - LIST NEWSGROUPS
+  This should make nntp//rss usable by a much wider
+  range of newsreaders
++ NNTP Server Fixes
+  - Catch group-not-selected scenarios (discovered during
+    testing with tin)
++ Configurable NNTP listener port (config in nntprss-config.xml)
++ Considerably enhanced plain-text rendering of articles 
+  - Line break handling for appropriate html markup (p, br,
+  	ul, li)
+  - URL embedding for hyperlinks
++ Validate option when adding URL (in web admin interface)
+  Can uncheck validate to stop nntp//rss from validating RSS 
+  feed URL.  Useful when adding feed that is temporarily
+  unavailable.
++ Message content type now switchable between text/plain,
+  text/html and multipart/alternative.  text/plain useful 
+  when using older or text-based newsreaders.
+
+December 30, 2002 - nntp//rss v0.1
+
++ Initial Release
