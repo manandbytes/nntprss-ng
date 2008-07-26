@@ -1,0 +1,2943 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>nntp//rss-ng - FindBugs Bug Detector Report</title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            nntp//rss-ng
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2008-07-26
+                      </div>
+            <div class="xright">            <a href="">nntp//rss-ng</a>
+            
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                             <h5>Project Documentation</h5>
+            <ul>
+              
+                
+              
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+                    <a href="project-info.html">Project Information</a>
+                </li>
+              
+                
+              
+      
+            
+      
+            
+            
+            
+      
+            
+      
+            
+      
+              
+            <li class="expanded">
+                    <a href="project-reports.html">Project Reports</a>
+                  <ul>
+                  
+    <li class="none">
+                    <a href="cpd.html">CPD Report</a>
+          </li>
+                  
+    <li class="none">
+                    <a href="dashboard-report.html">DashBoard Report</a>
+          </li>
+                  
+    <li class="none">
+              <strong>FindBugs Report</strong>
+        </li>
+                  
+    <li class="none">
+                    <a href="pmd.html">PMD Report</a>
+          </li>
+                  
+    <li class="none">
+                    <a href="xref/index.html">Source Xref</a>
+          </li>
+                  
+    <li class="none">
+                    <a href="taglist.html">Tag List</a>
+          </li>
+              </ul>
+        </li>
+          </ul>
+                                           <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <div class="section"><h2>FindBugs Bug Detector Report</h2>
+<p>The following document contains the results of <a class="externalLink" href="http://findbugs.sourceforge.net">FindBugs Report</a>
+</p>
+<p>FindBugs Version is <i>1.2.1</i>
+</p>
+<p>Threshold is <i>Low</i>
+</p>
+<p>Effort is <i>Max</i>
+</p>
+</div>
+<div class="section"><h2>Summary</h2>
+<table class="bodyTable"><tr class="a"><th>Classes</th>
+<th>Bugs</th>
+<th>Errors</th>
+<th>Missing Classes</th>
+</tr>
+<tr class="b"><td>360</td>
+<td>384</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</table>
+</div>
+<div class="section"><h2>Files</h2>
+<table class="bodyTable"><tr class="a"><th>Class</th>
+<th>Bugs</th>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.Main">org.methodize.nntprss.Main</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.Startup">org.methodize.nntprss.Startup</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.WindowsSysTray">org.methodize.nntprss.WindowsSysTray</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.admin.AdminServer">org.methodize.nntprss.admin.AdminServer</a>
+</td>
+<td>3</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.admin.AdminServlet">org.methodize.nntprss.admin.AdminServlet</a>
+</td>
+<td>10</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.Category">org.methodize.nntprss.feed.Category</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.Channel">org.methodize.nntprss.feed.Channel</a>
+</td>
+<td>11</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.ChannelManager">org.methodize.nntprss.feed.ChannelManager</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.ChannelPoller">org.methodize.nntprss.feed.ChannelPoller</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.Item">org.methodize.nntprss.feed.Item</a>
+</td>
+<td>3</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.ItemContainer">org.methodize.nntprss.feed.ItemContainer</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.db.ChannelDAO">org.methodize.nntprss.feed.db.ChannelDAO</a>
+</td>
+<td>4</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.db.DerbyChannelDAO">org.methodize.nntprss.feed.db.DerbyChannelDAO</a>
+</td>
+<td>7</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.db.JdbcChannelDAO">org.methodize.nntprss.feed.db.JdbcChannelDAO</a>
+</td>
+<td>21</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.db.MySQLChannelDAO">org.methodize.nntprss.feed.db.MySQLChannelDAO</a>
+</td>
+<td>6</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.parser.AtomParser">org.methodize.nntprss.feed.parser.AtomParser</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.parser.LooseParser">org.methodize.nntprss.feed.parser.LooseParser</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.publish.BloggerPublisher">org.methodize.nntprss.feed.publish.BloggerPublisher</a>
+</td>
+<td>5</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.publish.LiveJournalPublisher">org.methodize.nntprss.feed.publish.LiveJournalPublisher</a>
+</td>
+<td>8</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.publish.MetaWeblogPublisher">org.methodize.nntprss.feed.publish.MetaWeblogPublisher</a>
+</td>
+<td>5</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.publish.MovableTypePublisher">org.methodize.nntprss.feed.publish.MovableTypePublisher</a>
+</td>
+<td>5</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.feed.publish.PublishManager">org.methodize.nntprss.feed.publish.PublishManager</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.feed.publish.PublishManager$System">org.methodize.nntprss.feed.publish.PublishManager$System</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.nntp.ClientHandler">org.methodize.nntprss.nntp.ClientHandler</a>
+</td>
+<td>10</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.nntp.NNTPServer">org.methodize.nntprss.nntp.NNTPServer</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.nntp.NNTPServerListener">org.methodize.nntprss.nntp.NNTPServerListener</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.util.AppConstants">org.methodize.nntprss.util.AppConstants</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.util.Base64">org.methodize.nntprss.util.Base64</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.util.FixedThreadPool">org.methodize.nntprss.util.FixedThreadPool</a>
+</td>
+<td>1</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.util.FixedThreadPool$WorkerThread">org.methodize.nntprss.util.FixedThreadPool$WorkerThread</a>
+</td>
+<td>2</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.util.HTMLHelper">org.methodize.nntprss.util.HTMLHelper</a>
+</td>
+<td>253</td>
+</tr>
+<tr class="a"><td><a href="#org.methodize.nntprss.util.WorkerThread">org.methodize.nntprss.util.WorkerThread</a>
+</td>
+<td>4</td>
+</tr>
+<tr class="b"><td><a href="#org.methodize.nntprss.util.XMLHelper">org.methodize.nntprss.util.XMLHelper</a>
+</td>
+<td>2</td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.Main"></a>
+<div class="section"><h3>org.methodize.nntprss.Main</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.Main.startNntpRss() invokes System.exit(...), which shuts down the entire virtual machine</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_EXIT">DM_EXIT</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/Main.html#167">167</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.Main.stopApplication() invokes System.exit(...), which shuts down the entire virtual machine</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_EXIT">DM_EXIT</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/Main.html#210">210</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.Startup"></a>
+<div class="section"><h3>org.methodize.nntprss.Startup</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.Startup.stopApplication() invokes System.exit(...), which shuts down the entire virtual machine</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_EXIT">DM_EXIT</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/Startup.html#119">119</a></td>
+</tr>
+<tr class="b"><td>Possible null pointer dereference of mainMethod in org.methodize.nntprss.Startup.run(String[])</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/Startup.html#113">113</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.WindowsSysTray"></a>
+<div class="section"><h3>org.methodize.nntprss.WindowsSysTray</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.WindowsSysTray.actionPerformed(ActionEvent) invokes System.exit(...), which shuts down the entire virtual machine</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_EXIT">DM_EXIT</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/WindowsSysTray.html#256">256</a></td>
+</tr>
+<tr class="a"><td>WindowsSysTray.channelManager not initialized in constructor</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/WindowsSysTray.html#-1">Not available</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.admin.AdminServer"></a>
+<div class="section"><h3>org.methodize.nntprss.admin.AdminServer</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.admin.AdminServer.configure(Document) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServer.html#152">152</a></td>
+</tr>
+<tr class="b"><td>Usage of GetResource in org.methodize.nntprss.admin.AdminServer.configure(Document) may be unsafe if class is extended</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UI_INHERITANCE_UNSAFE_GETRESOURCE">UI_INHERITANCE_UNSAFE_GETRESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServer.html#100">100</a></td>
+</tr>
+<tr class="a"><td>AdminServer.httpServer not initialized in constructor</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServer.html#-1">Not available</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.admin.AdminServlet"></a>
+<div class="section"><h3>org.methodize.nntprss.admin.AdminServlet</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Dead store to expiration in org.methodize.nntprss.admin.AdminServlet.cmdImportNntpRssChannelConfig(HttpServletResponse, MultiPartRequest)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#2760">2760</a></td>
+</tr>
+<tr class="b"><td>Use of non-localized String.toUpperCase() or String.toLowerCase</td>
+<td>I18N</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_CONVERT_CASE">DM_CONVERT_CASE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#2654">2654</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.admin.AdminServlet.processRequest(HttpServletRequest, HttpServletResponse) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#3480">3480</a></td>
+</tr>
+<tr class="b"><td>Check for oddness that won't work for negative numbers in org.methodize.nntprss.admin.AdminServlet.cmdImportOpmlChannelConfigValidate(HttpServletResponse, MultiPartRequest)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#IM_BAD_CHECK_FOR_ODD">IM_BAD_CHECK_FOR_ODD</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#2999">2999</a></td>
+</tr>
+<tr class="a"><td>Null pointer dereference of category in org.methodize.nntprss.admin.AdminServlet.writeCategory(Writer, Category)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_ALWAYS_NULL">NP_ALWAYS_NULL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#1023">1023</a></td>
+</tr>
+<tr class="b"><td>Null pointer dereference of channel in org.methodize.nntprss.admin.AdminServlet.writeChannel(Writer, Channel, HttpServletRequest, boolean)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_ALWAYS_NULL">NP_ALWAYS_NULL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#447">447</a></td>
+</tr>
+<tr class="a"><td>Load of known null value in org.methodize.nntprss.admin.AdminServlet.writeCategory(Writer, Category)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_LOAD_OF_KNOWN_NULL_VALUE">NP_LOAD_OF_KNOWN_NULL_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#1023">1023</a></td>
+</tr>
+<tr class="b"><td>Load of known null value in org.methodize.nntprss.admin.AdminServlet.writeChannel(Writer, Channel, HttpServletRequest, boolean)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_LOAD_OF_KNOWN_NULL_VALUE">NP_LOAD_OF_KNOWN_NULL_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#447">447</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.admin.AdminServlet.cmdExportChannelConfig(HttpServletResponse) may fail to close stream</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#OS_OPEN_STREAM">OS_OPEN_STREAM</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#2573">2573</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.admin.AdminServlet.cmdExportOpmlChannelConfig(HttpServletResponse) may fail to close stream</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#OS_OPEN_STREAM">OS_OPEN_STREAM</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/admin/AdminServlet.html#2616">2616</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.Category"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.Category</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.Category.addChannel(Channel) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Category.html#107">107</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.Category.removeChannel(Channel) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Category.html#101">101</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.Channel"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.Channel</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Dead store to bytesRead in org.methodize.nntprss.feed.Channel.skipBOM(PushbackInputStream)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#618">618</a></td>
+</tr>
+<tr class="b"><td>Dead store to keepExpiration in org.methodize.nntprss.feed.Channel.poll()</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#198">198</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.Channel.setUrl(URL) invokes java.net.URL.equals(Object), which blocks to do domain name resolution</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DMI_BLOCKING_METHODS_ON_URL">DMI_BLOCKING_METHODS_ON_URL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#807">807</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.Channel.getLastCleaned() may expose internal representation by returning Channel.lastCleaned</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP">EI_EXPOSE_REP</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#1163">1163</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.Channel.getLastPolled() may expose internal representation by returning Channel.lastPolled</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP">EI_EXPOSE_REP</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#696">696</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.Channel.setLastCleaned(Date) may expose internal representation by storing an externally mutable object into Channel.lastCleaned</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP2">EI_EXPOSE_REP2</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#1170">1170</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.Channel.setLastPolled(Date) may expose internal representation by storing an externally mutable object into Channel.lastPolled</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP2">EI_EXPOSE_REP2</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#704">704</a></td>
+</tr>
+<tr class="b"><td>Inconsistent synchronization of org.methodize.nntprss.feed.Channel.polling; locked 75% of time</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#IS2_INCONSISTENT_SYNC">IS2_INCONSISTENT_SYNC</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#984">984</a></td>
+</tr>
+<tr class="a"><td>Inconsistent synchronization of org.methodize.nntprss.feed.Channel.status; locked 84% of time</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#IS2_INCONSISTENT_SYNC">IS2_INCONSISTENT_SYNC</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#840">840</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.Channel.executeHttpRequest(HttpClient, HostConfiguration, HttpMethod) may fail to close stream on exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#OS_OPEN_STREAM_EXCEPTION_PATH">OS_OPEN_STREAM_EXCEPTION_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#1067">1067</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.Channel.poll()</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Channel.html#460">460</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.ChannelManager"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.ChannelManager</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.ChannelManager.getItemProcessors() may expose internal representation by returning ChannelManager.itemProcessors</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP">EI_EXPOSE_REP</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/ChannelManager.html#431">431</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.ChannelManager.configure(Document) uses Collection.toArray() with zero-length array argument</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ITA_INEFFICIENT_TO_ARRAY">ITA_INEFFICIENT_TO_ARRAY</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/ChannelManager.html#152">152</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.ChannelPoller"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.ChannelPoller</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Using notify rather than notifyAll in org.methodize.nntprss.feed.ChannelPoller.shutdown()</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NO_NOTIFY_NOT_NOTIFYALL">NO_NOTIFY_NOT_NOTIFYALL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/ChannelPoller.html#80">80</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.Item"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.Item</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.Item.getDate() may expose internal representation by returning Item.date</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP">EI_EXPOSE_REP</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Item.html#129">129</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.Item.setDate(Date) may expose internal representation by storing an externally mutable object into Item.date</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP2">EI_EXPOSE_REP2</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Item.html#137">137</a></td>
+</tr>
+<tr class="b"><td>Item.channel not initialized in constructor</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/Item.html#-1">Not available</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.ItemContainer"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.ItemContainer</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.ItemContainer.getCreated() may expose internal representation by returning ItemContainer.created</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP">EI_EXPOSE_REP</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/ItemContainer.html#120">120</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.ItemContainer.setCreated(Date) may expose internal representation by storing an externally mutable object into ItemContainer.created</td>
+<td>MALICIOUS_CODE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#EI_EXPOSE_REP2">EI_EXPOSE_REP2</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/ItemContainer.html#127">127</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.db.ChannelDAO"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.db.ChannelDAO</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.ChannelDAO.migrateHsql() might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/ChannelDAO.html#398">398</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.ChannelDAO.migrateHsql() invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/ChannelDAO.html#267">267</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.db.ChannelDAO.migrateHsql()</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/ChannelDAO.html#389">389</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.ChannelDAO.migrateHsql() passes a nonconstant String to an execute method on an SQL statement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE">SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/ChannelDAO.html#312">312</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.db.DerbyChannelDAO"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.db.DerbyChannelDAO</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.DerbyChannelDAO.createTables() might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#202">202</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.DerbyChannelDAO.populateInitialChannels(Document) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#292">292</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.DerbyChannelDAO.upgradeDatabase(int) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#511">511</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.DerbyChannelDAO.shutdown() may fail to close java.sql.Connection</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ODR_OPEN_DATABASE_RESOURCE">ODR_OPEN_DATABASE_RESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#648">648</a></td>
+</tr>
+<tr class="b"><td>Switch statement found in org.methodize.nntprss.feed.db.DerbyChannelDAO.upgradeDatabase(int) where one case falls through to the next case</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SF_SWITCH_FALLTHROUGH">SF_SWITCH_FALLTHROUGH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#357">357-363</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.db.DerbyChannelDAO.createTables() passes a nonconstant String to an execute method on an SQL statement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE">SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#173">173</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.DerbyChannelDAO.upgradeDatabase(int) passes a nonconstant String to an execute method on an SQL statement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE">SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/DerbyChannelDAO.html#464">464</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.db.JdbcChannelDAO"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.db.JdbcChannelDAO</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.initialize(Document) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#483">483</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.loadConfiguration(ChannelManager) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#361">361</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.loadConfiguration(NNTPServer) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#316">316</a></td>
+</tr>
+<tr class="a"><td>Dead store to poolableConnectionFactory in org.methodize.nntprss.feed.db.JdbcChannelDAO.initializeDatabasePool(Document)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#412">412</a></td>
+</tr>
+<tr class="b"><td>Dead store to paramCount in org.methodize.nntprss.feed.db.JdbcChannelDAO.loadArticleNumbers(Category)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1580">1580</a></td>
+</tr>
+<tr class="a"><td>Dead store to paramCount in org.methodize.nntprss.feed.db.JdbcChannelDAO.loadArticleNumbers(Channel)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1051">1051</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.deleteExpiredItems(Channel, Set) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1268">1268</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadArticleNumbers(Category) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1586">1586</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadArticleNumbers(Channel) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1057">1057</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadChannels(ChannelManager) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#222">222</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadChannels(ChannelManager) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#229">229</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadChannels(ChannelManager) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#244">244</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadItem(Category, int) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1742">1742</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadItems(Category, int[], boolean, int) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1846">1846</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.JdbcChannelDAO.loadRelativeItem(Category, int, String) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1941">1941</a></td>
+</tr>
+<tr class="a"><td>Possible null pointer dereference of rs in org.methodize.nntprss.feed.db.JdbcChannelDAO.addChannelToCategory(Channel, Category)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#541">541</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.deleteExpiredItems(Channel, Set) may fail to close java.sql.PreparedStatement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ODR_OPEN_DATABASE_RESOURCE">ODR_OPEN_DATABASE_RESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1255">1255</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.deleteExpiredItems(Channel, Set) may fail to close java.sql.PreparedStatement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ODR_OPEN_DATABASE_RESOURCE">ODR_OPEN_DATABASE_RESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1287">1287</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.deleteExpiredItems(Channel, Set) may fail to close java.sql.PreparedStatement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ODR_OPEN_DATABASE_RESOURCE">ODR_OPEN_DATABASE_RESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1316">1316</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.deleteExpiredItems(Channel, Set) may fail to close java.sql.PreparedStatement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ODR_OPEN_DATABASE_RESOURCE">ODR_OPEN_DATABASE_RESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1329">1329</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.JdbcChannelDAO.deleteItemsNotInSet(Channel, Set) may fail to close java.sql.PreparedStatement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#ODR_OPEN_DATABASE_RESOURCE">ODR_OPEN_DATABASE_RESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/JdbcChannelDAO.html#1420">1420</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.db.MySQLChannelDAO"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.db.MySQLChannelDAO</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.MySQLChannelDAO.createTables() might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/MySQLChannelDAO.html#194">194</a></td>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.db.MySQLChannelDAO.populateInitialChannels(Document) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/MySQLChannelDAO.html#284">284</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.db.MySQLChannelDAO.upgradeDatabase(int) might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/MySQLChannelDAO.html#503">503</a></td>
+</tr>
+<tr class="a"><td>Switch statement found in org.methodize.nntprss.feed.db.MySQLChannelDAO.upgradeDatabase(int) where one case falls through to the next case</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SF_SWITCH_FALLTHROUGH">SF_SWITCH_FALLTHROUGH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/MySQLChannelDAO.html#349">349-355</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.db.MySQLChannelDAO.createTables() passes a nonconstant String to an execute method on an SQL statement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE">SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/MySQLChannelDAO.html#165">165</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.db.MySQLChannelDAO.upgradeDatabase(int) passes a nonconstant String to an execute method on an SQL statement</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE">SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/db/MySQLChannelDAO.html#456">456</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.parser.AtomParser"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.parser.AtomParser</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Load of known null value in org.methodize.nntprss.feed.parser.AtomParser.processFeedItems(Element, Channel, ChannelDAO, boolean)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_LOAD_OF_KNOWN_NULL_VALUE">NP_LOAD_OF_KNOWN_NULL_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/parser/AtomParser.html#316">316</a></td>
+</tr>
+<tr class="b"><td>Redundant nullcheck of existingBase which is known to be null in org.methodize.nntprss.feed.parser.AtomParser.extractXmlBase(Element, Channel, URI)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE">RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/parser/AtomParser.html#387">387</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.parser.LooseParser"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.parser.LooseParser</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Possible null pointer dereference of LooseParser.dtd in org.methodize.nntprss.feed.parser.LooseParser.&lt;static initializer&gt;() on exception path</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH_EXCEPTION">NP_NULL_ON_SOME_PATH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/parser/LooseParser.html#71">71</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.parser.LooseParser.main(String[])</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/parser/LooseParser.html#171">171</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.publish.BloggerPublisher"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.publish.BloggerPublisher</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.feed.publish.BloggerPublisher.main(String[]) invokes inefficient Boolean constructor; use Boolean.valueOf(...) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_BOOLEAN_CTOR">DM_BOOLEAN_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/BloggerPublisher.html#147">147</a></td>
+</tr>
+<tr class="b"><td>Possible null pointer dereference in org.methodize.nntprss.feed.publish.BloggerPublisher.main(String[]) due to return value of called method</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/BloggerPublisher.html#143">143</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.BloggerPublisher.main(String[])</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/BloggerPublisher.html#160">160</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.BloggerPublisher.publish(Map, Item)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/BloggerPublisher.html#88">88</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.BloggerPublisher.validate(Map)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/BloggerPublisher.html#114">114</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.publish.LiveJournalPublisher"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.publish.LiveJournalPublisher</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.publish.LiveJournalPublisher.publish(Map, Item) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#110">110</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.publish.LiveJournalPublisher.publish(Map, Item) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#111">111</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.publish.LiveJournalPublisher.publish(Map, Item) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#112">112</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.publish.LiveJournalPublisher.publish(Map, Item) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#113">113</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.feed.publish.LiveJournalPublisher.publish(Map, Item) invokes inefficient Integer(int) constructor; use Integer.valueOf(int) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#114">114</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.LiveJournalPublisher.main(String[])</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#201">201</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.LiveJournalPublisher.publish(Map, Item)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#124">124</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.LiveJournalPublisher.validate(Map)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/LiveJournalPublisher.html#159">159</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.publish.MetaWeblogPublisher"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.publish.MetaWeblogPublisher</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.publish.MetaWeblogPublisher.main(String[]) invokes inefficient Boolean constructor; use Boolean.valueOf(...) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_BOOLEAN_CTOR">DM_BOOLEAN_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MetaWeblogPublisher.html#165">165</a></td>
+</tr>
+<tr class="a"><td>Possible null pointer dereference in org.methodize.nntprss.feed.publish.MetaWeblogPublisher.main(String[]) due to return value of called method</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MetaWeblogPublisher.html#161">161</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.MetaWeblogPublisher.main(String[])</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MetaWeblogPublisher.html#178">178</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.MetaWeblogPublisher.publish(Map, Item)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MetaWeblogPublisher.html#102">102</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.MetaWeblogPublisher.validate(Map)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MetaWeblogPublisher.html#132">132</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.publish.MovableTypePublisher"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.publish.MovableTypePublisher</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.feed.publish.MovableTypePublisher.main(String[]) invokes inefficient Boolean constructor; use Boolean.valueOf(...) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_BOOLEAN_CTOR">DM_BOOLEAN_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MovableTypePublisher.html#164">164</a></td>
+</tr>
+<tr class="a"><td>Possible null pointer dereference in org.methodize.nntprss.feed.publish.MovableTypePublisher.main(String[]) due to return value of called method</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MovableTypePublisher.html#160">160</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.MovableTypePublisher.main(String[])</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MovableTypePublisher.html#177">177</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.MovableTypePublisher.publish(Map, Item)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MovableTypePublisher.html#101">101</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.MovableTypePublisher.validate(Map)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/MovableTypePublisher.html#131">131</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.publish.PublishManager"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.publish.PublishManager</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.feed.publish.PublishManager.configure(Document) invokes toString() method on a String</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_STRING_TOSTRING">DM_STRING_TOSTRING</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/PublishManager.html#79">79</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.feed.publish.PublishManager.configure(Document)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/PublishManager.html#105">105</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.feed.publish.PublishManagerSystem"></a>
+<div class="section"><h3>org.methodize.nntprss.feed.publish.PublishManager$System</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Should org.methodize.nntprss.feed.publish.PublishManager$System be a _static_ inner class?</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SIC_INNER_SHOULD_BE_STATIC">SIC_INNER_SHOULD_BE_STATIC</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/feed/publish/PublishManager.html#147">147-173</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.nntp.ClientHandler"></a>
+<div class="section"><h3>org.methodize.nntprss.nntp.ClientHandler</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.nntp.ClientHandler.processRequestLoop(BufferedReader, PrintWriter, PrintWriter) uses the same code for two switch clauses</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DB_DUPLICATE_SWITCH_CLAUSES">DB_DUPLICATE_SWITCH_CLAUSES</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1161">1161-1162</a></td>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.nntp.ClientHandler.run() might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1480">1480</a></td>
+</tr>
+<tr class="a"><td>Use of non-localized String.toUpperCase() or String.toLowerCase</td>
+<td>I18N</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_CONVERT_CASE">DM_CONVERT_CASE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1380">1380</a></td>
+</tr>
+<tr class="b"><td>items could be null and is guaranteed to be dereferenced in org.methodize.nntprss.nntp.ClientHandler.cmdXOVER(PrintWriter, String, String[])</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_GUARANTEED_DEREF">NP_GUARANTEED_DEREF</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1259">1259</a></td>
+</tr>
+<tr class="a"><td>Possible null pointer dereference of channel in org.methodize.nntprss.nntp.ClientHandler.cmdPost(BufferedReader, PrintWriter)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1415">1415</a></td>
+</tr>
+<tr class="b"><td>Possible null pointer dereference of pub in org.methodize.nntprss.nntp.ClientHandler.cmdPost(BufferedReader, PrintWriter)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1408">1408</a></td>
+</tr>
+<tr class="a"><td>Possible null pointer dereference of item in org.methodize.nntprss.nntp.ClientHandler.processRequestLoop(BufferedReader, PrintWriter, PrintWriter)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#765">765</a></td>
+</tr>
+<tr class="b"><td>Possible null pointer dereference of item in org.methodize.nntprss.nntp.ClientHandler.processRequestLoop(BufferedReader, PrintWriter, PrintWriter)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#969">969</a></td>
+</tr>
+<tr class="a"><td>Possible null pointer dereference of items in org.methodize.nntprss.nntp.ClientHandler.processRequestLoop(BufferedReader, PrintWriter, PrintWriter)</td>
+<td>CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NP_NULL_ON_SOME_PATH">NP_NULL_ON_SOME_PATH</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#878">878</a></td>
+</tr>
+<tr class="b"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.nntp.ClientHandler.run()</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/ClientHandler.html#1464">1464</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.nntp.NNTPServer"></a>
+<div class="section"><h3>org.methodize.nntprss.nntp.NNTPServer</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Usage of GetResource in org.methodize.nntprss.nntp.NNTPServer.configure(Document) may be unsafe if class is extended</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UI_INHERITANCE_UNSAFE_GETRESOURCE">UI_INHERITANCE_UNSAFE_GETRESOURCE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/NNTPServer.html#114">114</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.nntp.NNTPServerListener"></a>
+<div class="section"><h3>org.methodize.nntprss.nntp.NNTPServerListener</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Using notify rather than notifyAll in org.methodize.nntprss.nntp.NNTPServerListener.shutdown()</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NO_NOTIFY_NOT_NOTIFYALL">NO_NOTIFY_NOT_NOTIFYALL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/nntp/NNTPServerListener.html#77">77</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.AppConstants"></a>
+<div class="section"><h3>org.methodize.nntprss.util.AppConstants</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Dead store to localAddr in org.methodize.nntprss.util.AppConstants.getCurrentHostName()</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/AppConstants.html#118">118</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.Base64"></a>
+<div class="section"><h3>org.methodize.nntprss.util.Base64</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Private method org.methodize.nntprss.util.Base64.encode3to4(byte[]) is never called</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UPM_UNCALLED_PRIVATE_METHOD">UPM_UNCALLED_PRIVATE_METHOD</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/Base64.html#189">189</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.FixedThreadPool"></a>
+<div class="section"><h3>org.methodize.nntprss.util.FixedThreadPool</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>org.methodize.nntprss.util.FixedThreadPool.FixedThreadPool(String, String, int) invokes org.methodize.nntprss.util.FixedThreadPool$WorkerThread.start()</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#SC_START_IN_CTOR">SC_START_IN_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/FixedThreadPool.html#125">125</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.FixedThreadPoolWorkerThread"></a>
+<div class="section"><h3>org.methodize.nntprss.util.FixedThreadPool$WorkerThread</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Naked notify in org.methodize.nntprss.util.FixedThreadPool$WorkerThread.run(Runnable)</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NN_NAKED_NOTIFY">NN_NAKED_NOTIFY</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/FixedThreadPool.html#70">70</a></td>
+</tr>
+<tr class="a"><td>Unconditional wait in org.methodize.nntprss.util.FixedThreadPool$WorkerThread.run()</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#UW_UNCOND_WAIT">UW_UNCOND_WAIT</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/FixedThreadPool.html#80">80</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.HTMLHelper"></a>
+<div class="section"><h3>org.methodize.nntprss.util.HTMLHelper</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#56">56</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#58">58</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#59">59</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#60">60</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#61">61</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#62">62</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#63">63</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#64">64</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#65">65</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#66">66</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#67">67</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#68">68</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#69">69</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#70">70</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#71">71</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#72">72</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#73">73</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#74">74</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#75">75</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#76">76</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#77">77</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#78">78</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#79">79</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#80">80</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#81">81</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#82">82</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#83">83</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#84">84</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#85">85</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#86">86</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#87">87</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#88">88</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#89">89</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#90">90</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#91">91</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#92">92</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#93">93</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#94">94</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#95">95</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#96">96</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#97">97</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#98">98</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#99">99</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#100">100</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#101">101</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#102">102</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#103">103</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#104">104</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#105">105</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#106">106</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#107">107</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#108">108</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#109">109</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#110">110</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#111">111</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#112">112</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#113">113</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#114">114</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#115">115</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#116">116</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#117">117</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#118">118</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#119">119</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#120">120</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#121">121</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#122">122</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#123">123</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#124">124</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#125">125</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#126">126</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#127">127</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#128">128</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#129">129</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#130">130</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#131">131</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#132">132</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#133">133</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#134">134</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#135">135</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#136">136</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#137">137</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#138">138</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#139">139</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#140">140</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#141">141</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#142">142</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#143">143</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#144">144</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#145">145</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#146">146</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#147">147</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#148">148</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#149">149</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#150">150</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#151">151</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#152">152</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#156">156</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#159">159</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#160">160</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#161">161</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#162">162</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#163">163</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#164">164</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#165">165</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#166">166</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#167">167</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#168">168</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#169">169</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#170">170</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#171">171</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#172">172</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#173">173</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#174">174</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#175">175</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#176">176</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#177">177</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#178">178</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#179">179</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#180">180</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#181">181</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#182">182</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#183">183</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#184">184</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#185">185</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#186">186</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#187">187</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#188">188</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#189">189</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#190">190</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#191">191</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#192">192</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#193">193</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#194">194</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#195">195</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#196">196</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#197">197</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#198">198</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#199">199</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#200">200</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#201">201</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#202">202</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#203">203</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#204">204</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#205">205</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#206">206</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#207">207</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#208">208</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#209">209</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#210">210</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#213">213</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#214">214</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#215">215</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#216">216</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#217">217</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#218">218</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#221">221</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#222">222</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#223">223</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#224">224</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#225">225</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#228">228</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#229">229</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#230">230</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#231">231</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#232">232</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#233">233</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#234">234</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#235">235</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#236">236</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#237">237</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#238">238</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#241">241</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#242">242</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#243">243</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#244">244</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#245">245</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#246">246</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#247">247</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#248">248</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#249">249</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#250">250</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#251">251</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#252">252</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#253">253</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#254">254</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#255">255</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#256">256</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#257">257</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#258">258</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#259">259</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#260">260</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#261">261</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#262">262</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#263">263</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#264">264</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#265">265</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#266">266</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#267">267</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#268">268</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#269">269</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#270">270</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#271">271</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#272">272</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#273">273</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#274">274</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#275">275</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#276">276</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#277">277</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#278">278</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#281">281</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#282">282</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#283">283</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#284">284</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#285">285</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#286">286</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#289">289</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#292">292</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#293">293</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#294">294</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#295">295</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#299">299</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#300">300</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#301">301</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#302">302</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#303">303</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#306">306</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#307">307</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#308">308</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#309">309</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#310">310</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#313">313</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#314">314</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#317">317</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#318">318</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#319">319</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#320">320</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#321">321</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#322">322</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#323">323</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#324">324</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#325">325</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#326">326</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#327">327</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#328">328</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#329">329</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#330">330</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#331">331</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#332">332</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#333">333</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#334">334</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#335">335</a></td>
+</tr>
+<tr class="b"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#336">336</a></td>
+</tr>
+<tr class="a"><td>Method org.methodize.nntprss.util.HTMLHelper.&lt;static initializer&gt;() invokes inefficient Character(char) constructor; use Character.valueOf(char) instead</td>
+<td>PERFORMANCE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_NUMBER_CTOR">DM_NUMBER_CTOR</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/HTMLHelper.html#337">337</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.WorkerThread"></a>
+<div class="section"><h3>org.methodize.nntprss.util.WorkerThread</h3>
+<table class="bodyTable"><tr class="b"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="a"><td>org.methodize.nntprss.util.WorkerThread.run() might ignore java.lang.Exception</td>
+<td>BAD_PRACTICE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DE_MIGHT_IGNORE">DE_MIGHT_IGNORE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/WorkerThread.html#74">74</a></td>
+</tr>
+<tr class="b"><td>Inconsistent synchronization of org.methodize.nntprss.util.WorkerThread.active; locked 66% of time</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#IS2_INCONSISTENT_SYNC">IS2_INCONSISTENT_SYNC</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/WorkerThread.html#69">69</a></td>
+</tr>
+<tr class="a"><td>Using notify rather than notifyAll in org.methodize.nntprss.util.WorkerThread.end()</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NO_NOTIFY_NOT_NOTIFYALL">NO_NOTIFY_NOT_NOTIFYALL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/WorkerThread.html#62">62</a></td>
+</tr>
+<tr class="b"><td>Using notify rather than notifyAll in org.methodize.nntprss.util.WorkerThread.run(Runnable)</td>
+<td>MT_CORRECTNESS</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#NO_NOTIFY_NOT_NOTIFYALL">NO_NOTIFY_NOT_NOTIFYALL</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/WorkerThread.html#56">56</a></td>
+</tr>
+</table>
+</div>
+<a name="org.methodize.nntprss.util.XMLHelper"></a>
+<div class="section"><h3>org.methodize.nntprss.util.XMLHelper</h3>
+<table class="bodyTable"><tr class="a"><th>Bug</th>
+<th>Category</th>
+<th>Details</th>
+<th>Line</th>
+</tr>
+<tr class="b"><td>Use of non-localized String.toUpperCase() or String.toLowerCase</td>
+<td>I18N</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#DM_CONVERT_CASE">DM_CONVERT_CASE</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/XMLHelper.html#240">240</a></td>
+</tr>
+<tr class="a"><td>Exception is caught when Exception is not thrown in org.methodize.nntprss.util.XMLHelper.xmlToStringHashMap(String)</td>
+<td>STYLE</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/bugDescriptions.html#REC_CATCH_EXCEPTION">REC_CATCH_EXCEPTION</a>
+</td>
+<td><a href="xref/org/methodize/nntprss/util/XMLHelper.html#428">428</a></td>
+</tr>
+</table>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2008
+    
+          
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
