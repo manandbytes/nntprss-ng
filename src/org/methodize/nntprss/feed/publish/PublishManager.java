@@ -30,7 +30,11 @@ package org.methodize.nntprss.feed.publish;
  * Boston, MA  02111-1307  USA
  * ----------------------------------------------------- */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.security.CodeSource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,23 +66,22 @@ public class PublishManager {
     public void configure(Document config) {
         Document publishDoc = null;
 
-        InputStream publishFile =
-            getClass().getClassLoader().getResourceAsStream(
-                AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE);
-        if (publishFile == null) {
-            throw new RuntimeException(
-                "Cannot load "
-                    + AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
-                    + " configuration file");
-        }
-
+        CodeSource codeSource = getClass().getProtectionDomain()
+                .getCodeSource();
+        String publishFileName = new File(codeSource.getLocation().getFile())
+                .getParent()
+                + "/" + AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE;
         try {
+            InputStream publishFile = new FileInputStream(publishFileName);
             DocumentBuilder db = AppConstants.newDocumentBuilder();
             publishDoc = db.parse(publishFile);
+        } catch (FileNotFoundException e1) {
+            throw new RuntimeException("Cannot load "
+                    + AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
+                    + " configuration file as " + publishFileName.toString());
         } catch (Exception e) {
             // FIXME more granular exception?
-            throw new RuntimeException(
-                "Error parsing "
+            throw new RuntimeException("Error parsing "
                     + AppConstants.NNTPRSS_PUBLISH_CONFIGURATION_FILE
                     + " configuration file");
         }
