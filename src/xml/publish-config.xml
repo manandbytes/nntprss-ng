@@ -1,0 +1,155 @@
+<!-- nntp//rss Publishing API configuration -->
+<!-- http://www.methodize.org/nntprss -->
+<!-- License under the GNU Public License -->
+
+<nntprss-publish>
+	<interface name="blogger" class="org.methodize.nntprss.feed.publish.BloggerPublisher"/>
+	<interface name="livejournal" class="org.methodize.nntprss.feed.publish.LiveJournalPublisher"/>
+	<interface name="metaweblog" class="org.methodize.nntprss.feed.publish.MetaWeblogPublisher"/>
+	<interface name="movabletype" class="org.methodize.nntprss.feed.publish.MovableTypePublisher"/>
+
+	<system name="b2" 
+		title="b2" 
+		interface="blogger"
+		homePage="http://www.cafelog.com"
+		url="http://www.yourb2host.com/b2folder/xmlrpc.php"
+		>
+	</system>
+
+	<system name="bigblogtool" 
+		title="Big Blog Tool" 
+		interface="blogger"
+		homePage="http://www.bigblogtool.com/"
+		url="http://ping.bigblogtool.com/bloggerapi.php"
+		>
+	</system>
+
+	<system name="blogalia" 
+		title="Blogalia" 
+		interface="blogger"
+		homePage="http://www.blogalia.com/"
+		url="http://www.blogalia.com/RPC.php"
+		>
+	</system>
+
+	<system name="blogger" 
+		title="Blogger API" 
+		interface="blogger"
+		homePage="http://www.blogger.com/"
+		url="http://plant.blogger.com/api/RPC2"
+		>
+	</system>
+
+	<system name="bloggerpro" 
+		title="Blogger API" 
+		interface="blogger"
+		homePage="http://pro.blogger.com/"
+		url="http://plant.blogger.com/api/RPC2"
+		>
+	</system>
+
+	<system name="blogworks" 
+		title="BlogWorks XML" 
+		interface="blogger"
+		homePage="http://www.blogworks.com"
+		url="http://www.yourbwhost.com/admin_dir/listen.asp"
+		>
+	</system>
+
+	<system name="drupal" 
+		title="Drupal" 
+		interface="blogger"
+		homePage="http://www.drupal.org"
+		url="http://www.yourdrupalhost.com/drupalpath/xmlrpc.php"
+		>
+	</system>
+
+	<system name="e-xoops" 
+		title="E-Xoops" 
+		interface="metaweblog"
+		homePage="http://www.e-xoops.com"
+		url="http://www.yourexoopshost.com/modules/phpRPC/server.php"
+		>
+	</system>
+
+	<system name="erablog" 
+		title="EraBlog.NET" 
+		interface="metaweblog"
+		homePage="http://www.erablog.net"
+		url="http://erablog.net/RPC/v1.1/EraBlog.xmlrpc"
+		>
+	</system>
+
+	<system name="movabletype" 
+		title="Movable Type" 
+		interface="movabletype"
+		homePage="http://www.movabletype.org/"
+		url="http://www.yourmthost.com/mtfolder/mt-xmlrpc.cgi"
+		>
+	</system>
+
+	<system name="nucleus" 
+		title="Nucleus" 
+		interface="metaweblog"
+		homePage="http://www.nucleuscms.org/"
+		url="http://www.yourserver.com/yourpath/nucleus/xmlrpc/server.php"
+		>
+	</system>
+
+	<system name="postnuke" 
+		title="PostNuke" 
+		interface="blogger"
+		homePage="http://www.postnuke.com"
+		url="http://www.yourpostnukehost.com/xmlrpc.php"
+		>
+	</system>
+
+	<system name="roller"
+		title="Roller Weblogger"
+		homePage="http://www.rollerweblogger.org/"
+		interface="metaweblog"
+		url="http://www.yourrollerhost.com/roller/xmlrpc"
+		>
+	</system>		
+
+	<system name="theblogbrturbo" 
+		title="The Blog - BR Turbo" 
+		interface="blogger"
+		homePage="http://www.theblog.com.br"
+		url="http://www.theblog.com.br/servlet/theblog"
+		>
+	</system>
+
+	<system name="upsaid" 
+		title="Upsaid" 
+		interface="blogger"
+		homePage="http://www.upsaid.com"
+		url="http://www.upsaid.com/xmlrpc.php"
+		>
+	</system>
+
+	<system name="xoops" 
+		title="Xoops" 
+		interface="metaweblog"
+		homePage="http://www.xoops.org"
+		url="http://www.yourxoopshost.com/xmlrpc.php"
+		>
+	</system>
+
+<!-- Default APIs -->
+	<system name="metaweblog" 
+		title="MetaWeblog API" 
+		interface="metaweblog"
+		homePage="http://www.xmlrpc.com/metaWeblogApi"
+		url="http://127.0.0.1:5335/RPC2"
+		>
+	</system>
+	<system name="livejournal" 
+		title="LiveJournal API" 
+		interface="livejournal"
+		homePage="http://www.livejournal.com/"
+		url="http://www.livejournal.com/interface/xmlrpc"
+		>
+	</system>
+
+</nntprss-publish>
