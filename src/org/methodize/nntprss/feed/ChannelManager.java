@@ -61,7 +61,7 @@ public class ChannelManager {
 	private int pollerThreads = 4;
 
     private Map<String, Channel> channels;
-    private Map categories;
+    private Map<String, Category> categories;
     private static ChannelManager channelManager = new ChannelManager();
     private final ChannelDAO channelDAO;
     private ChannelPoller channelPoller;
@@ -115,7 +115,7 @@ public class ChannelManager {
 		if(processorsElms != null && processorsElms.getLength() > 0) {
 			NodeList processorElms = ((Element)processorsElms.item(0)).getElementsByTagName("processor");
 			if(processorElms != null && processorElms.getLength() > 0) {
-				List processors = new ArrayList();
+				List<ItemProcessor> processors = new ArrayList<ItemProcessor>();
 				for(int i = 0; i < processorElms.getLength(); i++) {
 					Element processorElm = (Element)processorElms.item(i);
 
@@ -149,7 +149,7 @@ public class ChannelManager {
 				}
 				if(processors.size() > 0)
 				{
-					itemProcessors = (ItemProcessor[])processors.toArray(new ItemProcessor[0]);
+					itemProcessors = processors.toArray(new ItemProcessor[0]);
 				}
 			}
 		}
@@ -202,8 +202,8 @@ public class ChannelManager {
         return categories.values().iterator();
     }
 
-    public Iterator groups() {
-        Set groups = new HashSet();
+    public Iterator<ItemContainer> groups() {
+        Set<ItemContainer> groups = new HashSet<ItemContainer>();
         groups.addAll(channels.values());
         groups.addAll(categories.values());
         return groups.iterator();
@@ -214,13 +214,13 @@ public class ChannelManager {
     }
 
     public Category categoryByName(String name) {
-        return (Category) categories.get(name);
+        return categories.get(name);
     }
 
     public ItemContainer groupByName(String name) {
         ItemContainer group = channels.get(name);
         if (group == null) {
-            group = (ItemContainer) categories.get(name);
+            group = categories.get(name);
         }
         return group;
     }
