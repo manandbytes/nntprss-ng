@@ -229,9 +229,9 @@ public class ChannelManager {
         Category category = null;
         if(categories != null) 
         {
-	        Iterator categoryIter = categories.values().iterator();
+	        Iterator<Category> categoryIter = categories.values().iterator();
 	        while (categoryIter.hasNext()) {
-	            Category nextCategory = (Category) categoryIter.next();
+	            Category nextCategory = categoryIter.next();
 	            if (nextCategory.getId() == id) {
 	                category = nextCategory;
 	                break;
@@ -254,10 +254,10 @@ public class ChannelManager {
 
     public synchronized void repollAllChannels() {
         try {
-            Iterator channelIter = channels.values().iterator();
+            Iterator<Channel> channelIter = channels.values().iterator();
 
             while (channelIter.hasNext()) {
-                Channel channel = (Channel) channelIter.next();
+                Channel channel = channelIter.next();
                 channel.setLastPolled(null);
                 channel.setStatus(Channel.STATUS_OK);
             }
