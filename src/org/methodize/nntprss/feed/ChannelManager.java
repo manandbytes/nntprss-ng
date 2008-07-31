@@ -60,7 +60,7 @@ public class ChannelManager {
     private boolean observeHttp301 = false;
 	private int pollerThreads = 4;
 
-    private Map channels;
+    private Map<String, Channel> channels;
     private Map categories;
     private static ChannelManager channelManager = new ChannelManager();
     private final ChannelDAO channelDAO;
@@ -210,7 +210,7 @@ public class ChannelManager {
     }
 
     public Channel channelByName(String name) {
-        return (Channel) channels.get(name);
+        return channels.get(name);
     }
 
     public Category categoryByName(String name) {
@@ -218,7 +218,7 @@ public class ChannelManager {
     }
 
     public ItemContainer groupByName(String name) {
-        ItemContainer group = (ItemContainer) channels.get(name);
+        ItemContainer group = channels.get(name);
         if (group == null) {
             group = (ItemContainer) categories.get(name);
         }
