@@ -113,7 +113,7 @@ public class AdminServlet extends HttpServlet {
     // Currently used within posting/publishing configuration.
     private static final String PASSWORD_MAGIC_KEY = "###__KCV__###";
 
-    private void writeHeader(Writer writer, String tab) throws IOException {
+    private void writeHeader(final Writer writer, final String tab) throws IOException {
 
         writer.write("<html><head><title>nntp//rss admin</title>");
         writer.write(CSS_HEADER);
@@ -171,7 +171,7 @@ public class AdminServlet extends HttpServlet {
             "<tr height='100%'><td width='100%' height='100%' valign='top' align='center'><br>");
     }
 
-    private void writeFooter(Writer writer) throws IOException {
+    private void writeFooter(final Writer writer) throws IOException {
         DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
 
         writer.write("<p>");
@@ -190,9 +190,9 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void writeConfig(
-        Writer writer,
-        ChannelManager channelManager,
-        NNTPServer nntpServer)
+        final Writer writer,
+        final ChannelManager channelManager,
+        final NNTPServer nntpServer)
         throws IOException {
         writer.write("<form action='?action=updateconfig' method='POST'>");
         writer.write("<table class='tableBorder'>");
@@ -335,7 +335,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowConfig(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -353,8 +353,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdUpdateConfig(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -428,7 +428,7 @@ public class AdminServlet extends HttpServlet {
         writeFooter(writer);
     }
 
-    private boolean isChecked(HttpServletRequest request, String checkbox) {
+    private boolean isChecked(final HttpServletRequest request, final String checkbox) {
         String checkboxValue = request.getParameter(checkbox);
         if (checkboxValue != null && checkboxValue.equals("true")) {
             return true;
@@ -438,10 +438,10 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void writeChannel(
-        Writer writer,
-        Channel channel,
-        HttpServletRequest request,
-        boolean refresh)
+        final Writer writer,
+        final Channel channel,
+        final HttpServletRequest request,
+        final boolean refresh)
         throws IOException {
         if (channel == null) {
             writer.write("<b>Channel " + channel.getName() + " not found!</b>");
@@ -722,13 +722,13 @@ public class AdminServlet extends HttpServlet {
                                     BloggerPublisher.PROP_PUBLISHER_URL);
                         }
                         blogId =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 BloggerPublisher.PROP_BLOG_ID);
                         userName =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 BloggerPublisher.PROP_USERNAME);
                         password =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 BloggerPublisher.PROP_PASSWORD);
                         String autoPublishStr =
                             request.getParameter(BloggerPublisher.PROP_PUBLISH);
@@ -835,16 +835,16 @@ public class AdminServlet extends HttpServlet {
                                     MetaWeblogPublisher.PROP_PUBLISHER_URL);
                         }
                         blogId =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 BloggerPublisher.PROP_BLOG_ID);
                         if (blogId != null && blogId.length() == 0)
                             blogId = "home";
 
                         userName =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 MetaWeblogPublisher.PROP_USERNAME);
                         password =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 MetaWeblogPublisher.PROP_PASSWORD);
                         String autoPublishStr =
                             request.getParameter(
@@ -947,10 +947,10 @@ public class AdminServlet extends HttpServlet {
                                     LiveJournalPublisher.PROP_PUBLISHER_URL);
                         }
                         userName =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 LiveJournalPublisher.PROP_USERNAME);
                         password =
-                            (String) request.getParameter(
+                            request.getParameter(
                                 LiveJournalPublisher.PROP_PASSWORD);
                     } else {
                         // If a initial channel view, extract parameter from the Channel publish config map
@@ -1016,8 +1016,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void writeCategory(
-        Writer writer,
-        Category category)
+        final Writer writer,
+        final Category category)
         throws IOException {
         if (category == null) {
             writer.write(
@@ -1072,7 +1072,7 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void writeExpiration(Writer writer, Channel channel)
+    private void writeExpiration(final Writer writer, final Channel channel)
         throws IOException {
         writer.write("<tr><td class='row1' align='right'>Expiration</td>");
         writer.write("<td class='row2'><select name='expiration'>");
@@ -1132,10 +1132,10 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void writeOption(
-        Writer writer,
-        String option,
-        long value,
-        long selectedValue)
+        final Writer writer,
+        final String option,
+        final long value,
+        final long selectedValue)
         throws IOException {
         if (value == selectedValue) {
             writer.write(
@@ -1146,10 +1146,10 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void writeOption(
-        StringBuffer buffer,
-        String option,
-        long value,
-        long selectedValue)
+        final StringBuffer buffer,
+        final String option,
+        final long value,
+        final long selectedValue)
         throws IOException {
         if (value == selectedValue) {
             buffer.append(
@@ -1160,8 +1160,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowChannel(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -1179,8 +1179,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowCategory(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -1197,8 +1197,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdUpdateChannel(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -1231,9 +1231,9 @@ public class AdminServlet extends HttpServlet {
             boolean postingEnabled =
                 request.getParameter("postingEnabled").equalsIgnoreCase("true");
             String publishAPI = null;
-            Map publishConfig = null;
+            Map<String, String> publishConfig = null;
             if (postingEnabled) {
-                publishConfig = new HashMap();
+                publishConfig = new HashMap<String, String>();
                 publishAPI = request.getParameter("publishAPI");
 
                 // Validate...
@@ -1262,8 +1262,8 @@ public class AdminServlet extends HttpServlet {
                         request.getParameter(BloggerPublisher.PROP_BLOG_ID));
 
                     String autoPublishStr =
-                        (String) request.getParameter(
-                            BloggerPublisher.PROP_PUBLISH);
+                        request.getParameter(
+                        BloggerPublisher.PROP_PUBLISH);
                     if (autoPublishStr.equals("true")) {
                         publishConfig.put(
                             BloggerPublisher.PROP_PUBLISH,
@@ -1312,8 +1312,8 @@ public class AdminServlet extends HttpServlet {
                         request.getParameter(MetaWeblogPublisher.PROP_BLOG_ID));
 
                     String autoPublishStr =
-                        (String) request.getParameter(
-                            MetaWeblogPublisher.PROP_PUBLISH);
+                        request.getParameter(
+                        MetaWeblogPublisher.PROP_PUBLISH);
                     if (autoPublishStr.equals("true")) {
                         publishConfig.put(
                             MetaWeblogPublisher.PROP_PUBLISH,
@@ -1491,8 +1491,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdUpdateCategory(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -1516,8 +1516,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdEditChannelRefresh(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -1535,7 +1535,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void channelDelete(
-        HttpServletRequest request)
+        final HttpServletRequest request)
         throws ServletException, IOException {
 
         Enumeration paramEnum = request.getParameterNames();
@@ -1557,7 +1557,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void channelRepoll(
-        HttpServletRequest request)
+        final HttpServletRequest request)
         throws ServletException, IOException {
 
         Enumeration paramEnum = request.getParameterNames();
@@ -1581,8 +1581,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdChannelAction(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         if (request.getParameter("delete") != null) {
@@ -1598,7 +1598,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowCurrentChannels(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         DateFormat df =
@@ -1763,7 +1763,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdShowCurrentCategories(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -1813,7 +1813,7 @@ public class AdminServlet extends HttpServlet {
 
     }
 
-    private String getNewsURLPrefix(NNTPServer nntpServer) {
+    private String getNewsURLPrefix(final NNTPServer nntpServer) {
         String newsPrefix;
         if (nntpServer.getListenerPort() == 119) {
             newsPrefix = "news://" + nntpServer.getHostName() + "/";
@@ -1829,8 +1829,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdQuickEditChannels(
-        HttpServletResponse response,
-        boolean updated)
+        final HttpServletResponse response,
+        final boolean updated)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -2033,8 +2033,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdQuickEditChannelsUpdate(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         int chlCount = 0;
@@ -2111,10 +2111,10 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void writeCheckboxSelector(
-        Writer writer,
-        String functionName,
-        String checkPrefix,
-        String formName)
+        final Writer writer,
+        final String functionName,
+        final String checkPrefix,
+        final String formName)
         throws IOException {
         writer.write("\n<SCRIPT language='JavaScript'><!--\n");
 
@@ -2140,8 +2140,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdAddChannelForm(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         ChannelManager channelManager =
@@ -2285,7 +2285,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdAddCategoryForm(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -2303,15 +2303,15 @@ public class AdminServlet extends HttpServlet {
         writer.flush();
     }
 
-    private void writeErrors(Writer writer, List errors) throws IOException {
+    private void writeErrors(final Writer writer, final List errors) throws IOException {
         for (int errorCount = 0; errorCount < errors.size(); errorCount++) {
             writer.write(errors.get(errorCount) + "<br>");
         }
     }
 
     private void cmdAddChannel(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         ChannelManager channelManager =
@@ -2505,8 +2505,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdAddCategory(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         ChannelManager channelManager =
@@ -2562,7 +2562,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdExportChannelConfig(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         //		response.setContentType("text/xml");
@@ -2605,7 +2605,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdExportOpmlChannelConfig(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         //		response.setContentType("text/xml");
@@ -2668,7 +2668,7 @@ public class AdminServlet extends HttpServlet {
         writer.println("</opml>");
     }
 
-    private void writeImportForm(Writer writer) throws IOException {
+    private void writeImportForm(final Writer writer) throws IOException {
         writer.write(
             "<form action='?action=import' method='POST' enctype='multipart/form-data'>");
         writer.write("<table class='tableBorder'>");
@@ -2692,7 +2692,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportChannelConfigForm(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -2706,8 +2706,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportChannelConfig(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         MultiPartRequest mpRequest = new MultiPartRequest(request);
@@ -2720,8 +2720,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportNntpRssChannelConfig(
-        HttpServletResponse response,
-        MultiPartRequest mpRequest)
+        final HttpServletResponse response,
+        final MultiPartRequest mpRequest)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -2902,7 +2902,7 @@ public class AdminServlet extends HttpServlet {
 
     }
 
-    private String fixChannelName(String channelName) {
+    private String fixChannelName(final String channelName) {
         StringBuffer fixedName = new StringBuffer();
 
         for (int i = 0; i < channelName.length(); i++) {
@@ -2916,7 +2916,7 @@ public class AdminServlet extends HttpServlet {
         return fixedName.toString().trim();
     }
 
-    private String createChannelName(String urlString) {
+    private String createChannelName(final String urlString) {
         String name = null;
         try {
             URL url = new URL(urlString);
@@ -2946,8 +2946,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportOpmlChannelConfigValidate(
-        HttpServletResponse response,
-        MultiPartRequest mpRequest)
+        final HttpServletResponse response,
+        final MultiPartRequest mpRequest)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -3108,8 +3108,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdImportOpmlChannelConfig(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -3329,7 +3329,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void cmdHelp(
-        HttpServletResponse response)
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         Writer writer = response.getWriter();
@@ -3416,8 +3416,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void processRequest(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         response.setContentType("text/html");
@@ -3528,9 +3528,10 @@ public class AdminServlet extends HttpServlet {
     /**
      * @see javax.servlet.http.HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
+    @Override
     protected void doGet(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         processRequest(request, response);
@@ -3539,9 +3540,10 @@ public class AdminServlet extends HttpServlet {
     /**
      * @see javax.servlet.http.HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
      */
+    @Override
     protected void doPost(
-        HttpServletRequest request,
-        HttpServletResponse response)
+        final HttpServletRequest request,
+        final HttpServletResponse response)
         throws ServletException, IOException {
 
         processRequest(request, response);

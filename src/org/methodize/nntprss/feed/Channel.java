@@ -993,7 +993,7 @@ public class Channel
      * Sets the publishConfig.
      * @param publishConfig The publishConfig to set
      */
-    public void setPublishConfig(final Map publishConfig) {
+    public void setPublishConfig(final Map<String, String> publishConfig) {
         this.publishConfig = publishConfig;
     }
 
