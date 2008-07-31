@@ -43,7 +43,7 @@ public class Category extends ItemContainer  {
 
     private int id;
 
-    private Map channels = new HashMap();
+    private Map<Integer, Channel> channels = new HashMap<Integer, Channel>();
 
     private ChannelManager channelManager;
     private ChannelDAO channelDAO;
@@ -67,7 +67,7 @@ public class Category extends ItemContainer  {
     /**
      * @param i
      */
-    public void setId(int i) {
+    public void setId(final int i) {
         id = i;
     }
 
@@ -79,14 +79,14 @@ public class Category extends ItemContainer  {
     /**
      * @return
      */
-    public Map getChannels() {
+    public Map<Integer, Channel> getChannels() {
         return channels;
     }
 
     /**
      * @param map
      */
-    public void setChannels(Map map) {
+    public void setChannels(final Map<Integer, Channel> map) {
         channels = map;
     }
 
@@ -95,13 +95,13 @@ public class Category extends ItemContainer  {
         return lastArticleNumber;
     }
 
-    public void removeChannel(Channel channel) {
+    public void removeChannel(final Channel channel) {
         // Update channel in database...
         channelDAO.removeChannelFromCategory(channel, this);
         channels.remove(new Integer(channel.getId()));
     }
 
-    public void addChannel(Channel channel) {
+    public void addChannel(final Channel channel) {
         // Update channel in database...
         channelDAO.addChannelToCategory(channel, this);
         channels.put(new Integer(channel.getId()), channel);
