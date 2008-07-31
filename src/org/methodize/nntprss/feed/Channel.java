@@ -133,7 +133,7 @@ public class Channel
     public Channel() {
     }
 
-    public Channel(String name, String urlString)
+    public Channel(final String name, final String urlString)
         throws MalformedURLException {
         this.name = name;
         this.url = new URL(urlString);
@@ -193,9 +193,6 @@ public class Channel
         // Use method-level variable
         // Guard against change in history mid-poll
         polling = true;
-
-        //		boolean keepHistory = historical;
-        long keepExpiration = expiration;
 
         lastPolled = new Date();
 
@@ -475,14 +472,14 @@ public class Channel
 
     }
 
-    private void processChannelDocument(long keepExpiration, Document rssDoc)
+    private void processChannelDocument(final long keepExpiration, final Document rssDoc)
         throws NoSuchAlgorithmException, IOException {
         Element rootElm = rssDoc.getDocumentElement();
 
         GenericParser docParser = null;
-        for (int i = 0; i < parsers.length; i++) {
-            if (parsers[i].isParsable(rootElm)) {
-                docParser = parsers[i];
+        for (GenericParser parser : parsers) {
+            if (parser.isParsable(rootElm)) {
+                docParser = parser;
                 break;
             }
         }
@@ -500,7 +497,7 @@ public class Channel
 
     }
 
-    private long parseHttpDate(String dateString) {
+    private long parseHttpDate(final String dateString) {
         long time = 0;
         try {
             time = httpDate.parse(dateString).getTime();
@@ -516,7 +513,7 @@ public class Channel
      * document has an rss root element with a 
      * version, or rdf root element, 
      */
-    public static boolean isValid(URL url) throws HttpUserException {
+    public static boolean isValid(final URL url) throws HttpUserException {
         boolean valid = false;
         try {
             //			System.setProperty("networkaddress.cache.ttl", "0");
@@ -587,8 +584,8 @@ public class Channel
                 Document rssDoc = db.parse(bis);
                 Element rootElm = rssDoc.getDocumentElement();
 
-                for (int i = 0; i < parsers.length; i++) {
-                    if (parsers[i].isParsable(rootElm)) {
+                for (GenericParser parser : parsers) {
+                    if (parser.isParsable(rootElm)) {
                         valid = true;
                         break;
                     }
@@ -613,9 +610,9 @@ public class Channel
         return valid;
     }
 
-    private static void skipBOM(PushbackInputStream is) throws IOException {
+    private static void skipBOM(final PushbackInputStream is) throws IOException {
         byte[] header = new byte[PUSHBACK_BUFFER_SIZE];
-        int bytesRead = is.read(header);
+        is.read(header);
         if (header[0] == 0
             && header[1] == 0
             && (header[2] & 0xff) == 0xFE
@@ -668,7 +665,7 @@ public class Channel
      * Sets the author.
      * @param author The author to set
      */
-    public void setAuthor(String author) {
+    public void setAuthor(final String author) {
         this.author = author;
     }
 
@@ -684,7 +681,7 @@ public class Channel
      * Sets the id.
      * @param id The id to set
      */
-    public void setId(int id) {
+    public void setId(final int id) {
         this.id = id;
     }
 
@@ -700,7 +697,7 @@ public class Channel
      * Sets the lastPolled.
      * @param lastPolled The lastPolled to set
      */
-    public void setLastPolled(Date lastPolled) {
+    public void setLastPolled(final Date lastPolled) {
         this.lastPolled = lastPolled;
     }
 
@@ -771,7 +768,7 @@ public class Channel
      * Sets the lastETag.
      * @param lastETag The lastETag to set
      */
-    public void setLastETag(String lastETag) {
+    public void setLastETag(final String lastETag) {
         this.lastETag = lastETag;
     }
 
@@ -779,7 +776,7 @@ public class Channel
      * Sets the lastModified.
      * @param lastModified The lastModified to set
      */
-    public void setLastModified(long lastModified) {
+    public void setLastModified(final long lastModified) {
         this.lastModified = lastModified;
     }
 
@@ -795,7 +792,7 @@ public class Channel
      * Sets the rssVersion.
      * @param rssVersion The rssVersion to set
      */
-    public void setRssVersion(String rssVersion) {
+    public void setRssVersion(final String rssVersion) {
         this.rssVersion = rssVersion;
     }
 
@@ -803,7 +800,7 @@ public class Channel
      * Sets the url.
      * @param url The url to set
      */
-    public void setUrl(URL url) {
+    public void setUrl(final URL url) {
         if (this.url == null || !this.url.equals(url)) {
             this.url = url;
 
@@ -844,7 +841,7 @@ public class Channel
      * Sets the status.
      * @param status The status to set
      */
-    public void setStatus(int status) {
+    public void setStatus(final int status) {
         this.status = status;
     }
 
@@ -876,7 +873,7 @@ public class Channel
      * Sets the description.
      * @param description The description to set
      */
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -884,7 +881,7 @@ public class Channel
      * Sets the link.
      * @param link The link to set
      */
-    public void setLink(String link) {
+    public void setLink(final String link) {
         this.link = link;
     }
 
@@ -892,7 +889,7 @@ public class Channel
      * Sets the title.
      * @param title The title to set
      */
-    public void setTitle(String title) {
+    public void setTitle(final String title) {
         this.title = title;
     }
 
@@ -908,7 +905,7 @@ public class Channel
      * Sets the enabled.
      * @param enabled The enabled to set
      */
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -924,7 +921,7 @@ public class Channel
      * Sets the managingEditor.
      * @param managingEditor The managingEditor to set
      */
-    public void setManagingEditor(String managingEditor) {
+    public void setManagingEditor(final String managingEditor) {
         this.managingEditor = managingEditor;
     }
 
@@ -940,7 +937,7 @@ public class Channel
      * Sets the postingEnabled.
      * @param postingEnabled The postingEnabled to set
      */
-    public void setPostingEnabled(boolean postingEnabled) {
+    public void setPostingEnabled(final boolean postingEnabled) {
         this.postingEnabled = postingEnabled;
     }
 
@@ -956,7 +953,7 @@ public class Channel
      * Sets the parseAtAllCost.
      * @param parseAtAllCost The parseAtAllCost to set
      */
-    public void setParseAtAllCost(boolean parseAtAllCost) {
+    public void setParseAtAllCost(final boolean parseAtAllCost) {
         this.parseAtAllCost = parseAtAllCost;
     }
 
@@ -972,7 +969,7 @@ public class Channel
      * Sets the publishAPI.
      * @param publishAPI The publishAPI to set
      */
-    public void setPublishAPI(String publishAPI) {
+    public void setPublishAPI(final String publishAPI) {
         this.publishAPI = publishAPI;
     }
 
@@ -996,7 +993,7 @@ public class Channel
      * Sets the publishConfig.
      * @param publishConfig The publishConfig to set
      */
-    public void setPublishConfig(Map publishConfig) {
+    public void setPublishConfig(final Map publishConfig) {
         this.publishConfig = publishConfig;
     }
 
@@ -1012,7 +1009,7 @@ public class Channel
      * Sets the pollingIntervalSeconds.
      * @param pollingIntervalSeconds The pollingIntervalSeconds to set
      */
-    public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
+    public void setPollingIntervalSeconds(final long pollingIntervalSeconds) {
         this.pollingIntervalSeconds = pollingIntervalSeconds;
     }
 
@@ -1024,9 +1021,9 @@ public class Channel
      */
 
     private static HttpResult executeHttpRequest(
-        HttpClient client,
-        HostConfiguration config,
-        HttpMethod method)
+        final HttpClient client,
+        final HostConfiguration config,
+        final HttpMethod method)
         throws HttpException, IOException {
 
         HttpResult result;
@@ -1103,7 +1100,7 @@ public class Channel
         private byte[] response;
         private String location;
 
-        public HttpResult(int statusCode) {
+        public HttpResult(final int statusCode) {
             this.statusCode = statusCode;
         }
 
@@ -1115,7 +1112,7 @@ public class Channel
             return response;
         }
 
-        public void setResponse(byte[] response) {
+        public void setResponse(final byte[] response) {
             this.response = response;
         }
 
@@ -1123,7 +1120,7 @@ public class Channel
             return location;
         }
 
-        public void setLocation(String location) {
+        public void setLocation(final String location) {
             this.location = location;
         }
     }
@@ -1138,7 +1135,7 @@ public class Channel
     /**
      * @param l
      */
-    public void setExpiration(long l) {
+    public void setExpiration(final long l) {
         expiration = l;
     }
 
@@ -1152,7 +1149,7 @@ public class Channel
     /**
      * @param category
      */
-    public void setCategory(Category category) {
+    public void setCategory(final Category category) {
         this.category = category;
     }
 
@@ -1166,10 +1163,11 @@ public class Channel
     /**
      * @param date
      */
-    public void setLastCleaned(Date date) {
+    public void setLastCleaned(final Date date) {
         lastCleaned = date;
     }
 
+    @Override
     public String toString() {
         return "{Channel"
             + " author="
