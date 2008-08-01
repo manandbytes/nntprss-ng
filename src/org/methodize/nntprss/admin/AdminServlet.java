@@ -1965,42 +1965,7 @@ public class AdminServlet extends HttpServlet {
 
             long expiration = channel.getExpiration();
 
-            writeOption(
-                writer,
-                "Keep all items",
-                Channel.EXPIRATION_KEEP,
-                expiration);
-            writeOption(writer, "Keep only current items", 0, expiration);
-            writeOption(
-                writer,
-                "Keep items for 1 day",
-                (1000 * 60 * 60 * 24 * 1),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 2 days",
-                (1000 * 60 * 60 * 24 * 2),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 4 days",
-                (1000 * 60 * 60 * 24 * 4),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 1 week",
-                (1000 * 60 * 60 * 24 * 7),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 2 weeks",
-                (1000 * 60 * 60 * 24 * 14),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 4 weeks",
-                (1000 * 60 * 60 * 24 * 28),
-                expiration);
+            writeExpirations(writer, expiration);
 
 			writeOption(
 				writer,
@@ -2209,42 +2174,7 @@ public class AdminServlet extends HttpServlet {
             "<tr><td class='row1' align='right' valign='top'>Item Expiration</td><td class='row2'>");
 
         writer.write("<select name='expiration'>");
-        writeOption(
-            writer,
-            "Keep all items",
-            Channel.EXPIRATION_KEEP,
-            expiration);
-        writeOption(writer, "Keep only current items", 0, expiration);
-        writeOption(
-            writer,
-            "Keep items for 1 day",
-            (1000 * 60 * 60 * 24 * 1),
-            expiration);
-        writeOption(
-            writer,
-            "Keep items for 2 days",
-            (1000 * 60 * 60 * 24 * 2),
-            expiration);
-        writeOption(
-            writer,
-            "Keep items for 4 days",
-            (1000 * 60 * 60 * 24 * 4),
-            expiration);
-        writeOption(
-            writer,
-            "Keep items for 1 week",
-            (1000 * 60 * 60 * 24 * 7),
-            expiration);
-        writeOption(
-            writer,
-            "Keep items for 2 weeks",
-            (1000 * 60 * 60 * 24 * 14),
-            expiration);
-        writeOption(
-            writer,
-            "Keep items for 4 weeks",
-            (1000 * 60 * 60 * 24 * 28),
-            expiration);
+        writeExpirations(writer, expiration);
 		writeOption(
 			writer,
 			"Keep items for 6 months",
@@ -2416,42 +2346,7 @@ public class AdminServlet extends HttpServlet {
                 "<tr><td class='row1' align='right' valign='top'>Item Expiration</td><td class='row2'>");
 
             writer.write("<select name='expiration'>");
-            writeOption(
-                writer,
-                "Keep all items",
-                Channel.EXPIRATION_KEEP,
-                expiration);
-            writeOption(writer, "Keep only current items", 0, expiration);
-            writeOption(
-                writer,
-                "Keep items for 1 day",
-                (1000 * 60 * 60 * 24 * 1),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 2 days",
-                (1000 * 60 * 60 * 24 * 2),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 4 days",
-                (1000 * 60 * 60 * 24 * 4),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 1 week",
-                (1000 * 60 * 60 * 24 * 7),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 2 weeks",
-                (1000 * 60 * 60 * 24 * 14),
-                expiration);
-            writeOption(
-                writer,
-                "Keep items for 4 weeks",
-                (1000 * 60 * 60 * 24 * 28),
-                expiration);
+            writeExpirations(writer, expiration);
 
             writer.write("</select></td></tr>");
 
@@ -3022,46 +2917,7 @@ public class AdminServlet extends HttpServlet {
 
                     long expiration = Channel.EXPIRATION_KEEP;
 
-                    writeOption(
-                        writer,
-                        "Keep all items",
-                        Channel.EXPIRATION_KEEP,
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep only current items",
-                        0,
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep items for 1 day",
-                        (1000 * 60 * 60 * 24 * 1),
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep items for 2 days",
-                        (1000 * 60 * 60 * 24 * 2),
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep items for 4 days",
-                        (1000 * 60 * 60 * 24 * 4),
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep items for 1 week",
-                        (1000 * 60 * 60 * 24 * 7),
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep items for 2 weeks",
-                        (1000 * 60 * 60 * 24 * 14),
-                        expiration);
-                    writeOption(
-                        writer,
-                        "Keep items for 4 weeks",
-                        (1000 * 60 * 60 * 24 * 28),
-                        expiration);
+                    writeExpirations(writer, expiration);
 
                     writer.write(
                         "</select></td>"
@@ -3105,6 +2961,50 @@ public class AdminServlet extends HttpServlet {
         writeFooter(writer);
         writer.flush();
 
+    }
+
+    private void writeExpirations(Writer writer, long expiration)
+            throws IOException {
+        writeOption(
+            writer,
+            "Keep all items",
+            Channel.EXPIRATION_KEEP,
+            expiration);
+        writeOption(
+            writer,
+            "Keep only current items",
+            0,
+            expiration);
+        writeOption(
+            writer,
+            "Keep items for 1 day",
+            (1000 * 60 * 60 * 24 * 1),
+            expiration);
+        writeOption(
+            writer,
+            "Keep items for 2 days",
+            (1000 * 60 * 60 * 24 * 2),
+            expiration);
+        writeOption(
+            writer,
+            "Keep items for 4 days",
+            (1000 * 60 * 60 * 24 * 4),
+            expiration);
+        writeOption(
+            writer,
+            "Keep items for 1 week",
+            (1000 * 60 * 60 * 24 * 7),
+            expiration);
+        writeOption(
+            writer,
+            "Keep items for 2 weeks",
+            (1000 * 60 * 60 * 24 * 14),
+            expiration);
+        writeOption(
+            writer,
+            "Keep items for 4 weeks",
+            (1000 * 60 * 60 * 24 * 28),
+            expiration);
     }
 
     private void cmdImportOpmlChannelConfig(
