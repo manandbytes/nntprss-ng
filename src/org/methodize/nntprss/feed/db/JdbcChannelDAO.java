@@ -75,8 +75,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
 
     @Override
-    public Map loadCategories() {
-        Map categories = new TreeMap();
+    public Map<String, Category> loadCategories() {
+        Map<String, Category> categories = new TreeMap<String, Category>();
         Connection conn = null;
         Statement stmt = null;
         PreparedStatement ps = null;
@@ -164,9 +164,9 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     }
 
     @Override
-    public Map loadChannels(ChannelManager channelManager) {
-        Map channels = new TreeMap();
-        Map channelsById = new TreeMap();
+    public Map<String, Channel> loadChannels(ChannelManager channelManager) {
+        Map<String, Channel> channels = new TreeMap<String, Channel>();
+        Map<Integer, Channel> channelsById = new TreeMap<Integer, Channel>();
         Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -243,7 +243,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 				if (rs != null) {
 					while (rs.next()) {
 						int channelId = rs.getInt(1);
-						Channel channel = (Channel)channelsById.get(new Integer(channelId));
+						Channel channel = channelsById.get(new Integer(channelId));
 						if(channel != null)
 						{
 							int firstArticleNumber = rs.getInt(2);
@@ -941,12 +941,12 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     }
 
     @Override
-    public List loadItems(
+    public List<Item> loadItems(
         Channel channel,
         int[] articleRange,
         boolean onlyHeaders,
         int limit) {
-        List items = new ArrayList();
+        List<Item> items = new ArrayList<Item>();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1047,9 +1047,9 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     }
 
     @Override
-    public List loadArticleNumbers(Channel channel) {
+    public List<Integer> loadArticleNumbers(Channel channel) {
 
-        List articleNumbers = new ArrayList();
+        List<Integer> articleNumbers = new ArrayList<Integer>();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1255,9 +1255,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
      * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteExpiredItems(org.methodize.nntprss.feed.Channel, java.util.Set)
      */
     @Override
-    public void deleteExpiredItems(
-        Channel channel,
-        Set currentItemSignatures) {
+    public void deleteExpiredItems(Channel channel, Set<?> currentItemSignatures) {
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1282,7 +1280,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     paramCount++,
                     new java.sql.Timestamp(expirationDate.getTime()));
                 rs = ps.executeQuery();
-                List expiredIds = new ArrayList();
+                List<Integer> expiredIds = new ArrayList<Integer>();
                 while (rs.next()) {
                     expiredIds.add(new Integer(rs.getInt(1)));
                 }
@@ -1311,7 +1309,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 for (int i = 0; i < expiredIds.size(); i++) {
                     ps.setInt(
                         paramCount++,
-                        ((Integer) expiredIds.get(i)).intValue());
+                        (expiredIds.get(i)).intValue());
                 }
 
                 ps.executeUpdate();
@@ -1339,7 +1337,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 for (int i = 0; i < expiredIds.size(); i++) {
                     ps.setInt(
                         paramCount++,
-                        ((Integer) expiredIds.get(i)).intValue());
+                        (expiredIds.get(i)).intValue());
                 }
 
                 ps.executeUpdate();
@@ -1413,7 +1411,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     }
 
     @Override
-    public void deleteItemsNotInSet(Channel channel, Set itemSignatures) {
+    public void deleteItemsNotInSet(Channel channel, Set<String> itemSignatures) {
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1442,9 +1440,9 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             int paramCount = 1;
             ps.setInt(paramCount++, channel.getId());
 
-            Iterator sigIter = itemSignatures.iterator();
+            Iterator<String> sigIter = itemSignatures.iterator();
             while (sigIter.hasNext()) {
-                ps.setString(paramCount++, (String) sigIter.next());
+                ps.setString(paramCount++, sigIter.next());
             }
 
             ps.executeUpdate();
@@ -1504,8 +1502,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     }
 
     @Override
-    public Set findNewItemSignatures(Channel channel, Set itemSignatures) {
-        Set newSignatures = new HashSet();
+    public Set findNewItemSignatures(Channel channel, Set<String> itemSignatures) {
+        Set<String> newSignatures = new HashSet<String>();
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1535,15 +1533,15 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
             int paramCount = 1;
             ps.setInt(paramCount++, channelId);
 
-            Iterator sigIter = itemSignatures.iterator();
+            Iterator<String> sigIter = itemSignatures.iterator();
             while (sigIter.hasNext()) {
-                ps.setString(paramCount++, (String) sigIter.next());
+                ps.setString(paramCount++, sigIter.next());
             }
 
             rs = ps.executeQuery();
 
             // Generate the list of existing signatures...
-            Set currentSignatures = new HashSet();
+            Set<String> currentSignatures = new HashSet<String>();
             if (rs != null) {
                 while (rs.next()) {
                     currentSignatures.add(rs.getString("signature"));
@@ -1586,8 +1584,8 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadArticleNumbers(org.methodize.nntprss.feed.Category)
      */
     @Override
-    public List loadArticleNumbers(Category category) {
-        List articleNumbers = new ArrayList();
+    public List<Integer> loadArticleNumbers(Category category) {
+        List<Integer> articleNumbers = new ArrayList<Integer>();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1800,13 +1798,13 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadItems(org.methodize.nntprss.feed.Category, int[], boolean, int)
      */
     @Override
-    public List loadItems(
+    public List<Item> loadItems(
         Category category,
         int[] articleRange,
         boolean onlyHeaders,
         int limit) {
 
-        List items = new ArrayList();
+        List<Item> items = new ArrayList<Item>();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;

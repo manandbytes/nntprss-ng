@@ -175,9 +175,9 @@ public class AtomParser extends GenericParser {
         Calendar retrievalDate = Calendar.getInstance();
         retrievalDate.add(Calendar.SECOND, -entryList.getLength());
 
-        Set currentSignatures = null;
+        Set<String> currentSignatures = null;
         if (!keepHistory) {
-            currentSignatures = new HashSet();
+            currentSignatures = new HashSet<String>();
         }
 
         Map newItems = new HashMap();

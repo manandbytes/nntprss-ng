@@ -985,7 +985,7 @@ public class Channel
      * Returns the publishConfig.
      * @return Map
      */
-    public Map getPublishConfig() {
+    public Map<String, String> getPublishConfig() {
         return publishConfig;
     }
 

@@ -65,9 +65,10 @@ public abstract class ChannelDAO {
 
     public abstract void loadConfiguration(NNTPServer nntpServer);
 
-    public abstract Map loadChannels(ChannelManager channelManager);
+    public abstract Map<String, Channel> loadChannels(
+            ChannelManager channelManager);
 
-    public abstract Map loadCategories();
+    public abstract Map<String, Category> loadCategories();
 
     public abstract void addChannel(Channel channel);
     public abstract void addCategory(Category category);
@@ -122,19 +123,19 @@ public abstract class ChannelDAO {
      *    all items to article number)
      */
 
-    public abstract List loadItems(
+    public abstract List<Item> loadItems(
         Category category,
         int[] articleRange,
         boolean onlyHeaders,
         int limit);
 
-    public abstract List loadItems(
+    public abstract List<Item> loadItems(
         Channel channel,
         int[] articleRange,
         boolean onlyHeaders,
         int limit);
 
-    public abstract List loadArticleNumbers(Category category);
+    public abstract List<Integer> loadArticleNumbers(Category category);
 
     /**
      * Method loadArticleNumbers
@@ -143,7 +144,7 @@ public abstract class ChannelDAO {
      * 
      * Supports NNTP listgroup command
      */
-    public abstract List loadArticleNumbers(Channel channel);
+    public abstract List<Integer> loadArticleNumbers(Channel channel);
 
     public abstract void saveItem(Item item);
 
@@ -153,21 +154,21 @@ public abstract class ChannelDAO {
 
     public abstract void deleteExpiredItems(
         Channel channel,
-        Set currentItemSignatures);
+            Set<?> currentItemSignatures);
 
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteItemsNotInSet(org.methodize.nntprss.feed.Channel, java.util.Set)
      */
     public abstract void deleteItemsNotInSet(
         Channel channel,
-        Set itemSignatures);
+            Set<String> itemSignatures);
 
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#findNewItemSignatures(int, java.util.Set)
      */
-    public abstract Set findNewItemSignatures(
+    public abstract Set<?> findNewItemSignatures(
         Channel channel,
-        Set itemSignatures);
+            Set<String> itemSignatures);
 
 	boolean migrateHsql() {
 		boolean hsqlFound = false;
@@ -236,7 +237,7 @@ public abstract class ChannelDAO {
 			}
 
 			rs = stmt.executeQuery("SELECT * FROM channels");
-			Map channelMap = new TreeMap();
+            Map<Integer, Channel> channelMap = new TreeMap<Integer, Channel>();
 
 			while (rs.next()) {
 				int origId = rs.getInt("id");

@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
 import org.hsqldb.lib.StringInputStream;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -211,9 +210,9 @@ public class XMLHelper {
         boolean inPre = false;
         boolean startOfLine = true;
         String lastURL = null;
-        List footnotes = null;
+        List<String> footnotes = null;
         if (footnoteLinks) {
-            footnotes = new ArrayList();
+            footnotes = new ArrayList<String>();
         }
 
         while (strTok.hasMoreTokens()) {
@@ -381,20 +380,21 @@ public class XMLHelper {
      * an XML document.
      */
 
-    public static String stringMapToXML(Map stringMap) {
+    public static String stringMapToXML(Map<String, String> stringMap) {
         String mapXMLResult = null;
         if (stringMap != null && stringMap.size() > 0) {
             StringBuffer mapXML = new StringBuffer();
             mapXML.append("<?xml version='1.0' encoding='UTF-8'?>\n<map>\n");
 
-            Iterator mapIter = stringMap.entrySet().iterator();
+            Iterator<Map.Entry<String, String>> mapIter = stringMap.entrySet()
+                    .iterator();
 
             while (mapIter.hasNext()) {
-                Map.Entry entry = (Map.Entry) mapIter.next();
+                Map.Entry<String, String> entry = mapIter.next();
                 mapXML.append("<entry key='");
-                mapXML.append(escapeString((String) entry.getKey()));
+                mapXML.append(escapeString(entry.getKey()));
                 mapXML.append("' value='");
-                mapXML.append(escapeString((String) entry.getValue()));
+                mapXML.append(escapeString(entry.getValue()));
                 mapXML.append("'/>\n");
             }
 
@@ -407,8 +407,8 @@ public class XMLHelper {
         return mapXMLResult;
     }
 
-    public static Map xmlToStringHashMap(String xml) {
-        Map map = new HashMap();
+    public static Map<String, String> xmlToStringHashMap(String xml) {
+        Map<String, String> map = new HashMap<String, String>();
 
         if (xml != null && xml.length() > 0) {
             try {

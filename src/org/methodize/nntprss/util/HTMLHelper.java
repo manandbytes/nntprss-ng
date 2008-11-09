@@ -48,7 +48,7 @@ import java.util.Map;
 
 public class HTMLHelper {
 
-    private static final Map escapeMap = new HashMap();
+    private static final Map<String, Character> escapeMap = new HashMap<String, Character>();
 
     static {
 
@@ -378,7 +378,7 @@ public class HTMLHelper {
                     }
                 } else {
                     Character unescapedVer =
-                        (Character) escapeMap.get(charBuf.toString());
+                        escapeMap.get(charBuf.toString());
                     if (unescapedVer != null) {
                         unescapedString.append(unescapedVer);
                     } else {
