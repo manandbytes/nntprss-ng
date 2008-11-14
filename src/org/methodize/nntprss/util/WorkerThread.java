@@ -65,6 +65,7 @@ public class WorkerThread extends Thread {
     /**
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
         while (active) {
             // We have work to do?

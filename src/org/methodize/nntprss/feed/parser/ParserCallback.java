@@ -64,6 +64,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleComment(char[], int)
      */
+    @Override
     public void handleComment(char[] data, int pos) {
         //		System.out.println("Comment: " 
         //			+ new String(data));
@@ -72,6 +73,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleEndOfLineString(String)
      */
+    @Override
     public void handleEndOfLineString(String eol) {
         //		System.out.println("EOL: " + eol.toString());
     }
@@ -90,6 +92,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleEndTag(Tag, int)
      */
+    @Override
     public void handleEndTag(Tag t, int pos) {
         //		System.out.println("EndTag: " + t.toString());
 
@@ -138,6 +141,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleError(String, int)
      */
+    @Override
     public void handleError(String errorMsg, int pos) {
         //		System.out.println("Error: " + errorMsg.toString());
     }
@@ -145,6 +149,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleSimpleTag(Tag, MutableAttributeSet, int)
      */
+    @Override
     public void handleSimpleTag(Tag t, MutableAttributeSet a, int pos) {
         //		System.out.println("SimpleTag: " + t.toString());
     }
@@ -152,6 +157,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleStartTag(Tag, MutableAttributeSet, int)
      */
+    @Override
     public void handleStartTag(Tag t, MutableAttributeSet a, int pos) {
         //		System.out.println("Tag: " + t.toString());
         //		System.out.println("Atts List: " + a.toString());
@@ -172,6 +178,7 @@ public class ParserCallback extends HTMLEditorKit.ParserCallback {
     /**
      * @see javax.swing.text.html.HTMLEditorKit.ParserCallback#handleText(char[], int)
      */
+    @Override
     public void handleText(char[] data, int pos) {
         currentText = new String(data);
         //		System.out.println("Text: " 

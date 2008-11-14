@@ -74,6 +74,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 	static final int FIELD_ITEM_CREATOR_LENGTH = 255;
 
 
+    @Override
     public Map loadCategories() {
         Map categories = new TreeMap();
         Connection conn = null;
@@ -162,6 +163,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return categories;
     }
 
+    @Override
     public Map loadChannels(ChannelManager channelManager) {
         Map channels = new TreeMap();
         Map channelsById = new TreeMap();
@@ -286,6 +288,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return channels;
     }
 
+    @Override
     public void loadConfiguration(NNTPServer nntpServer) {
         Connection conn = null;
         Statement stmt = null;
@@ -328,6 +331,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         }
     }
 
+    @Override
     public void loadConfiguration(ChannelManager channelManager) {
         Connection conn = null;
         Statement stmt = null;
@@ -429,6 +433,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         driver.registerPool("nntprss", connectionPool);
     }
 
+    @Override
     public void initialize(Document config) throws Exception {
         Connection conn = null;
         Statement stmt = null;
@@ -503,6 +508,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#addChannelToCategory(org.methodize.nntprss.feed.Channel, org.methodize.nntprss.feed.Category)
      */
+    @Override
     public void addChannelToCategory(Channel channel, Category category) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -580,6 +586,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         }
     }
 
+    @Override
     public void updateCategory(Category category) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -617,6 +624,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
     }
 
+    @Override
     public void updateChannel(Channel channel) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -713,6 +721,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
     }
 
+    @Override
     public void deleteChannel(Channel channel) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -772,6 +781,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return item;
     }
 
+    @Override
     public Item loadItem(Channel channel, int articleNumber) {
         Item item = null;
         Connection conn = null;
@@ -818,6 +828,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return item;
     }
 
+    @Override
     public Item loadNextItem(Channel channel, int relativeArticleNumber) {
         return loadRelativeItem(
             channel,
@@ -827,6 +838,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                 + " WHERE articleNumber > ? AND channel = ? ORDER BY articleNumber");
     }
 
+    @Override
     public Item loadPreviousItem(Channel channel, int relativeArticleNumber) {
         return loadRelativeItem(
             channel,
@@ -881,6 +893,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return item;
     }
 
+    @Override
     public Item loadItem(Channel channel, String signature) {
         Item item = null;
         Connection conn = null;
@@ -927,6 +940,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return item;
     }
 
+    @Override
     public List loadItems(
         Channel channel,
         int[] articleRange,
@@ -1032,6 +1046,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return items;
     }
 
+    @Override
     public List loadArticleNumbers(Channel channel) {
 
         List articleNumbers = new ArrayList();
@@ -1080,6 +1095,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return articleNumbers;
     }
 
+    @Override
     public void saveItem(Item item) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1146,6 +1162,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         }
     }
 
+    @Override
     public void saveConfiguration(ChannelManager channelManager) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1195,6 +1212,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
     }
 
+    @Override
     public void saveConfiguration(NNTPServer nntpServer) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1236,6 +1254,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteExpiredItems(org.methodize.nntprss.feed.Channel, java.util.Set)
      */
+    @Override
     public void deleteExpiredItems(
         Channel channel,
         Set currentItemSignatures) {
@@ -1393,6 +1412,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         }
     }
 
+    @Override
     public void deleteItemsNotInSet(Channel channel, Set itemSignatures) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1483,6 +1503,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         }
     }
 
+    @Override
     public Set findNewItemSignatures(Channel channel, Set itemSignatures) {
         Set newSignatures = new HashSet();
 
@@ -1556,12 +1577,15 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return newSignatures;
     }
 
+    @Override
     public abstract void addCategory(Category category);
+    @Override
     public abstract void addChannel(Channel channel);
 
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadArticleNumbers(org.methodize.nntprss.feed.Category)
      */
+    @Override
     public List loadArticleNumbers(Category category) {
         List articleNumbers = new ArrayList();
         Connection conn = null;
@@ -1612,6 +1636,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#removeChannelFromCategory(org.methodize.nntprss.feed.Channel, org.methodize.nntprss.feed.Category)
      */
+    @Override
     public void removeChannelFromCategory(Channel channel, Category category) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1669,6 +1694,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#deleteCategory(org.methodize.nntprss.feed.Category)
      */
+    @Override
     public void deleteCategory(Category category) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1714,6 +1740,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadItem(org.methodize.nntprss.feed.Category, int)
      */
+    @Override
     public Item loadItem(Category category, int articleNumber) {
         Item item = null;
         Connection conn = null;
@@ -1741,7 +1768,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
 
                     item =
                         loadItem(
-                            (Channel) category.getChannels().get(
+                            category.getChannels().get(
                                 new Integer(channelId)),
                             origArticleNumber);
                     item.setArticleNumber(articleNumber);
@@ -1772,6 +1799,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadItems(org.methodize.nntprss.feed.Category, int[], boolean, int)
      */
+    @Override
     public List loadItems(
         Category category,
         int[] articleRange,
@@ -1844,7 +1872,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                             rs.getInt("categoryArticleNumber"),
                             rs.getString("signature"));
                     item.setChannel(
-                        (Channel) category.getChannels().get(
+                        category.getChannels().get(
                             new Integer(rs.getInt("channel"))));
                     item.setDate(rs.getTimestamp("dtStamp"));
                     item.setTitle(rs.getString("title"));
@@ -1892,6 +1920,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadNextItem(org.methodize.nntprss.feed.Category, int)
      */
+    @Override
     public Item loadNextItem(Category category, int relativeArticleNumber) {
         return loadRelativeItem(
             category,
@@ -1906,6 +1935,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#loadPreviousItem(org.methodize.nntprss.feed.Category, int)
      */
+    @Override
     public Item loadPreviousItem(
         Category category,
         int relativeArticleNumber) {
@@ -1941,7 +1971,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
                     item =
                         readItemFromRS(
                             rs,
-                            (Channel) category.getChannels().get(
+                            category.getChannels().get(
                                 new Integer(rs.getInt("channel"))));
                     item.setArticleNumber(rs.getInt("categoryArticleNumber"));
                 }
@@ -1969,6 +1999,7 @@ public abstract class JdbcChannelDAO extends ChannelDAO {
         return item;
     }
 
+    @Override
     protected void migrateInitializeDatabase() throws Exception {
         // No initialization required
     }

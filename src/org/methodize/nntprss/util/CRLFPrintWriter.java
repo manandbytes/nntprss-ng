@@ -67,6 +67,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println()
      */
+    @Override
     public void println() {
         super.print(CRLF);
     }
@@ -74,6 +75,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(boolean)
      */
+    @Override
     public void println(boolean arg0) {
         super.print(arg0);
         println();
@@ -82,6 +84,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(char)
      */
+    @Override
     public void println(char arg0) {
         super.print(arg0);
         println();
@@ -90,6 +93,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(char[])
      */
+    @Override
     public void println(char[] arg0) {
         super.print(arg0);
         println();
@@ -98,6 +102,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(double)
      */
+    @Override
     public void println(double arg0) {
         super.print(arg0);
         println();
@@ -106,6 +111,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(float)
      */
+    @Override
     public void println(float arg0) {
         super.print(arg0);
         println();
@@ -114,6 +120,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(int)
      */
+    @Override
     public void println(int arg0) {
         super.print(arg0);
         println();
@@ -122,6 +129,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(long)
      */
+    @Override
     public void println(long arg0) {
         super.print(arg0);
         println();
@@ -130,6 +138,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(Object)
      */
+    @Override
     public void println(Object arg0) {
         super.print(arg0);
         println();
@@ -138,6 +147,7 @@ public class CRLFPrintWriter extends PrintWriter {
     /**
      * @see java.io.PrintWriter#println(String)
      */
+    @Override
     public void println(String arg0) {
         super.print(arg0);
         println();

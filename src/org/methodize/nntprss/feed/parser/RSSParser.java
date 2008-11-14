@@ -65,6 +65,7 @@ import org.w3c.dom.NodeList;
 public class RSSParser extends GenericParser {
 
     private static ThreadLocal dcDates = new ThreadLocal() {
+        @Override
         public Object initialValue() {
             SimpleDateFormat[] dcDateArray =
                 new SimpleDateFormat[] {
@@ -84,6 +85,7 @@ public class RSSParser extends GenericParser {
     };
 
     private static ThreadLocal date822Parser = new ThreadLocal() {
+        @Override
         public Object initialValue() {
             return new MailDateFormat();
         }
@@ -103,6 +105,7 @@ public class RSSParser extends GenericParser {
      * @param docRootElement Root element of feed document
      * @return
      */
+    @Override
     public boolean isParsable(Element docRootElement) {
         if (docRootElement.getNodeName().equals("rss")
             || docRootElement.getNodeName().equals("rdf:RDF")) {
@@ -112,6 +115,7 @@ public class RSSParser extends GenericParser {
         }
     }
 
+    @Override
     public String getFormatVersion(Element docRootElement) {
         String rssVersion;
 
@@ -125,6 +129,7 @@ public class RSSParser extends GenericParser {
         return rssVersion;
     }
 
+    @Override
     public void extractFeedInfo(Element docRootElement, Channel channel) {
         Element channelElm =
             (Element) docRootElement.getElementsByTagName("channel").item(0);
@@ -140,6 +145,7 @@ public class RSSParser extends GenericParser {
             XMLHelper.getChildElementValue(channelElm, "managingEditor"));
     }
 
+    @Override
     public void processFeedItems(
         Element rootElm,
         Channel channel,

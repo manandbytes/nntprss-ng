@@ -83,6 +83,7 @@ public class ChannelPoller extends Thread {
     /**
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
         while (active) {
             if (log.isDebugEnabled()) {

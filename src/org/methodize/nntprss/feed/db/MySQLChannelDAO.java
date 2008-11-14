@@ -64,6 +64,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
     public MySQLChannelDAO() {
     }
 
+    @Override
     protected void createTables() {
         Connection conn = null;
         Statement stmt = null;
@@ -206,6 +207,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 
     }
 
+    @Override
     protected void populateInitialChannels(Document config) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -297,6 +299,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 
     }
 
+    @Override
     protected void upgradeDatabase(int dbVersion) {
         Connection conn = null;
         Statement stmt = null;
@@ -510,6 +513,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
         }
     }
 
+    @Override
     public void addChannel(Channel channel) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -577,6 +581,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
 
     }
 
+    @Override
     public void addCategory(Category category) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -635,6 +640,7 @@ public class MySQLChannelDAO extends JdbcChannelDAO {
     /* (non-Javadoc)
      * @see org.methodize.nntprss.feed.db.ChannelDAO#shutdown()
      */
+    @Override
     public void shutdown() {
         // TODO Auto-generated method stub
     }

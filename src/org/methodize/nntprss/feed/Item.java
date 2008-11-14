@@ -230,10 +230,12 @@ public class Item implements Cloneable {
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
+    @Override
     public String toString() {
         String d = "";
         if (description != null && description.length() > 80) {
